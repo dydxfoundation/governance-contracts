@@ -1,0 +1,37 @@
+pragma solidity 0.7.5;
+pragma experimental ABIEncoderV2;
+
+library LS1Types {
+  /**
+   * @dev The parameters used to convert a timestamp to an epoch number.
+   */
+  struct EpochParameters {
+    uint128 interval;
+    uint128 offset;
+  }
+
+  /**
+   * @dev A balance, possibly with a change scheduled for the next epoch.
+   *  Also includes cached index information for inactive balances.
+   *
+   * @param  currentEpoch         The epoch in which the balance was last updated.
+   * @param  currentEpochBalance  The balance at epoch `currentEpoch`.
+   * @param  nextEpochBalance     The balance at epoch `currentEpoch + 1`.
+   * @param  shortfallCounter     Incrementing counter of the next shortfall index to be applied.
+   */
+  struct StoredBalance {
+    uint16 currentEpoch; // Supports at least 1000 years given min epoch length of 6 days.
+    uint112 currentEpochBalance;
+    uint112 nextEpochBalance;
+    uint16 shortfallCounter; // Only for staker inactive balances. At most one shortfall per epoch.
+  }
+
+  /**
+   * @dev A borrower allocation, possibly with a change scheduled for the next epoch.
+   */
+  struct StoredAllocation {
+    uint16 currentEpoch; // Note: Supports at least 1000 years given min epoch length of 6 days.
+    uint120 currentEpochAllocation;
+    uint120 nextEpochAllocation;
+  }
+}

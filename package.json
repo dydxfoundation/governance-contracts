@@ -1,0 +1,89 @@
+{
+  "name": "@dydxprotocol/staking",
+  "version": "0.1.0",
+  "description": "dYdX staking smart contracts",
+  "files": [
+    "artifacts/",
+    "contracts/"
+  ],
+  "scripts": {
+    "run-env": "npm i && tail -f /dev/null",
+    "hardhat": "hardhat",
+    "hardhat:kovan": "hardhat --network kovan",
+    "hardhat:ropsten": "hardhat --network ropsten",
+    "hardhat:main": "hardhat --network main",
+    "compile": "SKIP_LOAD=true hardhat compile",
+    "compile:force": "npm run compile -- --force",
+    "compile:force:quiet": "npm run compile:force -- --quiet",
+    "test": "npm run compile:force:quiet && hardhat test test/__setup.spec.ts test/IncentivesController/*.spec.ts test/StakedDydxToken/*.spec.ts test/LiquidityStakingV1/*.spec.ts test/StarkProxyV1/*.spec.ts",
+    "test:no-compile": "hardhat test test/__setup.spec.ts test/LiquidityStakingV1/*.spec.ts test/StarkProxyV1/*.spec.ts",
+    "test:ci": "npm run compile:force:quiet && npm run test-pei && npm run test-psi && npm run test-psi2 && npm run test-bpt",
+    "test-pei": "npm run test test/__setup.spec.ts test/IncentivesController/*.spec.ts",
+    "test-psi": "npm run test test/__setup.spec.ts test/StakedDydxToken/*.spec.ts",
+    "test-bpt": "npm run compile:force:quiet && FORKING_BLOCK=11730175 MAINNET_FORK=true hardhat test test/StakedBPT/create-bpt-and-stakebpt.spec.ts",
+    "coverage": "SKIP_LOAD=true npx hardhat typechain && node --max_old_space_size=6144 node_modules/.bin/hardhat coverage",
+    "coverage:liquidity": "hardhat coverage --testfiles 'test/LiquidityStakingV1/*.spec.ts'",
+    "deploy:dev": "hardhat dev-deployment",
+    "deploy:ropsten": "npm run hardhat-ropsten -- common-deployment --verify",
+    "deploy:kovan": "npm run hardhat-kovan -- common-deployment --verify",
+    "deploy:main": "npm run hardhat-main -- common-deployment --verify",
+    "migrate:dev": "npm run compile:force:quiet && hardhat migrate:dev",
+    "types-gen": "hardhat typechain",
+    "clean": "rm -rf artifacts/ cache/ coverage/ types/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dydxprotocol/staking"
+  },
+  "keywords": [
+    "dydx",
+    "ethereum"
+  ],
+  "author": "dYdX Trading Inc.",
+  "bugs": {
+    "url": "https://github.com/dydxprotocol/staking/issues"
+  },
+  "homepage": "https://github.com/dydxprotocol/staking#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@nomiclabs/hardhat-etherscan": "^2.1.0",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "3.1.0",
+    "@typechain/ethers-v5": "^4.0.0",
+    "@types/chai": "4.2.11",
+    "@types/lowdb": "1.0.9",
+    "@types/mocha": "7.0.2",
+    "@types/node": "14.0.5",
+    "bignumber.js": "9.0.0",
+    "chai": "4.2.0",
+    "chai-bignumber": "3.0.0",
+    "eth-sig-util": "^3.0.0",
+    "ethereum-waffle": "^3.2.1",
+    "ethereumjs-util": "^7.0.7",
+    "ethers": "^5.0.8",
+    "hardhat": "^2.1.1",
+    "hardhat-typechain": "^0.3.3",
+    "husky": "^4.3.8",
+    "lodash": "^4.17.21",
+    "lowdb": "1.0.0",
+    "moment": "^2.27.0",
+    "prettier": "^2.0.5",
+    "prettier-plugin-solidity": "^1.0.0-beta.1",
+    "pretty-quick": "^2.0.1",
+    "solidity-coverage": "^0.7.16",
+    "tmp-promise": "^3.0.2",
+    "ts-generator": "^0.1.1",
+    "ts-node": "^9.1.0",
+    "tslint": "^6.1.2",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.3.0",
+    "typechain": "^3.0.0",
+    "typescript": "^4.1.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged --pattern 'contracts/**/*.sol' --pattern 'helpers/**/*.ts'  --pattern 'test/**/*.ts' --pattern 'tasks/**/*.ts'"
+    }
+  }
+}
