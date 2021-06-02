@@ -6,6 +6,7 @@ import {ILiquidityStakingV1} from '../../interfaces/ILiquidityStakingV1.sol';
 import {IStarkPerpetual} from '../../interfaces/IStarkPerpetual.sol';
 import {SafeERC20} from '../../lib/SafeERC20.sol';
 import {SP1FundsAdmin} from './impl/SP1FundsAdmin.sol';
+import {SP1Getters} from './impl/SP1Getters.sol';
 import {SP1Guardian} from './impl/SP1Guardian.sol';
 import {SP1Owner} from './impl/SP1Owner.sol';
 
@@ -22,7 +23,7 @@ import {SP1Owner} from './impl/SP1Owner.sol';
  *  actions are protected by access controls, with the exception of a few small functions which
  *  are provided by this top-level contract.
  */
-contract StarkProxyV1 is SP1Guardian, SP1Owner, SP1FundsAdmin {
+contract StarkProxyV1 is SP1Guardian, SP1Owner, SP1FundsAdmin, SP1Getters {
   using SafeERC20 for IERC20;
 
   // ============ Constructor ============

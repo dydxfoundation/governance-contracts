@@ -34,10 +34,10 @@ abstract contract SP1Storage is AccessControlUpgradeable, ReentrancyGuard, Versi
 
   // ============ Storage ============
 
-  mapping(uint256 => bool) _ALLOWED_STARK_KEYS_;
+  mapping(uint256 => bool) internal _ALLOWED_STARK_KEYS_;
 
-  mapping(address => bool) _ALLOWED_RECIPIENTS_;
+  mapping(address => bool) internal _ALLOWED_RECIPIENTS_;
 
   /// @dev Note that this is different from _IS_BORROWING_RESTRICTED_ in LiquidityStakingV1.
-  bool public _IS_BORROWING_RESTRICTED_;
+  bool internal _IS_BORROWING_RESTRICTED_;
 }
