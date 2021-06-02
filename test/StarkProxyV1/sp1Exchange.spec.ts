@@ -103,28 +103,6 @@ makeSuite('LS1Exchange', (testEnv: TestEnv) => {
         await loadSnapshot(borrowerHasBorrowed);
       });
 
-      it('can register an allowed STARK key', async () => {
-        const starkKey = 123;
-        await borrowers[0].allowStarkKey(starkKey);
-        await borrowers[0].registerUserOnExchange(starkKey, []);
-      });
-
-      it('cannot register STARK key that has not been explicitly allowed', async () => {
-        const starkKey = 123;
-        await expect(borrowers[0].registerUserOnExchange(starkKey, [])).to.be.revertedWith(
-          'SP1Storage: STARK key is not on the allowlist'
-        );
-      });
-
-      it('cannot register STARK key that has not been disallowed', async () => {
-        const starkKey = 123;
-        await borrowers[0].allowStarkKey(starkKey);
-        await borrowers[0].disallowStarkKey(starkKey);
-        await expect(borrowers[0].registerUserOnExchange(starkKey, [])).to.be.revertedWith(
-          'SP1Storage: STARK key is not on the allowlist'
-        );
-      });
-
       it('can deposit and withdraw, and then repay', async () => {
         const starkKey = 123;
         await borrowers[0].allowStarkKey(starkKey);

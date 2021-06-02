@@ -10,12 +10,6 @@ pragma experimental ABIEncoderV2;
  * @dev See https://github.com/starkware-libs/starkex-contracts
  */
 interface IStarkPerpetual {
-  function registerUser(
-    address ethKey,
-    uint256 starkKey,
-    bytes calldata signature
-  ) external;
-
   function deposit(
     uint256 starkKey,
     uint256 assetType,

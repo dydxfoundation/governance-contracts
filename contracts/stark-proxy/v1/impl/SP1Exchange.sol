@@ -27,8 +27,6 @@ abstract contract SP1Exchange is SP1Balances {
 
   // ============ Events ============
 
-  event RegisteredUserOnExchange(uint256 starkKey);
-
   event DepositedToExchange(
     uint256 starkKey,
     uint256 starkAssetType,
@@ -56,21 +54,6 @@ abstract contract SP1Exchange is SP1Balances {
   }
 
   // ============ External Functions ============
-
-  /**
-   * @notice Register a STARK key with the exchange.
-   *
-   * @param  starkKey   The STARK key to register. Must be authorized by FUNDS_ADMIN_ROLE.
-   * @param  signature  A signature from the exchange user admin.
-   */
-  function registerUserOnExchange(uint256 starkKey, bytes calldata signature)
-    external
-    nonReentrant
-    onlyRole(EXCHANGE_ROLE)
-    onlyAllowedKey(starkKey)
-  {
-    STARK_PERPETUAL.registerUser(address(this), starkKey, signature);
-  }
 
   /**
    * @notice Deposit funds to the exchange.

@@ -44,7 +44,7 @@ import {SP1Storage} from './SP1Storage.sol';
  *            |     -> May call functions on LiquidityStakingV1: borrow, repay, and repayDebt.
  *            |
  *            +-- EXCHANGE_ROLE
- *                  -> May call functions on StarkPerpetual: register, deposit, and withdraw.
+ *                  -> May call functions on StarkPerpetual: deposit, and withdraw.
  */
 abstract contract SP1Roles is SP1Storage {
   bytes32 public constant GUARDIAN_ROLE = keccak256('GUARDIAN_ROLE');
