@@ -11,8 +11,6 @@ import {IERC20} from '../interfaces/IERC20.sol';
  * @dev See https://github.com/starkware-libs/starkex-contracts
  */
 contract MockStarkPerpetual {
-  event MockStarkRegistered(address ethKey, uint256 starkKey, bytes signature);
-
   event MockStarkDeposited(
     uint256 starkKey,
     uint256 assetType,
@@ -28,14 +26,6 @@ contract MockStarkPerpetual {
 
   constructor(IERC20 token) {
     TOKEN = token;
-  }
-
-  function registerUser(
-    address ethKey,
-    uint256 starkKey,
-    bytes calldata signature
-  ) external {
-    emit MockStarkRegistered(ethKey, starkKey, signature);
   }
 
   function deposit(

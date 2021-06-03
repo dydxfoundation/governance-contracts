@@ -77,7 +77,7 @@ abstract contract SP1Guardian is SP1Borrowing, SP1Exchange {
   }
 
   /**
-   * @notice Guardian method to trigger a forced withdrawal request.
+   * @notice Guardian method to make a forced withdrawal request.
    *  Reverts if the contract does not have a debt balance on the staking contract.
    *
    *  Note: This function is intentionally not protected by the onlyAllowedKey modifier.
@@ -102,7 +102,7 @@ abstract contract SP1Guardian is SP1Borrowing, SP1Exchange {
   }
 
   /**
-   * @notice Guardian method to trigger a forced trade request.
+   * @notice Guardian method to make a forced trade request.
    *  Reverts if the contract does not have a debt balance on the staking contract.
    *
    *  Note: This function is intentionally not protected by the onlyAllowedKey modifier.

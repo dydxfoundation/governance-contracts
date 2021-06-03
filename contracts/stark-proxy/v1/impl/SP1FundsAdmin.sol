@@ -89,6 +89,15 @@ abstract contract SP1FundsAdmin is SP1Exchange {
     emit WithdrewExcessEther(recipient, amount);
   }
 
+  /**
+   * @notice Make a forced withdrawal request to withdraw collateral from the exchange.
+   *
+   * @param  starkKey         The STARK key of the account. Must be authorized by FUNDS_ADMIN_ROLE.
+   * @param  vaultId          The exchange position ID of the account.
+   * @param  quantizedAmount  The withdrawal amount denominated in the exchange base units.
+   * @param  premiumCost      Whether to pay extra gas for the right to bypass the regular
+   *                          per-block limit.
+   */
   function forcedWithdrawalRequest(
     uint256 starkKey,
     uint256 vaultId,
@@ -104,6 +113,12 @@ abstract contract SP1FundsAdmin is SP1Exchange {
     );
   }
 
+  /**
+   * @notice Make a forced trade request to reduce the size of a position on the exchange.
+   *
+   * @param  args       Parameters to be passed to the StarkPerpetual forcedTradeRequest() function.
+   * @param  signature  The signature for the counterparty to the trade.
+   */
   function forcedTradeRequest(uint256[12] calldata args, bytes calldata signature)
     external
     nonReentrant
