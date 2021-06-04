@@ -6,7 +6,7 @@ import {
 } from '../../../dependencies/open-zeppelin/AccessControlUpgradeable.sol';
 import { IERC20 } from '../../../interfaces/IERC20.sol';
 import { IRewardsOracle } from '../../../interfaces/IRewardsOracle.sol';
-import {ReentrancyGuard} from '../../../utils/ReentrancyGuard.sol';
+import {ReentrancyGuard} from '../../../lib/ReentrancyGuard.sol';
 import {VersionedInitializable} from '../../../utils/VersionedInitializable.sol';
 import {MD1Types} from '../lib/MD1Types.sol';
 

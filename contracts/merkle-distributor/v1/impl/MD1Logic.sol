@@ -1,10 +1,10 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import { SafeERC20 } from '../../../dependencies/open-zeppelin/SafeERC20.sol';
 import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import { MerkleProof } from '../../../dependencies/open-zeppelin/MerkleProof.sol';
 import { IERC20 } from '../../../interfaces/IERC20.sol';
+import { SafeERC20 } from '../../../lib/SafeERC20.sol';
 import {MD1Types} from '../lib/MD1Types.sol';
 import {MD1Pausable} from './MD1Pausable.sol';
 
