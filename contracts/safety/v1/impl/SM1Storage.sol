@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import {
   AccessControlUpgradeable
 } from '../../../dependencies/open-zeppelin/AccessControlUpgradeable.sol';
-import {ReentrancyGuard} from '../../../utils/ReentrancyGuard.sol';
+import {ReentrancyGuard} from '../../../lib/ReentrancyGuard.sol';
 import {VersionedInitializable} from '../../../utils/VersionedInitializable.sol';
 import {SM1Types} from '../lib/SM1Types.sol';
 
@@ -15,6 +15,10 @@ import {SM1Types} from '../lib/SM1Types.sol';
  * @dev Storage contract. Contains or inherits from all contract with storage.
  */
 abstract contract SM1Storage is AccessControlUpgradeable, ReentrancyGuard, VersionedInitializable {
+
+  // ============ Constants ============
+
+  uint256 public constant EXCHANGE_RATE_BASE = 1e18;
 
   // ============ Epoch Schedule ============
 
@@ -61,4 +65,13 @@ abstract contract SM1Storage is AccessControlUpgradeable, ReentrancyGuard, Versi
 
   /// @dev The total inactive balance of stakers.
   SM1Types.StoredBalance internal _TOTAL_INACTIVE_BALANCE_;
+
+  // ============ Slash Accounting ============
+
+  /// @dev The value of one underlying token, in the units used for staked balances, denominated
+  ///  as a mutiple of EXCHANGE_RATE_BASE for additional precision.
+  uint256 internal _EXCHANGE_RATE_;
+
+  /// @dev Info about full slashes that have occurred. Each full slash resets the exchange rate.
+  SM1Types.FullSlash[] internal _FULL_SLASHES_;
 }

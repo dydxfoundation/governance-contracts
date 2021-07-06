@@ -1,8 +1,8 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {SafeCast} from '../../../dependencies/open-zeppelin/SafeCast.sol';
 import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import {SafeCast} from '../../../lib/SafeCast.sol';
 import {SM1Types} from '../lib/SM1Types.sol';
 import {SM1Roles} from './SM1Roles.sol';
 

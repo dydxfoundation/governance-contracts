@@ -13,10 +13,10 @@ import {SM1Storage} from './SM1Storage.sol';
  *  Roles:
  *
  *    OWNER_ROLE
- *      | -> May add or remove users from any of the below roles it manages.
+ *      | -> May add or remove addresses from any of the roles below.
  *      |
  *      +-- SLASHER_ROLE
- *      |     -> Can slash staked token balances, up to some limit, and withdraw those funds.
+ *      |     -> Can slash staked token balances and withdraw those funds.
  *      |
  *      +-- EPOCH_PARAMETERS_ROLE
  *      |     -> May set epoch parameters such as the interval, offset, and blackout window.

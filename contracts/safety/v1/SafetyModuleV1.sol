@@ -6,21 +6,22 @@ import {SM1Admin} from './impl/SM1Admin.sol';
 import {SM1ERC20} from './impl/SM1ERC20.sol';
 import {SM1Getters} from './impl/SM1Getters.sol';
 import {SM1Operators} from './impl/SM1Operators.sol';
+import {SM1Slashing} from './impl/SM1Slashing.sol';
 import {SM1Staking} from './impl/SM1Staking.sol';
 
 /**
  * @title SafetyModuleV1
  * @author dYdX
  *
- * @notice Contract for staking tokens, which may be slashed by the owner.
+ * @notice Contract for staking tokens, which may be slashed by the permissioned slasher.
  *
  *  NOTE: Most functions will revert if epoch zero has not started.
  */
 contract SafetyModuleV1 is
-  SM1Staking,
-  SM1ERC20,
-  SM1Admin,
+  SM1Slashing,
   SM1Operators,
+  SM1Admin,
+  SM1ERC20,
   SM1Getters
 {
   // ============ Constructor ============
@@ -43,6 +44,7 @@ contract SafetyModuleV1 is
     __SM1Roles_init();
     __SM1EpochSchedule_init(interval, offset, blackoutWindow);
     __SM1Rewards_init();
+    _EXCHANGE_RATE_ = EXCHANGE_RATE_BASE;
   }
 
   // ============ Internal Functions ============

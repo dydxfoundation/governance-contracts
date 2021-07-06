@@ -2,8 +2,8 @@ pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
 import {IERC20} from '../../../interfaces/IERC20.sol';
-import {Math} from '../../../utils/Math.sol';
-import {SafeERC20} from '../../../dependencies/open-zeppelin/SafeERC20.sol';
+import {Math} from '../../../lib/Math.sol';
+import {SafeERC20} from '../../../lib/SafeERC20.sol';
 import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import {SM1EpochSchedule} from './SM1EpochSchedule.sol';
 
@@ -208,16 +208,20 @@ abstract contract SM1Rewards is SM1EpochSchedule {
     returns (uint256)
   {
     uint256 settleUpToTimestamp = getStartOfEpoch(epochNumber.add(1));
-    uint256 previouslySettledTimestamp = _GLOBAL_INDEX_TIMESTAMP_;
-
     uint256 globalIndex = _settleGlobalIndexUpToTimestamp(totalStaked, settleUpToTimestamp);
     _EPOCH_INDEXES_[epochNumber] = globalIndex;
     return globalIndex;
   }
 
-  // ============ Private Functions ============
-
-  function _settleGlobalIndexUpToNow(uint256 totalStaked) private returns (uint256) {
+  /**
+   * @dev Updates the global index, reflecting cumulative rewards given out per staked token.
+   *
+   * @param  totalStaked          The total staked balance, which should be constant in the interval
+   *                              since the last update to the global index.
+   *
+   * @return The new global index.
+   */
+  function _settleGlobalIndexUpToNow(uint256 totalStaked) internal returns (uint256) {
     return _settleGlobalIndexUpToTimestamp(totalStaked, block.timestamp);
   }
 
@@ -228,7 +232,8 @@ abstract contract SM1Rewards is SM1EpochSchedule {
    * @param  user            The user's address.
    * @param  userStaked      Tokens staked by the user during the period since the last user index
    *                         update.
-   * @param  newGlobalIndex  The new index value to bring the user index up to.
+   * @param  newGlobalIndex  The new index value to bring the user index up to. MUST NOT be less
+   *                         than the user's index.
    *
    * @return The user's accrued rewards, including past unclaimed rewards.
    */
@@ -236,7 +241,10 @@ abstract contract SM1Rewards is SM1EpochSchedule {
     address user,
     uint256 userStaked,
     uint256 newGlobalIndex
-  ) private returns (uint256) {
+  )
+    internal
+    returns (uint256)
+  {
     uint256 oldAccruedRewards = _USER_REWARDS_BALANCES_[user];
     uint256 oldUserIndex = _USER_INDEXES_[user];
 
@@ -263,6 +271,8 @@ abstract contract SM1Rewards is SM1EpochSchedule {
     emit UserIndexUpdated(user, newGlobalIndex, newAccruedRewards);
     return newAccruedRewards;
   }
+
+  // ============ Private Functions ============
 
   /**
    * @dev Updates the global index, reflecting cumulative rewards given out per staked token.

@@ -19,36 +19,39 @@ abstract contract SM1ERC20 is SM1StakedBalances, IERC20Detailed {
   // ============ External Functions ============
 
   function name() external pure override returns (string memory) {
-    return 'dYdX Staked USDC';
+    return 'Staked DYDX';
   }
 
   function symbol() external pure override returns (string memory) {
-    return 'dydxUSDC';
+    return 'stkDYDX';
   }
 
   function decimals() external pure override returns (uint8) {
-    return 6;
+    return 18;
   }
 
   /**
-   * @notice Get the total supply of `STAKED_TOKEN` staked to the contract.
-   *  This value is calculated from adding the active + inactive balances of
-   *  this current epoch.
+   * @notice Get the total supply of staked balances.
    *
-   * @return The total staked balance of this contract.
+   *  Note that due to the exchange rate, this is different than querying the total balance of
+   *  underyling token staked to this contract.
+   *
+   * @return The sum of all staked balances.
    */
   function totalSupply() external view override returns (uint256) {
     return getTotalActiveBalanceCurrentEpoch() + getTotalInactiveBalanceCurrentEpoch();
   }
 
   /**
-   * @notice Get the current balance of `STAKED_TOKEN` the user has staked to the contract.
-   *  This value includes the users active + inactive balances, but note that only
-   *  their active balance in the next epoch is transferable.
+   * @notice Get a user's staked balance.
+   *
+   *  Note that due to the exchange rate, one unit of staked balance may not be equivalent to one
+   *  unit of the underlying token. Also note that a user's staked balance is different from a
+   *  user's transferable balance.
    *
    * @param  account  The account to get the balance of.
    *
-   * @return The user's balance.
+   * @return The user's staked balance.
    */
   function balanceOf(address account) external view override returns (uint256) {
     return getActiveBalanceCurrentEpoch(account) + getInactiveBalanceCurrentEpoch(account);

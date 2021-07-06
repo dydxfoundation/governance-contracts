@@ -56,32 +56,32 @@ abstract contract SM1Operators is SM1Staking {
    *
    *  Reverts if we are currently in the blackout window.
    *
-   * @param  staker  The staker whose stake to request a withdrawal for.
-   * @param  amount  The amount to move from the active to the inactive balance.
+   * @param  staker       The staker whose stake to request a withdrawal for.
+   * @param  stakeAmount  The amount of stake to move from the active to the inactive balance.
    */
-  function requestWithdrawalFor(address staker, uint256 amount)
+  function requestWithdrawalFor(address staker, uint256 stakeAmount)
     external
     onlyRole(STAKE_OPERATOR_ROLE)
     nonReentrant
   {
-    _requestWithdrawal(staker, amount);
-    emit OperatorWithdrawalRequestedFor(staker, amount, msg.sender);
+    _requestWithdrawal(staker, stakeAmount);
+    emit OperatorWithdrawalRequestedFor(staker, stakeAmount, msg.sender);
   }
 
   /**
    * @notice Withdraw a staker's stake, and send to the specified recipient.
    *
-   * @param  staker     The staker whose stake to withdraw.
-   * @param  recipient  The address that should receive the funds.
-   * @param  amount     The amount to withdraw from the staker's inactive balance.
+   * @param  staker       The staker whose stake to withdraw.
+   * @param  recipient    The address that should receive the funds.
+   * @param  stakeAmount  The amount of stake to withdraw from the staker's inactive balance.
    */
   function withdrawStakeFor(
     address staker,
     address recipient,
-    uint256 amount
+    uint256 stakeAmount
   ) external onlyRole(STAKE_OPERATOR_ROLE) nonReentrant {
-    _withdrawStake(staker, recipient, amount);
-    emit OperatorWithdrewStakeFor(staker, recipient, amount, msg.sender);
+    _withdrawStake(staker, recipient, stakeAmount);
+    emit OperatorWithdrewStakeFor(staker, recipient, stakeAmount, msg.sender);
   }
 
   /**

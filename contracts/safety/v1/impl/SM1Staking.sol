@@ -2,8 +2,8 @@ pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
 import {IERC20} from '../../../interfaces/IERC20.sol';
-import {Math} from '../../../utils/Math.sol';
-import {SafeERC20} from '../../../dependencies/open-zeppelin/SafeERC20.sol';
+import {Math} from '../../../lib/Math.sol';
+import {SafeERC20} from '../../../lib/SafeERC20.sol';
 import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import {SM1Types} from '../lib/SM1Types.sol';
 import {SM1StakedBalances} from './SM1StakedBalances.sol';
@@ -13,6 +13,11 @@ import {SM1StakedBalances} from './SM1StakedBalances.sol';
  * @author dYdX
  *
  * @dev External functions for stakers. See SM1StakedBalances for details on staker accounting.
+ *
+ *  We distinguish between underlying amounts and stake amounts. An underlying amount is denoted in
+ *  the original units of the token being staked. A stake amount is adjusted by the exchange rate,
+ *  which can increase due to slashing. Before any slashes have occurred, or after a full slash has
+ *  occurred, the exchange rate is equal to one.
  */
 abstract contract SM1Staking is SM1StakedBalances {
   using SafeERC20 for IERC20;
@@ -20,11 +25,24 @@ abstract contract SM1Staking is SM1StakedBalances {
 
   // ============ Events ============
 
-  event Staked(address indexed staker, address spender, uint256 amount);
+  event Staked(
+    address indexed staker,
+    address spender,
+    uint256 underlyingAmount,
+    uint256 stakeAmount
+  );
 
-  event WithdrawalRequested(address indexed staker, uint256 amount);
+  event WithdrawalRequested(
+    address indexed staker,
+    uint256 stakeAmount
+  );
 
-  event WithdrewStake(address indexed staker, address recipient, uint256 amount);
+  event WithdrewStake(
+    address indexed staker,
+    address recipient,
+    uint256 underlyingAmount,
+    uint256 stakeAmount
+  );
 
   // ============ Constants ============
 
@@ -47,20 +65,20 @@ abstract contract SM1Staking is SM1StakedBalances {
   /**
    * @notice Deposit and stake funds. These funds are active and start earning rewards immediately.
    *
-   * @param  amount  The amount to stake.
+   * @param  underlyingAmount  The amount of underlying token to stake.
    */
-  function stake(uint256 amount) external nonReentrant {
-    _stake(msg.sender, amount);
+  function stake(uint256 underlyingAmount) external nonReentrant {
+    _stake(msg.sender, underlyingAmount);
   }
 
   /**
    * @notice Deposit and stake on behalf of another address.
    *
-   * @param  staker  The staker who will receive the stake.
-   * @param  amount  The amount to stake.
+   * @param  staker            The staker who will receive the stake.
+   * @param  underlyingAmount  The amount of underlying token to stake.
    */
-  function stakeFor(address staker, uint256 amount) external nonReentrant {
-    _stake(staker, amount);
+  function stakeFor(address staker, uint256 underlyingAmount) external nonReentrant {
+    _stake(staker, underlyingAmount);
   }
 
   /**
@@ -69,20 +87,20 @@ abstract contract SM1Staking is SM1StakedBalances {
    *
    *  Reverts if we are currently in the blackout window.
    *
-   * @param  amount  The amount to move from the active to the inactive balance.
+   * @param  stakeAmount  The amount of stake to move from the active to the inactive balance.
    */
-  function requestWithdrawal(uint256 amount) external nonReentrant {
-    _requestWithdrawal(msg.sender, amount);
+  function requestWithdrawal(uint256 stakeAmount) external nonReentrant {
+    _requestWithdrawal(msg.sender, stakeAmount);
   }
 
   /**
    * @notice Withdraw the sender's inactive funds, and send to the specified recipient.
    *
-   * @param  recipient  The address that should receive the funds.
-   * @param  amount     The amount to withdraw from the sender's inactive balance.
+   * @param  recipient    The address that should receive the funds.
+   * @param  stakeAmount  The amount of stake to withdraw from the sender's inactive balance.
    */
-  function withdrawStake(address recipient, uint256 amount) external nonReentrant {
-    _withdrawStake(msg.sender, recipient, amount);
+  function withdrawStake(address recipient, uint256 stakeAmount) external nonReentrant {
+    _withdrawStake(msg.sender, recipient, stakeAmount);
   }
 
   /**
@@ -95,9 +113,9 @@ abstract contract SM1Staking is SM1StakedBalances {
    * @return The withdrawn amount.
    */
   function withdrawMaxStake(address recipient) external nonReentrant returns (uint256) {
-    uint256 amount = getStakeAvailableToWithdraw(msg.sender);
-    _withdrawStake(msg.sender, recipient, amount);
-    return amount;
+    uint256 stakeAmount = getStakeAvailableToWithdraw(msg.sender);
+    _withdrawStake(msg.sender, recipient, stakeAmount);
+    return stakeAmount;
   }
 
   /**
@@ -116,7 +134,7 @@ abstract contract SM1Staking is SM1StakedBalances {
   // ============ Public Functions ============
 
   /**
-   * @notice Get the amount of stake available to withdraw taking into account the contract balance.
+   * @notice Get the amount of stake available for a given staker to withdraw.
    *
    * @param  staker  The address whose balance to check.
    *
@@ -124,24 +142,25 @@ abstract contract SM1Staking is SM1StakedBalances {
    */
   function getStakeAvailableToWithdraw(address staker) public view returns (uint256) {
     // Note that the next epoch inactive balance is always at least that of the current epoch.
-    uint256 stakerBalance = getInactiveBalanceCurrentEpoch(staker);
-    uint256 totalStakeAvailable = STAKED_TOKEN.balanceOf(address(this));
-    return Math.min(stakerBalance, totalStakeAvailable);
+    return getInactiveBalanceCurrentEpoch(staker);
   }
 
   // ============ Internal Functions ============
 
-  function _stake(address staker, uint256 amount) internal {
+  function _stake(address staker, uint256 underlyingAmount) internal {
+    // Convert using the exchange rate.
+    uint256 stakeAmount = underlyingAmount.mul(_EXCHANGE_RATE_).div(EXCHANGE_RATE_BASE);
+
     // Increase current and next active balance.
-    _increaseCurrentAndNextActiveBalance(staker, amount);
+    _increaseCurrentAndNextActiveBalance(staker, stakeAmount);
 
     // Transfer token from the sender.
-    STAKED_TOKEN.safeTransferFrom(msg.sender, address(this), amount);
+    STAKED_TOKEN.safeTransferFrom(msg.sender, address(this), underlyingAmount);
 
-    emit Staked(staker, msg.sender, amount);
+    emit Staked(staker, msg.sender, underlyingAmount, stakeAmount);
   }
 
-  function _requestWithdrawal(address staker, uint256 amount) internal {
+  function _requestWithdrawal(address staker, uint256 stakeAmount) internal {
     require(
       !inBlackoutWindow(),
       'SM1Staking: Withdrawal requests restricted in the blackout window'
@@ -150,41 +169,37 @@ abstract contract SM1Staking is SM1StakedBalances {
     // Get the staker's requestable amount and revert if there is not enough to request withdrawal.
     uint256 requestableBalance = getActiveBalanceNextEpoch(staker);
     require(
-      amount <= requestableBalance,
+      stakeAmount <= requestableBalance,
       'SM1Staking: Withdrawal request exceeds next staker active balance'
     );
 
     // Move amount from active to inactive in the next epoch.
-    _moveNextBalanceActiveToInactive(staker, amount);
+    _moveNextBalanceActiveToInactive(staker, stakeAmount);
 
-    emit WithdrawalRequested(staker, amount);
+    emit WithdrawalRequested(staker, stakeAmount);
   }
 
   function _withdrawStake(
     address staker,
     address recipient,
-    uint256 amount
+    uint256 stakeAmount
   ) internal {
-    // Get contract available amount and revert if there is not enough to withdraw.
-    uint256 totalStakeAvailable = STAKED_TOKEN.balanceOf(address(this));
-    require(
-      amount <= totalStakeAvailable,
-      'SM1Staking: Withdraw amount exceeds amount available in the contract'
-    );
-
     // Get staker withdrawable balance and revert if there is not enough to withdraw.
     uint256 withdrawableBalance = getInactiveBalanceCurrentEpoch(staker);
     require(
-      amount <= withdrawableBalance,
+      stakeAmount <= withdrawableBalance,
       'SM1Staking: Withdraw amount exceeds staker inactive balance'
     );
 
     // Decrease the staker's current and next inactive balance. Reverts if balance is insufficient.
-    _decreaseCurrentAndNextInactiveBalance(staker, amount);
+    _decreaseCurrentAndNextInactiveBalance(staker, stakeAmount);
+
+    // Convert using the exchange rate.
+    uint256 underlyingAmount = stakeAmount.mul(EXCHANGE_RATE_BASE).div(_EXCHANGE_RATE_);
 
     // Transfer token to the recipient.
-    STAKED_TOKEN.safeTransfer(recipient, amount);
+    STAKED_TOKEN.safeTransfer(recipient, underlyingAmount);
 
-    emit WithdrewStake(staker, recipient, amount);
+    emit WithdrewStake(staker, recipient, underlyingAmount, stakeAmount);
   }
 }
