@@ -36,6 +36,15 @@ abstract contract SM1Getters is SM1Storage {
   }
 
   /**
+   * @notice Get the domain separator used for EIP-712 signatures.
+   *
+   * @return The EIP-712 domain separator.
+   */
+  function getDomainSeparator() external view returns (bytes32) {
+    return _DOMAIN_SEPARATOR_;
+  }
+
+  /**
    * @notice The value of one underlying token, in the units used for staked balances, denominated
    *  as a mutiple of EXCHANGE_RATE_BASE for additional precision.
    *
@@ -48,22 +57,22 @@ abstract contract SM1Getters is SM1Storage {
   }
 
   /**
-   * @notice Get info about a full slash that has occurred.
+   * @notice Get an exchange rate snapshot.
    *
-   * @param  index  The index number of the full slash.
+   * @param  index  The index number of the exchange rate snapshot.
    *
-   * @return Struct containing the epoch and rewards global index when the full slash occurred.
+   * @return The snapshot struct with `blockNumber` and `value` fields.
    */
-  function getFullSlash(uint256 index) external view returns (SM1Types.FullSlash memory) {
-    return _FULL_SLASHES_[index];
+  function getExchangeRateSnapshot(uint256 index) external view returns (SM1Types.Snapshot memory) {
+    return _EXCHANGE_RATE_SNAPSHOTS_[index];
   }
 
   /**
-   * @notice Get the number of full slashes that have occurred.
+   * @notice Get the number of exchange rate snapshots.
    *
-   * @return The number of full slashes that have occurred.
+   * @return The number of snapshots that have been taken of the exchange rate.
    */
-  function getFullSlashCount() external view returns (uint256) {
-    return _FULL_SLASHES_.length;
+  function getExchangeRateSnapshotCount() external view returns (uint256) {
+    return _EXCHANGE_RATE_SNAPSHOT_COUNT_;
   }
 }

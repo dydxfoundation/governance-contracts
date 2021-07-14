@@ -1,10 +1,10 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import {SafeCast} from '../../../lib/SafeCast.sol';
+import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import {SM1Types} from '../lib/SM1Types.sol';
-import {SM1Roles} from './SM1Roles.sol';
+import {SM1Storage} from './SM1Storage.sol';
 
 /**
  * @title SM1EpochSchedule
@@ -24,7 +24,9 @@ import {SM1Roles} from './SM1Roles.sol';
  *  The recommended epoch length and blackout window are 28 and 7 days respectively; however, these
  *  are modifiable by the admin, within the specified bounds.
  */
-abstract contract SM1EpochSchedule is SM1Roles {
+abstract contract SM1EpochSchedule is
+  SM1Storage
+{
   using SafeCast for uint256;
   using SafeMath for uint256;
 

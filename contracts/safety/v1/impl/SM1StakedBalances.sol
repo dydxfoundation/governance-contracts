@@ -2,8 +2,8 @@ pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
 import {IERC20} from '../../../interfaces/IERC20.sol';
-import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import {SafeCast} from '../../../lib/SafeCast.sol';
+import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import {SM1Types} from '../lib/SM1Types.sol';
 import {SM1Rewards} from './SM1Rewards.sol';
 
@@ -16,8 +16,7 @@ import {SM1Rewards} from './SM1Rewards.sol';
  *  NOTE: Functions may revert if epoch zero has not started.
  *
  *  NOTE: All amounts dealt with in this file are denominated in staked units, which because of the
- *   exchange rate, may not correspond one-to-one with the underlying token units.
- *   See SM1Staking.sol for discussion.
+ *   exchange rate, may not correspond one-to-one with the underlying token. See SM1Staking.sol.
  *
  *  STAKED BALANCE ACCOUNTING:
  *
@@ -97,7 +96,7 @@ abstract contract SM1StakedBalances is SM1Rewards {
     if (!hasEpochZeroStarted()) {
       return 0;
     }
-    (SM1Types.StoredBalance memory balance, , , , , , ) = _loadActiveBalance(
+    (SM1Types.StoredBalance memory balance, , , ) = _loadActiveBalance(
       _ACTIVE_BALANCES_[staker]
     );
     return uint256(balance.currentEpochBalance);
@@ -110,7 +109,7 @@ abstract contract SM1StakedBalances is SM1Rewards {
     if (!hasEpochZeroStarted()) {
       return 0;
     }
-    (SM1Types.StoredBalance memory balance, , , , , , ) = _loadActiveBalance(
+    (SM1Types.StoredBalance memory balance, , , ) = _loadActiveBalance(
       _ACTIVE_BALANCES_[staker]
     );
     return uint256(balance.nextEpochBalance);
@@ -123,7 +122,7 @@ abstract contract SM1StakedBalances is SM1Rewards {
     if (!hasEpochZeroStarted()) {
       return 0;
     }
-    (SM1Types.StoredBalance memory balance, , , , , , ) = _loadActiveBalance(
+    (SM1Types.StoredBalance memory balance, , , ) = _loadActiveBalance(
       _TOTAL_ACTIVE_BALANCE_
     );
     return uint256(balance.currentEpochBalance);
@@ -136,7 +135,7 @@ abstract contract SM1StakedBalances is SM1Rewards {
     if (!hasEpochZeroStarted()) {
       return 0;
     }
-    (SM1Types.StoredBalance memory balance, , , , , , ) = _loadActiveBalance(
+    (SM1Types.StoredBalance memory balance, , , ) = _loadActiveBalance(
       _TOTAL_ACTIVE_BALANCE_
     );
     return uint256(balance.nextEpochBalance);
@@ -298,8 +297,8 @@ abstract contract SM1StakedBalances is SM1Rewards {
       _loadBalanceForUpdate(balancePtr, maybeStaker, isActiveBalance);
 
     uint256 originalCurrentBalance = uint256(balance.currentEpochBalance);
-    balance.currentEpochBalance = originalCurrentBalance.add(amount).toUint112();
-    balance.nextEpochBalance = uint256(balance.nextEpochBalance).add(amount).toUint112();
+    balance.currentEpochBalance = originalCurrentBalance.add(amount).toUint240();
+    balance.nextEpochBalance = uint256(balance.nextEpochBalance).add(amount).toUint240();
 
     _storeBalance(balancePtr, balance);
     return originalCurrentBalance;
@@ -318,8 +317,8 @@ abstract contract SM1StakedBalances is SM1Rewards {
       _loadBalanceForUpdate(balancePtr, maybeStaker, isActiveBalance);
 
     uint256 originalCurrentBalance = uint256(balance.currentEpochBalance);
-    balance.currentEpochBalance = originalCurrentBalance.sub(amount).toUint112();
-    balance.nextEpochBalance = uint256(balance.nextEpochBalance).sub(amount).toUint112();
+    balance.currentEpochBalance = originalCurrentBalance.sub(amount).toUint240();
+    balance.nextEpochBalance = uint256(balance.nextEpochBalance).sub(amount).toUint240();
 
     _storeBalance(balancePtr, balance);
     return originalCurrentBalance;
@@ -337,7 +336,7 @@ abstract contract SM1StakedBalances is SM1Rewards {
     SM1Types.StoredBalance memory balance =
       _loadBalanceForUpdate(balancePtr, maybeStaker, isActiveBalance);
 
-    balance.nextEpochBalance = uint256(balance.nextEpochBalance).add(amount).toUint112();
+    balance.nextEpochBalance = uint256(balance.nextEpochBalance).add(amount).toUint240();
 
     _storeBalance(balancePtr, balance);
   }
@@ -354,7 +353,7 @@ abstract contract SM1StakedBalances is SM1Rewards {
     SM1Types.StoredBalance memory balance =
       _loadBalanceForUpdate(balancePtr, maybeStaker, isActiveBalance);
 
-    balance.nextEpochBalance = uint256(balance.nextEpochBalance).sub(amount).toUint112();
+    balance.nextEpochBalance = uint256(balance.nextEpochBalance).sub(amount).toUint240();
 
     _storeBalance(balancePtr, balance);
   }
@@ -385,7 +384,6 @@ abstract contract SM1StakedBalances is SM1Rewards {
    *  IMPORTANT: This function may modify state, and so the balance MUST be stored afterwards.
    *    - For active balances:
    *      - If a rollover occurs, rewards are settled up to the epoch boundary.
-   *      - If a full slash occurs, rewards are settled up to the point when the slash occurred.
    *
    * @param  balancePtr       A storage pointer to the balance.
    * @param  maybeStaker      The user address, or address(0) to update total balance.
@@ -396,119 +394,60 @@ abstract contract SM1StakedBalances is SM1Rewards {
     address maybeStaker,
     bool isActiveBalance
   ) private returns (SM1Types.StoredBalance memory) {
-    // Inactive balance.
-    if (!isActiveBalance) {
-      return _loadInactiveBalance(balancePtr);
-    }
-
     // Active balance.
-    (
-      SM1Types.StoredBalance memory balance,
-      uint256 beforeRolloverEpoch,
-      uint256 beforeRolloverBalance,
-      bool didRolloverOccur,
-      uint256 originalFullSlashCounter,
-      uint256 afterRolloverBalance,
-      bool didFullSlashOccur
-    ) = _loadActiveBalance(balancePtr);
-
-    if (didFullSlashOccur) {
-      // If a full slash occurred, then the loaded balance is zero, and we must make sure to
-      // account for all rewards that were earned up to the point where the full slash occurred.
-      //
-      // No action required for the total active balance, since both the balance and the rewards
-      // index were settled when the full slash occurred.
-      if (maybeStaker == address(0)) {
-        return balance;
+    if (isActiveBalance) {
+      (
+        SM1Types.StoredBalance memory balance,
+        uint256 beforeRolloverEpoch,
+        uint256 beforeRolloverBalance,
+        bool didRolloverOccur
+      ) = _loadActiveBalance(balancePtr);
+      if (didRolloverOccur) {
+        // Handle the effect of the balance rollover on rewards. We must partially settle the index
+        // up to the epoch boundary where the change in balance occurred. We pass in the balance
+        // from before the boundary.
+        if (maybeStaker == address(0)) {
+          // If it's the total active balance...
+          _settleGlobalIndexUpToEpoch(beforeRolloverBalance, beforeRolloverEpoch);
+        } else {
+          // If it's a user active balance...
+          _settleUserRewardsUpToEpoch(maybeStaker, beforeRolloverBalance, beforeRolloverEpoch);
+        }
       }
-
-      SM1Types.FullSlash memory fullSlash = _FULL_SLASHES_[originalFullSlashCounter];
-      uint256 fullSlashEpoch = uint256(fullSlash.epoch);
-      uint256 fullSlashRewardsGlobalIndex = uint256(fullSlash.rewardsGlobalIndex);
-
-      if (fullSlashEpoch == beforeRolloverEpoch) {
-        // Full slash case 1:
-        //
-        // The balance was last touched in epoch n = beforeRolloverEpoch. A full slash occurred
-        // later in that epoch. Rewards are therefore earned on beforeRolloverBalance up to the
-        // point where the full slash occurred. There is no need to consider the rollover.
-        _settleUserRewardsUpToIndex(
-          maybeStaker,
-          beforeRolloverBalance,
-          fullSlashRewardsGlobalIndex
-        );
-      } else {
-        // Full slash case 2:
-        //
-        // A full slash occurred only after the balance rolled over. We must first account for the
-        // effect of the rollover on rewards. Rewards are then earned on afterRolloverBalance up to
-        // the point where the full slash occurred
-        _settleUserRewardsUpToEpoch(maybeStaker, beforeRolloverBalance, beforeRolloverEpoch);
-        _settleUserRewardsUpToIndex(maybeStaker, afterRolloverBalance, fullSlashRewardsGlobalIndex);
-      }
-    } else if (didRolloverOccur) {
-      // Handle the effect of the balance rollover on rewards. We must partially settle the index
-      // up to the epoch boundary where the change in balance occurred. We pass in the balance
-      // from before the boundary.
-      if (maybeStaker == address(0)) {
-        // If it's the total active balance...
-        _settleGlobalIndexUpToEpoch(beforeRolloverBalance, beforeRolloverEpoch);
-      } else {
-        // If it's a user active balance...
-        _settleUserRewardsUpToEpoch(maybeStaker, beforeRolloverBalance, beforeRolloverEpoch);
-      }
+      return balance;
     }
 
-    return balance;
+    // Inactive balance.
+    return _loadInactiveBalance(balancePtr);
   }
 
   function _loadActiveBalance(SM1Types.StoredBalance storage balancePtr)
     private
     view
     returns (
-      SM1Types.StoredBalance memory balance,
-      uint256 beforeRolloverEpoch,
-      uint256 beforeRolloverBalance,
-      bool didRolloverOccur,
-      uint256 originalFullSlashCounter,
-      uint256 afterRolloverBalance,
-      bool didFullSlashOccur
+      SM1Types.StoredBalance memory,
+      uint256,
+      uint256,
+      bool
     )
   {
-    balance = balancePtr;
+    SM1Types.StoredBalance memory balance = balancePtr;
+
+    // Return these as they may be needed for rewards settlement.
+    uint256 beforeRolloverEpoch = uint256(balance.currentEpoch);
+    uint256 beforeRolloverBalance = uint256(balance.currentEpochBalance);
+    bool didRolloverOccur = false;
+
+    // Roll the balance forward if needed.
     uint256 currentEpoch = getCurrentEpoch();
-    uint256 globalFullSlashCounter = _FULL_SLASHES_.length;
-
-    // If there is no non-zero balance, sync the epoch number and full slash counter and exit.
-    // Note: Current active balance is always >= next, so we only need to check current.
-    if (balance.currentEpochBalance == 0) {
-      balance.currentEpoch = currentEpoch.toUint16();
-      balance.fullSlashCounter = globalFullSlashCounter.toUint16();
-      return (balance, 0, 0, false, 0, 0, false);
-    }
-
-    // Set return values which may be needed for rewards settlement.
-    beforeRolloverEpoch = uint256(balance.currentEpoch);
-    beforeRolloverBalance = uint256(balance.currentEpochBalance);
-    originalFullSlashCounter = uint256(balance.fullSlashCounter);
-    afterRolloverBalance = uint256(balance.nextEpochBalance);
-
-    if (originalFullSlashCounter != globalFullSlashCounter) {
-      // If a full slash has occurred since this balance was last updated, return a zero balance.
-      didFullSlashOccur = true;
-      balance = SM1Types.StoredBalance({
-        currentEpoch: currentEpoch.toUint16(),
-        currentEpochBalance: 0,
-        nextEpochBalance: 0,
-        fullSlashCounter: globalFullSlashCounter.toUint16()
-      });
-    } else if (currentEpoch > beforeRolloverEpoch) {
-      // Roll the balance forward if needed.
+    if (currentEpoch > uint256(balance.currentEpoch)) {
       didRolloverOccur = balance.currentEpochBalance != balance.nextEpochBalance;
 
       balance.currentEpoch = currentEpoch.toUint16();
       balance.currentEpochBalance = balance.nextEpochBalance;
     }
+
+    return (balance, beforeRolloverEpoch, beforeRolloverBalance, didRolloverOccur);
   }
 
   function _loadInactiveBalance(SM1Types.StoredBalance storage balancePtr)
@@ -517,22 +456,9 @@ abstract contract SM1StakedBalances is SM1Rewards {
     returns (SM1Types.StoredBalance memory)
   {
     SM1Types.StoredBalance memory balance = balancePtr;
-    uint256 currentEpoch = getCurrentEpoch();
-    uint256 globalFullSlashCounter = _FULL_SLASHES_.length;
-
-    // If a full slash has occurred since this balance was last updated, return a zero balance.
-    // Note that this code path is also used for a newly created balance, if the global slash
-    // counter is nonzero.
-    if (uint256(balance.fullSlashCounter) != globalFullSlashCounter) {
-      return SM1Types.StoredBalance({
-        currentEpoch: currentEpoch.toUint16(),
-        currentEpochBalance: 0,
-        nextEpochBalance: 0,
-        fullSlashCounter: globalFullSlashCounter.toUint16()
-      });
-    }
 
     // Roll the balance forward if needed.
+    uint256 currentEpoch = getCurrentEpoch();
     if (currentEpoch > uint256(balance.currentEpoch)) {
       balance.currentEpoch = currentEpoch.toUint16();
       balance.currentEpochBalance = balance.nextEpochBalance;
@@ -552,6 +478,5 @@ abstract contract SM1StakedBalances is SM1Rewards {
     balancePtr.currentEpoch = balance.currentEpoch;
     balancePtr.currentEpochBalance = balance.currentEpochBalance;
     balancePtr.nextEpochBalance = balance.nextEpochBalance;
-    balancePtr.fullSlashCounter = balance.fullSlashCounter;
   }
 }

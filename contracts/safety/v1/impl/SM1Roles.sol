@@ -7,7 +7,7 @@ import {SM1Storage} from './SM1Storage.sol';
  * @title SM1Roles
  * @author dYdX
  *
- * @notice Defines roles used in the SafetyModuleV1 contract. The hierarchy of roles and powers
+ * @dev Defines roles used in the SafetyModuleV1 contract. The hierarchy of roles and powers
  *  of each role are described below.
  *
  *  Roles:

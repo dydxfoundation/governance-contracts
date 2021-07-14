@@ -1,9 +1,10 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import {SafeCast} from '../../../lib/SafeCast.sol';
+import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import {SM1Types} from '../lib/SM1Types.sol';
+import {SM1Roles} from './SM1Roles.sol';
 import {SM1StakedBalances} from './SM1StakedBalances.sol';
 
 /**
@@ -12,7 +13,10 @@ import {SM1StakedBalances} from './SM1StakedBalances.sol';
  *
  * @dev Admin-only functions.
  */
-abstract contract SM1Admin is SM1StakedBalances {
+abstract contract SM1Admin is
+  SM1StakedBalances,
+  SM1Roles
+{
   using SafeCast for uint256;
   using SafeMath for uint256;
 

@@ -51,7 +51,9 @@ import {SM1EpochSchedule} from './SM1EpochSchedule.sol';
  *                settledGlobalIndex - _USER_INDEXES_[user]
  *              ) / INDEX_BASE
  */
-abstract contract SM1Rewards is SM1EpochSchedule {
+abstract contract SM1Rewards is
+  SM1EpochSchedule
+{
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
@@ -208,6 +210,8 @@ abstract contract SM1Rewards is SM1EpochSchedule {
     returns (uint256)
   {
     uint256 settleUpToTimestamp = getStartOfEpoch(epochNumber.add(1));
+    uint256 previouslySettledTimestamp = _GLOBAL_INDEX_TIMESTAMP_;
+
     uint256 globalIndex = _settleGlobalIndexUpToTimestamp(totalStaked, settleUpToTimestamp);
     _EPOCH_INDEXES_[epochNumber] = globalIndex;
     return globalIndex;

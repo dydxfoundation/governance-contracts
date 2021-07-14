@@ -6,6 +6,7 @@ import {Math} from '../../../lib/Math.sol';
 import {SafeERC20} from '../../../lib/SafeERC20.sol';
 import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import {SM1Types} from '../lib/SM1Types.sol';
+import {SM1ERC20} from './SM1ERC20.sol';
 import {SM1StakedBalances} from './SM1StakedBalances.sol';
 
 /**
@@ -14,12 +15,17 @@ import {SM1StakedBalances} from './SM1StakedBalances.sol';
  *
  * @dev External functions for stakers. See SM1StakedBalances for details on staker accounting.
  *
- *  We distinguish between underlying amounts and stake amounts. An underlying amount is denoted in
- *  the original units of the token being staked. A stake amount is adjusted by the exchange rate,
- *  which can increase due to slashing. Before any slashes have occurred, or after a full slash has
- *  occurred, the exchange rate is equal to one.
+ *  UNDERLYING AND STAKED AMOUNTS:
+ *
+ *   We distinguish between underlying amounts and stake amounts. An underlying amount is denoted in
+ *   the original units of the token being staked. A stake amount is adjusted by the exchange rate,
+ *   which can increase due to slashing. Before any slashes have occurred, the exchange rate is
+ *   equal to one.
  */
-abstract contract SM1Staking is SM1StakedBalances {
+abstract contract SM1Staking is
+  SM1StakedBalances,
+  SM1ERC20
+{
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
@@ -149,10 +155,11 @@ abstract contract SM1Staking is SM1StakedBalances {
 
   function _stake(address staker, uint256 underlyingAmount) internal {
     // Convert using the exchange rate.
-    uint256 stakeAmount = underlyingAmount.mul(_EXCHANGE_RATE_).div(EXCHANGE_RATE_BASE);
+    uint256 stakeAmount = stakeAmountFromUnderlyingAmount(underlyingAmount);
 
-    // Increase current and next active balance.
+    // Update staked balances and delegate snapshots.
     _increaseCurrentAndNextActiveBalance(staker, stakeAmount);
+    _moveDelegatesForTransfer(address(0), staker, stakeAmount);
 
     // Transfer token from the sender.
     STAKED_TOKEN.safeTransferFrom(msg.sender, address(this), underlyingAmount);
@@ -191,11 +198,12 @@ abstract contract SM1Staking is SM1StakedBalances {
       'SM1Staking: Withdraw amount exceeds staker inactive balance'
     );
 
-    // Decrease the staker's current and next inactive balance. Reverts if balance is insufficient.
+    // Update staked balances and delegate snapshots.
     _decreaseCurrentAndNextInactiveBalance(staker, stakeAmount);
+    _moveDelegatesForTransfer(staker, address(0), stakeAmount);
 
     // Convert using the exchange rate.
-    uint256 underlyingAmount = stakeAmount.mul(EXCHANGE_RATE_BASE).div(_EXCHANGE_RATE_);
+    uint256 underlyingAmount = underlyingAmountFromStakeAmount(stakeAmount);
 
     // Transfer token to the recipient.
     STAKED_TOKEN.safeTransfer(recipient, underlyingAmount);

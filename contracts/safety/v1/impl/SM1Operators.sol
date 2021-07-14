@@ -2,13 +2,14 @@ pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import {SM1Roles} from './SM1Roles.sol';
 import {SM1Staking} from './SM1Staking.sol';
 
 /**
  * @title SM1Operators
  * @author dYdX
  *
- * @notice Actions which may be called by authorized operators, nominated by the contract owner.
+ * @dev Actions which may be called by authorized operators, nominated by the contract owner.
  *
  *  There are three types of operators. These should be smart contracts, which can be used to
  *  provide additional functionality to users:
@@ -26,7 +27,10 @@ import {SM1Staking} from './SM1Staking.sol';
  *    smart contract to provide an interface for claiming rewards from multiple incentive programs
  *    at once.
  */
-abstract contract SM1Operators is SM1Staking {
+abstract contract SM1Operators is
+  SM1Staking,
+  SM1Roles
+{
   using SafeMath for uint256;
 
   // ============ Events ============

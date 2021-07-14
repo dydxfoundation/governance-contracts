@@ -14,12 +14,11 @@ import {SM1Types} from '../lib/SM1Types.sol';
  *
  * @dev Storage contract. Contains or inherits from all contract with storage.
  */
-abstract contract SM1Storage is AccessControlUpgradeable, ReentrancyGuard, VersionedInitializable {
-
-  // ============ Constants ============
-
-  uint256 public constant EXCHANGE_RATE_BASE = 1e18;
-
+abstract contract SM1Storage is
+  AccessControlUpgradeable,
+  ReentrancyGuard,
+  VersionedInitializable
+{
   // ============ Epoch Schedule ============
 
   /// @dev The parameters specifying the function from timestamp to epoch number.
@@ -31,6 +30,21 @@ abstract contract SM1Storage is AccessControlUpgradeable, ReentrancyGuard, Versi
   // ============ Staked Token ERC20 ============
 
   mapping(address => mapping(address => uint256)) internal _ALLOWANCES_;
+
+  // ============ Governance Power Delegation ============
+
+  bytes32 internal _DOMAIN_SEPARATOR_;
+
+  /// @dev Mapping from (owner) => (next valid nonce) for EIP-712 signatures.
+  mapping(address => uint256) internal _NONCES_;
+
+  mapping(address => mapping(uint256 => SM1Types.Snapshot)) internal _VOTING_SNAPSHOTS_;
+  mapping(address => uint256) internal _VOTING_SNAPSHOT_COUNTS_;
+  mapping(address => address) internal _VOTING_DELEGATES_;
+
+  mapping(address => mapping(uint256 => SM1Types.Snapshot)) internal _PROPOSITION_SNAPSHOTS_;
+  mapping(address => uint256) internal _PROPOSITION_SNAPSHOT_COUNTS_;
+  mapping(address => address) internal _PROPOSITION_DELEGATES_;
 
   // ============ Rewards Accounting ============
 
@@ -66,12 +80,15 @@ abstract contract SM1Storage is AccessControlUpgradeable, ReentrancyGuard, Versi
   /// @dev The total inactive balance of stakers.
   SM1Types.StoredBalance internal _TOTAL_INACTIVE_BALANCE_;
 
-  // ============ Slash Accounting ============
+  // ============ Exchange Rate ============
 
   /// @dev The value of one underlying token, in the units used for staked balances, denominated
   ///  as a mutiple of EXCHANGE_RATE_BASE for additional precision.
   uint256 internal _EXCHANGE_RATE_;
 
-  /// @dev Info about full slashes that have occurred. Each full slash resets the exchange rate.
-  SM1Types.FullSlash[] internal _FULL_SLASHES_;
+  /// @dev Historical snapshots of the exchange rate, in each block that it has changed.
+  mapping(uint256 => SM1Types.Snapshot) internal _EXCHANGE_RATE_SNAPSHOTS_;
+
+  /// @dev Number of snapshots of the exchange rate.
+  uint256 internal _EXCHANGE_RATE_SNAPSHOT_COUNT_;
 }

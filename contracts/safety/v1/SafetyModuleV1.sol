@@ -3,7 +3,6 @@ pragma experimental ABIEncoderV2;
 
 import {IERC20} from '../../interfaces/IERC20.sol';
 import {SM1Admin} from './impl/SM1Admin.sol';
-import {SM1ERC20} from './impl/SM1ERC20.sol';
 import {SM1Getters} from './impl/SM1Getters.sol';
 import {SM1Operators} from './impl/SM1Operators.sol';
 import {SM1Slashing} from './impl/SM1Slashing.sol';
@@ -21,9 +20,18 @@ contract SafetyModuleV1 is
   SM1Slashing,
   SM1Operators,
   SM1Admin,
-  SM1ERC20,
   SM1Getters
 {
+  // ============ Constants ============
+
+  string public constant EIP712_DOMAIN_NAME = 'dYdX Safety Module';
+
+  string public constant EIP712_DOMAIN_VERSION = '1';
+
+  bytes32 public constant EIP712_DOMAIN_SCHEMA_HASH = keccak256(
+    'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
+  );
+
   // ============ Constructor ============
 
   constructor(
@@ -41,10 +49,26 @@ contract SafetyModuleV1 is
     uint256 offset,
     uint256 blackoutWindow
   ) external initializer {
+    __SM1ExchangeRate_init();
     __SM1Roles_init();
     __SM1EpochSchedule_init(interval, offset, blackoutWindow);
     __SM1Rewards_init();
-    _EXCHANGE_RATE_ = EXCHANGE_RATE_BASE;
+
+    // Store the domain separator for EIP-712 signatures.
+    uint256 chainId;
+    // solium-disable-next-line
+    assembly {
+      chainId := chainid()
+    }
+    _DOMAIN_SEPARATOR_ = keccak256(
+      abi.encode(
+        EIP712_DOMAIN_SCHEMA_HASH,
+        keccak256(bytes(EIP712_DOMAIN_NAME)),
+        keccak256(bytes(EIP712_DOMAIN_VERSION)),
+        chainId,
+        address(this)
+      )
+    );
   }
 
   // ============ Internal Functions ============

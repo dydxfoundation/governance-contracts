@@ -58,4 +58,13 @@ library SafeCast {
     require(uint256(b) == a, 'SafeCast: toUint128 overflow');
     return b;
   }
+
+  /**
+   * @dev Downcase to a uint240, reverting on overflow.
+   */
+  function toUint240(uint256 a) internal pure returns (uint240) {
+    uint240 b = uint240(a);
+    require(uint256(b) == a, 'SafeCast: toUint240 overflow');
+    return b;
+  }
 }
