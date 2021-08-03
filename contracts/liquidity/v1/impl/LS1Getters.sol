@@ -1,10 +1,10 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {Math} from '../../../lib/Math.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
-import {LS1Storage} from './LS1Storage.sol';
+import { Math } from '../../../utils/Math.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
+import { LS1Storage } from './LS1Storage.sol';
 
 /**
  * @title LS1Getters
@@ -74,7 +74,7 @@ abstract contract LS1Getters is LS1Storage {
    * @return Boolean `true` if the borrower is restricted, otherwise `false`.
    */
   function isBorrowingRestrictedForBorrower(address borrower) external view returns (bool) {
-    return _IS_BORROWING_RESTRICTED_[borrower];
+    return _BORROWER_RESTRICTIONS_[borrower];
   }
 
   /**
@@ -97,25 +97,14 @@ abstract contract LS1Getters is LS1Storage {
   }
 
   /**
-   * @notice Get the shortfall index for a shortfall event.
+   * @notice Get information about a shortfall that occurred.
    *
-   * @param  shortfallNumber  The number for the shortfall event to look up.
+   * @param  shortfallCounter  The array index for the shortfall event to look up.
    *
-   * @return The index, representing the fraction of inactive funds that were converted into debt.
+   * @return Struct containing the epoch and shortfall index value.
    */
-  function getShortfallIndex(uint256 shortfallNumber) external view returns (uint256) {
-    return _SHORTFALL_INDEXES_[shortfallNumber];
-  }
-
-  /**
-   * @notice Get the epoch number for a shortfall event.
-   *
-   * @param  shortfallNumber  The number for the shortfall event to look up.
-   *
-   * @return The epoch number in which the shortfall occurred.
-   */
-  function getShortfallEpoch(uint256 shortfallNumber) external view returns (uint256) {
-    return _SHORTFALL_EPOCHS_[shortfallNumber];
+  function getShortfall(uint256 shortfallCounter) external view returns (LS1Types.Shortfall memory) {
+    return _SHORTFALLS_[shortfallCounter];
   }
 
   /**
@@ -123,7 +112,7 @@ abstract contract LS1Getters is LS1Storage {
    *
    * @return The number of shortfalls that have occurred.
    */
-  function getShortfallCounter() external view returns (uint256) {
-    return _SHORTFALL_COUNTER_;
+  function getShortfallCount() external view returns (uint256) {
+    return _SHORTFALLS_.length;
   }
 }

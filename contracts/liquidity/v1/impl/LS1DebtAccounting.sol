@@ -1,19 +1,19 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from '../../../interfaces/IERC20.sol';
-import {Math} from '../../../lib/Math.sol';
-import {SafeERC20} from '../../../lib/SafeERC20.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
-import {LS1BorrowerAllocations} from './LS1BorrowerAllocations.sol';
+import { IERC20 } from '../../../interfaces/IERC20.sol';
+import { Math } from '../../../utils/Math.sol';
+import { SafeERC20 } from '../../../dependencies/open-zeppelin/SafeERC20.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
+import { LS1BorrowerAllocations } from './LS1BorrowerAllocations.sol';
 
 /**
  * @title LS1DebtAccounting
  * @author dYdX
  *
- * @dev Allows converting an unpaid loan into "debt", which is accounted for separately from the
- *  staked and borrowed balances. This allows the system to rebalance/restabilize itself in the
+ * @dev Allows converting an overdue balance into "debt", which is accounted for separately from
+ *  the staked and borrowed balances. This allows the system to rebalance/restabilize itself in the
  *  case where a borrower fails to return borrowed funds on time.
  *
  *  The shortfall debt calculation is as follows:
@@ -62,7 +62,7 @@ abstract contract LS1DebtAccounting is LS1BorrowerAllocations {
   function restrictBorrower(address borrower) external nonReentrant {
     require(
       isBorrowerOverdue(borrower),
-      'LS1DebtAccounting: Borrower has not borrowed in excess of allocation'
+      'LS1DebtAccounting: Borrower not overdue'
     );
     _setBorrowingRestriction(borrower, true);
   }
@@ -84,7 +84,7 @@ abstract contract LS1DebtAccounting is LS1BorrowerAllocations {
     // The debt is equal to the difference between the total active and total borrowed balances.
     uint256 totalActiveCurrent = getTotalActiveBalanceCurrentEpoch();
     uint256 totalBorrowed = _TOTAL_BORROWED_BALANCE_;
-    require(totalBorrowed > totalActiveCurrent, 'LS1DebtAccounting: No shortfall has occurred');
+    require(totalBorrowed > totalActiveCurrent, 'LS1DebtAccounting: No shortfall');
     uint256 shortfallDebt = totalBorrowed.sub(totalActiveCurrent);
 
     // Attribute debt to borrowers.
@@ -99,7 +99,7 @@ abstract contract LS1DebtAccounting is LS1BorrowerAllocations {
   // ============ Public Functions ============
 
   /**
-   * @notice Whether the borrower missed a loan payment, and is currently subject to having their
+   * @notice Whether the borrower is overdue on a payment, and is currently subject to having their
    *  borrowing rights revoked.
    *
    * @param  borrower  The borrower to check.
@@ -198,7 +198,7 @@ abstract contract LS1DebtAccounting is LS1BorrowerAllocations {
     // Require the borrowers to cover the full debt amount. This should always be possible.
     require(
       debtToBeAttributedPoints == 0,
-      'LS1DebtAccounting: The borrowers did not cover the shortfall'
+      'LS1DebtAccounting: Borrowers do not cover the shortfall'
     );
 
     // Move the debt from the total borrowed balance to the total debt balance.

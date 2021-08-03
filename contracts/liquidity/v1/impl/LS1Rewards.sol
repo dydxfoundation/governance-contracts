@@ -1,11 +1,12 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from '../../../interfaces/IERC20.sol';
-import {Math} from '../../../lib/Math.sol';
-import {SafeERC20} from '../../../lib/SafeERC20.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1EpochSchedule} from './LS1EpochSchedule.sol';
+import { IERC20 } from '../../../interfaces/IERC20.sol';
+import { Math } from '../../../utils/Math.sol';
+import { SafeERC20 } from '../../../dependencies/open-zeppelin/SafeERC20.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { SafeCast } from '../lib/SafeCast.sol';
+import { LS1EpochSchedule } from './LS1EpochSchedule.sol';
 
 /**
  * @title LS1Rewards
@@ -53,6 +54,7 @@ import {LS1EpochSchedule} from './LS1EpochSchedule.sol';
  */
 abstract contract LS1Rewards is LS1EpochSchedule {
   using SafeERC20 for IERC20;
+  using SafeCast for uint256;
   using SafeMath for uint256;
 
   // ============ Constants ============
@@ -64,7 +66,7 @@ abstract contract LS1Rewards is LS1EpochSchedule {
   IERC20 public immutable REWARDS_TOKEN;
 
   /// @notice Address to pull rewards from. Must have provided an allowance to this contract.
-  address public immutable REWARDS_VAULT;
+  address public immutable REWARDS_TREASURY;
 
   /// @notice Start timestamp (inclusive) of the period in which rewards can be earned.
   uint256 public immutable DISTRIBUTION_START;
@@ -86,13 +88,13 @@ abstract contract LS1Rewards is LS1EpochSchedule {
 
   constructor(
     IERC20 rewardsToken,
-    address rewardsVault,
+    address rewardsTreasury,
     uint256 distributionStart,
     uint256 distributionEnd
   ) {
     require(distributionEnd >= distributionStart, 'LS1Rewards: Invalid parameters');
     REWARDS_TOKEN = rewardsToken;
-    REWARDS_VAULT = rewardsVault;
+    REWARDS_TREASURY = rewardsTreasury;
     DISTRIBUTION_START = distributionStart;
     DISTRIBUTION_END = distributionEnd;
   }
@@ -114,7 +116,7 @@ abstract contract LS1Rewards is LS1EpochSchedule {
    * @dev Initialize the contract.
    */
   function __LS1Rewards_init() internal {
-    _GLOBAL_INDEX_TIMESTAMP_ = Math.max(block.timestamp, DISTRIBUTION_START);
+    _GLOBAL_INDEX_TIMESTAMP_ = Math.max(block.timestamp, DISTRIBUTION_START).toUint32();
   }
 
   /**
@@ -146,7 +148,7 @@ abstract contract LS1Rewards is LS1EpochSchedule {
   function _claimRewards(address user, address recipient) internal returns (uint256) {
     uint256 accruedRewards = _USER_REWARDS_BALANCES_[user];
     _USER_REWARDS_BALANCES_[user] = 0;
-    REWARDS_TOKEN.safeTransferFrom(REWARDS_VAULT, recipient, accruedRewards);
+    REWARDS_TOKEN.safeTransferFrom(REWARDS_TREASURY, recipient, accruedRewards);
     emit ClaimedRewards(user, recipient, accruedRewards);
     return accruedRewards;
   }
@@ -208,7 +210,6 @@ abstract contract LS1Rewards is LS1EpochSchedule {
     returns (uint256)
   {
     uint256 settleUpToTimestamp = getStartOfEpoch(epochNumber.add(1));
-    uint256 previouslySettledTimestamp = _GLOBAL_INDEX_TIMESTAMP_;
 
     uint256 globalIndex = _settleGlobalIndexUpToTimestamp(totalStaked, settleUpToTimestamp);
     _EPOCH_INDEXES_[epochNumber] = globalIndex;
@@ -278,7 +279,7 @@ abstract contract LS1Rewards is LS1EpochSchedule {
     private
     returns (uint256)
   {
-    uint256 oldGlobalIndex = _GLOBAL_INDEX_;
+    uint256 oldGlobalIndex = uint256(_GLOBAL_INDEX_);
 
     // The goal of this function is to calculate rewards earned since the last global index update.
     // These rewards are earned over the time interval which is the intersection of the intervals
@@ -288,7 +289,7 @@ abstract contract LS1Rewards is LS1EpochSchedule {
     //   `_GLOBAL_INDEX_TIMESTAMP_ >= DISTRIBUTION_START`
     //
     // Get the start and end of the time interval under consideration.
-    uint256 intervalStart = _GLOBAL_INDEX_TIMESTAMP_;
+    uint256 intervalStart = uint256(_GLOBAL_INDEX_TIMESTAMP_);
     uint256 intervalEnd = Math.min(settleUpToTimestamp, DISTRIBUTION_END);
 
     // Return early if the interval has length zero (incl. case where intervalEnd < intervalStart).
@@ -296,12 +297,14 @@ abstract contract LS1Rewards is LS1EpochSchedule {
       return oldGlobalIndex;
     }
 
-    // Update the stored timestamp of the last global index update.
-    _GLOBAL_INDEX_TIMESTAMP_ = intervalEnd;
+    // Note: If we reach this point, we must update _GLOBAL_INDEX_TIMESTAMP_.
 
     uint256 emissionPerSecond = _REWARDS_PER_SECOND_;
 
     if (emissionPerSecond == 0 || totalStaked == 0) {
+      // Ensure a log is emitted if the timestamp changed, even if the index does not change.
+      _GLOBAL_INDEX_TIMESTAMP_ = intervalEnd.toUint32();
+      emit GlobalIndexUpdated(oldGlobalIndex);
       return oldGlobalIndex;
     }
 
@@ -311,7 +314,11 @@ abstract contract LS1Rewards is LS1EpochSchedule {
 
     // Calculate, update, and return the new global index.
     uint256 newGlobalIndex = oldGlobalIndex.add(indexDelta);
-    _GLOBAL_INDEX_ = newGlobalIndex;
+
+    // Update storage. (Shared storage slot.)
+    _GLOBAL_INDEX_TIMESTAMP_ = intervalEnd.toUint32();
+    _GLOBAL_INDEX_ = newGlobalIndex.toUint224();
+
     emit GlobalIndexUpdated(newGlobalIndex);
     return newGlobalIndex;
   }

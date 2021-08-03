@@ -1,12 +1,12 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {ReentrancyGuard} from '../../../lib/ReentrancyGuard.sol';
 import {
   AccessControlUpgradeable
 } from '../../../dependencies/open-zeppelin/AccessControlUpgradeable.sol';
-import {VersionedInitializable} from '../../../utils/VersionedInitializable.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
+import { ReentrancyGuard } from '../../../utils/ReentrancyGuard.sol';
+import { VersionedInitializable } from '../../../utils/VersionedInitializable.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
 
 /**
  * @title LS1Storage
@@ -15,11 +15,6 @@ import {LS1Types} from '../lib/LS1Types.sol';
  * @dev Storage contract. Contains or inherits from all contract with storage.
  */
 abstract contract LS1Storage is AccessControlUpgradeable, ReentrancyGuard, VersionedInitializable {
-  // ============ Access Control ============
-
-  /// @dev Addresses which are allowed to modify debt balances.
-  mapping(address => bool) internal _DEBT_OPERATORS_;
-
   // ============ Epoch Schedule ============
 
   /// @dev The parameters specifying the function from timestamp to epoch number.
@@ -39,11 +34,11 @@ abstract contract LS1Storage is AccessControlUpgradeable, ReentrancyGuard, Versi
   /// @dev The emission rate of rewards.
   uint256 internal _REWARDS_PER_SECOND_;
 
-  /// @dev The cumulative rewards earned per staked token.
-  uint256 internal _GLOBAL_INDEX_;
+  /// @dev The cumulative rewards earned per staked token. (Shared storage slot.)
+  uint224 internal _GLOBAL_INDEX_;
 
-  /// @dev The timestamp at which the global index was last updated.
-  uint256 internal _GLOBAL_INDEX_TIMESTAMP_;
+  /// @dev The timestamp at which the global index was last updated. (Shared storage slot.)
+  uint32 internal _GLOBAL_INDEX_TIMESTAMP_;
 
   /// @dev The value of the global index when the user's staked balance was last updated.
   mapping(address => uint256) internal _USER_INDEXES_;
@@ -68,16 +63,8 @@ abstract contract LS1Storage is AccessControlUpgradeable, ReentrancyGuard, Versi
   /// @dev The total inactive balance of stakers. Note: The shortfallCounter field is unused.
   LS1Types.StoredBalance internal _TOTAL_INACTIVE_BALANCE_;
 
-  /// @dev Shortfall indexes, keyed by the shortfall counter, which starts at zero, and increments
-  ///  as new indexes are added. Each index represents the fraction of inactive funds that were
-  ///  converted into debt.
-  mapping(uint256 => uint256) internal _SHORTFALL_INDEXES_;
-
-  /// @dev The epoch in which each shortfall occurred.
-  mapping(uint256 => uint256) internal _SHORTFALL_EPOCHS_;
-
-  /// @dev The number of shortfalls that have occurred.
-  uint256 internal _SHORTFALL_COUNTER_;
+  /// @dev Information about shortfalls that have occurred.
+  LS1Types.Shortfall[] internal _SHORTFALLS_;
 
   // ============ Borrower Accounting ============
 
@@ -94,15 +81,15 @@ abstract contract LS1Storage is AccessControlUpgradeable, ReentrancyGuard, Versi
   uint256 internal _TOTAL_BORROWED_BALANCE_;
 
   /// @dev Indicates whether a borrower is restricted from new borrowing.
-  mapping(address => bool) internal _IS_BORROWING_RESTRICTED_;
+  mapping(address => bool) internal _BORROWER_RESTRICTIONS_;
 
   // ============ Debt Accounting ============
 
-  /// @dev The debt balance by borrower.
-  mapping(address => uint256) internal _BORROWER_DEBT_BALANCES_;
-
   /// @dev The debt balance owed to each staker.
   mapping(address => uint256) internal _STAKER_DEBT_BALANCES_;
+
+  /// @dev The debt balance by borrower.
+  mapping(address => uint256) internal _BORROWER_DEBT_BALANCES_;
 
   /// @dev The total debt balance of borrowers.
   uint256 internal _TOTAL_BORROWER_DEBT_BALANCE_;

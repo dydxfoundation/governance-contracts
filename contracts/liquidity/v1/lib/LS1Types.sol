@@ -11,6 +11,17 @@ library LS1Types {
   }
 
   /**
+   * @dev The parameters representing a shortfall event.
+   *
+   * @param  index  Fraction of inactive funds converted into debt, scaled by SHORTFALL_INDEX_BASE.
+   * @param  epoch  The epoch in which the shortfall occurred.
+   */
+  struct Shortfall {
+    uint16 epoch; // Note: Supports at least 1000 years given min epoch length of 6 days.
+    uint224 index; // Note: Save on contract bytecode size by reusing uint224 instead of uint240.
+  }
+
+  /**
    * @dev A balance, possibly with a change scheduled for the next epoch.
    *  Also includes cached index information for inactive balances.
    *

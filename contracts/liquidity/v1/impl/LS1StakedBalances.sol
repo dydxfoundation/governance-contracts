@@ -1,11 +1,11 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from '../../../interfaces/IERC20.sol';
-import {SafeCast} from '../../../lib/SafeCast.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
-import {LS1Rewards} from './LS1Rewards.sol';
+import { IERC20 } from '../../../interfaces/IERC20.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
+import { SafeCast } from '../lib/SafeCast.sol';
+import { LS1Rewards } from './LS1Rewards.sol';
 
 /**
  * @title LS1StakedBalances
@@ -100,10 +100,10 @@ abstract contract LS1StakedBalances is LS1Rewards {
 
   constructor(
     IERC20 rewardsToken,
-    address rewardsVault,
+    address rewardsTreasury,
     uint256 distributionStart,
     uint256 distributionEnd
-  ) LS1Rewards(rewardsToken, rewardsVault, distributionStart, distributionEnd) {}
+  ) LS1Rewards(rewardsToken, rewardsTreasury, distributionStart, distributionEnd) {}
 
   // ============ Public Functions ============
 
@@ -309,10 +309,10 @@ abstract contract LS1StakedBalances is LS1Rewards {
     // Decrease the total inactive balance.
     _decreaseCurrentAndNextBalances(address(0), false, shortfallAmount);
 
-    uint256 shortfallCounter = _SHORTFALL_COUNTER_;
-    _SHORTFALL_INDEXES_[shortfallCounter] = shortfallIndex;
-    _SHORTFALL_EPOCHS_[shortfallCounter] = getCurrentEpoch();
-    _SHORTFALL_COUNTER_ = shortfallCounter.add(1);
+    _SHORTFALLS_.push(LS1Types.Shortfall({
+      epoch: getCurrentEpoch().toUint16(),
+      index: shortfallIndex.toUint224()
+    }));
   }
 
   /**
@@ -331,7 +331,7 @@ abstract contract LS1StakedBalances is LS1Rewards {
    * @dev Sets the user inactive balance to zero. See LS1Failsafe.
    *
    *  Since the balance will never be settled, the staker loses any debt balance that they would
-   *  have otherwise received.
+   *  have otherwise been entitled to from shortfall losses.
    *
    *  Also note that we don't update the total inactive balance, but this is fine.
    */
@@ -462,7 +462,7 @@ abstract contract LS1StakedBalances is LS1Rewards {
    *
    *  IMPORTANT: This function modifies state, and so the balance MUST be stored afterwards.
    *    - For active balances: if a rollover occurs, rewards are settled to the epoch boundary.
-   *    - For inactive user balances: if a haircut occurs, the user's debt balance is increased.
+   *    - For inactive user balances: if a shortfall occurs, the user's debt balance is increased.
    *
    * @param  balancePtr       A storage pointer to the balance.
    * @param  maybeStaker      The user address, or address(0) to update total balance.
@@ -570,7 +570,7 @@ abstract contract LS1StakedBalances is LS1Rewards {
     // Note: Next inactive balance is always >= current, so we only need to check next.
     if (balance.nextEpochBalance == 0) {
       balance.currentEpoch = currentEpoch.toUint16();
-      balance.shortfallCounter = _SHORTFALL_COUNTER_.toUint16();
+      balance.shortfallCounter = _SHORTFALLS_.length.toUint16();
       return (balance, 0);
     }
 
@@ -599,7 +599,7 @@ abstract contract LS1StakedBalances is LS1Rewards {
   {
     // Get the cached and global shortfall counters.
     uint256 shortfallCounter = uint256(balance.shortfallCounter);
-    uint256 globalShortfallCounter = _SHORTFALL_COUNTER_;
+    uint256 globalShortfallCounter = _SHORTFALLS_.length;
 
     // If the counters are in sync, then there is nothing to do.
     if (shortfallCounter == globalShortfallCounter) {
@@ -607,7 +607,7 @@ abstract contract LS1StakedBalances is LS1Rewards {
     }
 
     // Get the balance params.
-    uint256 cachedEpoch = uint256(balance.currentEpoch);
+    uint16 cachedEpoch = balance.currentEpoch;
     uint256 oldCurrentBalance = uint256(balance.currentEpochBalance);
 
     // Calculate the new balance after applying shortfalls.
@@ -618,13 +618,15 @@ abstract contract LS1StakedBalances is LS1Rewards {
     // ensure recovery is possible.
     uint256 newCurrentBalance = oldCurrentBalance;
     while (shortfallCounter < globalShortfallCounter) {
+      LS1Types.Shortfall memory shortfall = _SHORTFALLS_[shortfallCounter];
+
       // Stop applying shortfalls if they are in the future relative to the balance current epoch.
-      if (_SHORTFALL_EPOCHS_[shortfallCounter] > cachedEpoch) {
+      if (shortfall.epoch > cachedEpoch) {
         break;
       }
 
       // Update the current balance to reflect the shortfall.
-      uint256 shortfallIndex = _SHORTFALL_INDEXES_[shortfallCounter];
+      uint256 shortfallIndex = uint256(shortfall.index);
       newCurrentBalance = newCurrentBalance.mul(shortfallIndex).div(SHORTFALL_INDEX_BASE);
 
       // Increment the staker's shortfall counter.
@@ -671,15 +673,17 @@ abstract contract LS1StakedBalances is LS1Rewards {
     // Validate maxEpoch.
     uint256 currentEpoch = getCurrentEpoch();
     uint256 cachedEpoch = uint256(balance.currentEpoch);
-    require(maxEpoch >= cachedEpoch, 'LS1StakedBalances: Invalid maxEpoch');
-    require(maxEpoch <= currentEpoch, 'LS1StakedBalances: Invalid maxEpoch');
+    require(
+      maxEpoch >= cachedEpoch && maxEpoch <= currentEpoch,
+      'LS1StakedBalances: maxEpoch'
+    );
 
     // Apply any pending shortfalls that don't affect the “next epoch” balance.
     uint256 newStakerDebt;
     (balance, newStakerDebt) = _applyShortfallsToBalance(balance);
 
     // Roll the balance forward if needed.
-    if (currentEpoch > cachedEpoch) {
+    if (maxEpoch > cachedEpoch) {
       balance.currentEpoch = maxEpoch.toUint16(); // Use maxEpoch instead of currentEpoch.
       balance.currentEpochBalance = balance.nextEpochBalance;
 

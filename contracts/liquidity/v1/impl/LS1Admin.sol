@@ -1,10 +1,10 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {SafeCast} from '../../../lib/SafeCast.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
-import {LS1BorrowerAllocations} from './LS1BorrowerAllocations.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
+import { SafeCast } from '../lib/SafeCast.sol';
+import { LS1Borrowing } from './LS1Borrowing.sol';
 
 /**
  * @title LS1Admin
@@ -12,7 +12,7 @@ import {LS1BorrowerAllocations} from './LS1BorrowerAllocations.sol';
  *
  * @dev Admin-only functions.
  */
-abstract contract LS1Admin is LS1BorrowerAllocations {
+abstract contract LS1Admin is LS1Borrowing {
   using SafeCast for uint256;
   using SafeMath for uint256;
 
@@ -40,7 +40,7 @@ abstract contract LS1Admin is LS1BorrowerAllocations {
     nonReentrant
   {
     if (!hasEpochZeroStarted()) {
-      require(block.timestamp < offset, 'LS1Admin: Cannot jump past start of epoch zero');
+      require(block.timestamp < offset, 'LS1Admin: Started epoch zero');
       _setEpochParameters(interval, offset);
       return;
     }
@@ -48,7 +48,7 @@ abstract contract LS1Admin is LS1BorrowerAllocations {
     // Require that we are not currently in a blackout window.
     require(
       !inBlackoutWindow(),
-      'LS1Admin: Cannot update epoch parameters while in blackout window'
+      'LS1Admin: Blackout window'
     );
 
     // We must settle the total active balance to ensure the index is recorded at the epoch
@@ -59,10 +59,10 @@ abstract contract LS1Admin is LS1BorrowerAllocations {
     uint256 originalCurrentEpoch = getCurrentEpoch();
     _setEpochParameters(interval, offset);
     uint256 newCurrentEpoch = getCurrentEpoch();
-    require(originalCurrentEpoch == newCurrentEpoch, 'LS1Admin: Cannot jump between epochs');
+    require(originalCurrentEpoch == newCurrentEpoch, 'LS1Admin: Changed epochs');
 
     // Require that the new parameters don't put us in a blackout window.
-    require(!inBlackoutWindow(), 'LS1Admin: Cannot jump into blackout window');
+    require(!inBlackoutWindow(), 'LS1Admin: End in blackout window');
   }
 
   /**
@@ -75,12 +75,12 @@ abstract contract LS1Admin is LS1BorrowerAllocations {
   {
     require(
       !inBlackoutWindow(),
-      'LS1Admin: Cannot update blackout window while in blackout window'
+      'LS1Admin: Blackout window'
     );
-    _setBlackoutWindow(blackoutWindow, uint256(_EPOCH_PARAMETERS_.interval));
+    _setBlackoutWindow(blackoutWindow);
 
     // Require that the new parameters don't put us in a blackout window.
-    require(!inBlackoutWindow(), 'LS1Admin: Cannot jump into blackout window');
+    require(!inBlackoutWindow(), 'LS1Admin: End in blackout window');
   }
 
   /**
@@ -115,10 +115,10 @@ abstract contract LS1Admin is LS1BorrowerAllocations {
     onlyRole(BORROWER_ADMIN_ROLE)
     nonReentrant
   {
-    require(borrowers.length == newAllocations.length, 'LS1Admin: Array params length mismatch');
+    require(borrowers.length == newAllocations.length, 'LS1Admin: Params length mismatch');
     require(
       !inBlackoutWindow(),
-      'LS1Admin: Cannot update borrower allocations while in blackout window'
+      'LS1Admin: Blackout window'
     );
     _setBorrowerAllocations(borrowers, newAllocations);
   }

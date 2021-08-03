@@ -1,13 +1,13 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from '../../../interfaces/IERC20.sol';
-import {SafeCast} from '../../../lib/SafeCast.sol';
-import {SafeERC20} from '../../../lib/SafeERC20.sol';
-import {Math} from '../../../lib/Math.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
-import {LS1StakedBalances} from './LS1StakedBalances.sol';
+import { IERC20 } from '../../../interfaces/IERC20.sol';
+import { SafeERC20 } from '../../../dependencies/open-zeppelin/SafeERC20.sol';
+import { Math } from '../../../utils/Math.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
+import { SafeCast } from '../lib/SafeCast.sol';
+import { LS1StakedBalances } from './LS1StakedBalances.sol';
 
 /**
  * @title LS1BorrowerAllocations
@@ -137,7 +137,7 @@ abstract contract LS1BorrowerAllocations is LS1StakedBalances {
       }
 
       // Commit the new allocation.
-      _storeBorrowerAllocation(borrower, allocationStruct);
+      _BORROWER_ALLOCATIONS_[borrower] = allocationStruct;
       emit ScheduledBorrowerAllocationChange(borrower, oldAllocation, newAllocation, epochNumber);
 
       // Record totals.
@@ -148,7 +148,7 @@ abstract contract LS1BorrowerAllocations is LS1StakedBalances {
     // Require the total allocated units to be unchanged.
     require(
       oldAllocationSum == newAllocationSum,
-      'LS1BorrowerAllocations: Total allocated borrow units changed'
+      'LS1BorrowerAllocations: Invalid'
     );
   }
 
@@ -156,9 +156,9 @@ abstract contract LS1BorrowerAllocations is LS1StakedBalances {
    * @dev Restrict a borrower from further borrowing.
    */
   function _setBorrowingRestriction(address borrower, bool isBorrowingRestricted) internal {
-    bool oldIsBorrowingRestricted = _IS_BORROWING_RESTRICTED_[borrower];
+    bool oldIsBorrowingRestricted = _BORROWER_RESTRICTIONS_[borrower];
     if (oldIsBorrowingRestricted != isBorrowingRestricted) {
-      _IS_BORROWING_RESTRICTED_[borrower] = isBorrowingRestricted;
+      _BORROWER_RESTRICTIONS_[borrower] = isBorrowingRestricted;
       emit BorrowingRestrictionChanged(borrower, isBorrowingRestricted);
     }
   }
@@ -206,11 +206,5 @@ abstract contract LS1BorrowerAllocations is LS1StakedBalances {
     }
 
     return allocation;
-  }
-
-  function _storeBorrowerAllocation(address borrower, LS1Types.StoredAllocation memory allocation)
-    private
-  {
-    _BORROWER_ALLOCATIONS_[borrower] = allocation;
   }
 }

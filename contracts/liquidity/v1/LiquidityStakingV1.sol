@@ -1,14 +1,14 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from '../../interfaces/IERC20.sol';
-import {LS1Admin} from './impl/LS1Admin.sol';
-import {LS1Borrowing} from './impl/LS1Borrowing.sol';
-import {LS1DebtAccounting} from './impl/LS1DebtAccounting.sol';
-import {LS1ERC20} from './impl/LS1ERC20.sol';
-import {LS1Failsafe} from './impl/LS1Failsafe.sol';
-import {LS1Getters} from './impl/LS1Getters.sol';
-import {LS1Operators} from './impl/LS1Operators.sol';
+import { IERC20 } from '../../interfaces/IERC20.sol';
+import { LS1Admin } from './impl/LS1Admin.sol';
+import { LS1Borrowing } from './impl/LS1Borrowing.sol';
+import { LS1DebtAccounting } from './impl/LS1DebtAccounting.sol';
+import { LS1ERC20 } from './impl/LS1ERC20.sol';
+import { LS1Failsafe } from './impl/LS1Failsafe.sol';
+import { LS1Getters } from './impl/LS1Getters.sol';
+import { LS1Operators } from './impl/LS1Operators.sol';
 
 /**
  * @title LiquidityStakingV1
@@ -21,7 +21,6 @@ import {LS1Operators} from './impl/LS1Operators.sol';
 contract LiquidityStakingV1 is
   LS1Borrowing,
   LS1DebtAccounting,
-  LS1ERC20,
   LS1Admin,
   LS1Operators,
   LS1Getters,
@@ -32,10 +31,10 @@ contract LiquidityStakingV1 is
   constructor(
     IERC20 stakedToken,
     IERC20 rewardsToken,
-    address rewardsVault,
+    address rewardsTreasury,
     uint256 distributionStart,
     uint256 distributionEnd
-  ) LS1Borrowing(stakedToken, rewardsToken, rewardsVault, distributionStart, distributionEnd) {}
+  ) LS1Borrowing(stakedToken, rewardsToken, rewardsTreasury, distributionStart, distributionEnd) {}
 
   // ============ External Functions ============
 

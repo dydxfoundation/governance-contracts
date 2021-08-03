@@ -1,12 +1,13 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from '../../../interfaces/IERC20.sol';
-import {Math} from '../../../lib/Math.sol';
-import {SafeERC20} from '../../../lib/SafeERC20.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
-import {LS1StakedBalances} from './LS1StakedBalances.sol';
+import { IERC20 } from '../../../interfaces/IERC20.sol';
+import { Math } from '../../../utils/Math.sol';
+import { SafeERC20 } from '../../../dependencies/open-zeppelin/SafeERC20.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
+import { LS1ERC20 } from './LS1ERC20.sol';
+import { LS1StakedBalances } from './LS1StakedBalances.sol';
 
 /**
  * @title LS1Staking
@@ -14,7 +15,10 @@ import {LS1StakedBalances} from './LS1StakedBalances.sol';
  *
  * @dev External functions for stakers. See LS1StakedBalances for details on staker accounting.
  */
-abstract contract LS1Staking is LS1StakedBalances {
+abstract contract LS1Staking is
+  LS1StakedBalances,
+  LS1ERC20
+{
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
@@ -42,10 +46,10 @@ abstract contract LS1Staking is LS1StakedBalances {
   constructor(
     IERC20 stakedToken,
     IERC20 rewardsToken,
-    address rewardsVault,
+    address rewardsTreasury,
     uint256 distributionStart,
     uint256 distributionEnd
-  ) LS1StakedBalances(rewardsToken, rewardsVault, distributionStart, distributionEnd) {
+  ) LS1StakedBalances(rewardsToken, rewardsTreasury, distributionStart, distributionEnd) {
     STAKED_TOKEN = stakedToken;
   }
 
@@ -196,19 +200,20 @@ abstract contract LS1Staking is LS1StakedBalances {
     STAKED_TOKEN.safeTransferFrom(msg.sender, address(this), amount);
 
     emit Staked(staker, msg.sender, amount);
+    emit Transfer(address(0), msg.sender, amount);
   }
 
   function _requestWithdrawal(address staker, uint256 amount) internal {
     require(
       !inBlackoutWindow(),
-      'LS1Staking: Withdrawal requests restricted in the blackout window'
+      'LS1Staking: Withdraw requests restricted in the blackout window'
     );
 
     // Get the staker's requestable amount and revert if there is not enough to request withdrawal.
     uint256 requestableBalance = getActiveBalanceNextEpoch(staker);
     require(
       amount <= requestableBalance,
-      'LS1Staking: Withdrawal request exceeds next staker active balance'
+      'LS1Staking: Withdraw request exceeds next active balance'
     );
 
     // Move amount from active to inactive in the next epoch.
@@ -226,14 +231,14 @@ abstract contract LS1Staking is LS1StakedBalances {
     uint256 totalStakeAvailable = getContractBalanceAvailableToWithdraw();
     require(
       amount <= totalStakeAvailable,
-      'LS1Staking: Withdraw amount exceeds amount available in the contract'
+      'LS1Staking: Withdraw exceeds amount available in the contract'
     );
 
     // Get staker withdrawable balance and revert if there is not enough to withdraw.
     uint256 withdrawableBalance = getInactiveBalanceCurrentEpoch(staker);
     require(
       amount <= withdrawableBalance,
-      'LS1Staking: Withdraw amount exceeds staker inactive balance'
+      'LS1Staking: Withdraw exceeds inactive balance'
     );
 
     // Decrease the staker's current and next inactive balance. Reverts if balance is insufficient.
@@ -242,6 +247,7 @@ abstract contract LS1Staking is LS1StakedBalances {
     // Transfer token to the recipient.
     STAKED_TOKEN.safeTransfer(recipient, amount);
 
+    emit Transfer(msg.sender, address(0), amount);
     emit WithdrewStake(staker, recipient, amount);
   }
 
@@ -256,12 +262,12 @@ abstract contract LS1Staking is LS1StakedBalances {
     uint256 oldDebtBalance = _settleStakerDebtBalance(staker);
     require(
       amount <= oldDebtBalance,
-      'LS1Staking: Withdraw debt amount exceeds debt owed to the staker'
+      'LS1Staking: Withdraw debt exceeds debt owed'
     );
     uint256 oldDebtAvailable = _TOTAL_DEBT_AVAILABLE_TO_WITHDRAW_;
     require(
       amount <= oldDebtAvailable,
-      'LS1Staking: Withdraw debt amount exceeds amount available in the contract'
+      'LS1Staking: Withdraw debt exceeds amount available'
     );
 
     // Caculate updated amounts and update storage.

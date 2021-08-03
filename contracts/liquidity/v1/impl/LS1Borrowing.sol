@@ -1,14 +1,14 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from '../../../interfaces/IERC20.sol';
-import {SafeCast} from '../../../lib/SafeCast.sol';
-import {SafeERC20} from '../../../lib/SafeERC20.sol';
-import {Math} from '../../../lib/Math.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
-import {LS1Staking} from './LS1Staking.sol';
-import {LS1BorrowerAllocations} from './LS1BorrowerAllocations.sol';
+import { IERC20 } from '../../../interfaces/IERC20.sol';
+import { SafeERC20 } from '../../../dependencies/open-zeppelin/SafeERC20.sol';
+import { Math } from '../../../utils/Math.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
+import { SafeCast } from '../lib/SafeCast.sol';
+import { LS1Staking } from './LS1Staking.sol';
+import { LS1BorrowerAllocations } from './LS1BorrowerAllocations.sol';
 
 /**
  * @title LS1Borrowing
@@ -26,7 +26,7 @@ abstract contract LS1Borrowing is LS1Staking, LS1BorrowerAllocations {
 
   event Borrowed(address indexed borrower, uint256 amount, uint256 newBorrowedBalance);
 
-  event RepaidLoan(
+  event RepaidBorrow(
     address indexed borrower,
     address sender,
     uint256 amount,
@@ -45,10 +45,10 @@ abstract contract LS1Borrowing is LS1Staking, LS1BorrowerAllocations {
   constructor(
     IERC20 stakedToken,
     IERC20 rewardsToken,
-    address rewardsVault,
+    address rewardsTreasury,
     uint256 distributionStart,
     uint256 distributionEnd
-  ) LS1Staking(stakedToken, rewardsToken, rewardsVault, distributionStart, distributionEnd) {}
+  ) LS1Staking(stakedToken, rewardsToken, rewardsTreasury, distributionStart, distributionEnd) {}
 
   // ============ External Functions ============
 
@@ -58,23 +58,25 @@ abstract contract LS1Borrowing is LS1Staking, LS1BorrowerAllocations {
    * @param  amount  The token amount to borrow.
    */
   function borrow(uint256 amount) external nonReentrant {
+    require(amount > 0, 'LS1Borrowing: Cannot borrow zero');
+
     address borrower = msg.sender;
 
     // Revert if the borrower is restricted.
-    require(!_IS_BORROWING_RESTRICTED_[borrower], 'LS1Borrowing: Borrowing is restricted');
+    require(!_BORROWER_RESTRICTIONS_[borrower], 'LS1Borrowing: Restricted');
 
     // Get contract available amount and revert if there is not enough to withdraw.
     uint256 totalAvailableForBorrow = getContractBalanceAvailableToBorrow();
     require(
       amount <= totalAvailableForBorrow,
-      'LS1Borrowing: Borrow amount exceeds borrowable amount available in the contract'
+      'LS1Borrowing: Amount > available'
     );
 
     // Get new net borrow and revert if it is greater than the allocated balance for new borrowing.
     uint256 newBorrowedBalance = _BORROWED_BALANCES_[borrower].add(amount);
     require(
       newBorrowedBalance <= _getAllocatedBalanceForNewBorrowing(borrower),
-      'LS1Borrowing: Cannot borrow more than the available allocated balance for new borrowing'
+      'LS1Borrowing: Amount > allocated'
     );
 
     // Update storage.
@@ -91,12 +93,14 @@ abstract contract LS1Borrowing is LS1Staking, LS1BorrowerAllocations {
    * @notice Repay borrowed funds for the specified borrower. Reverts if repay amount exceeds
    *  borrowed amount.
    *
-   * @param  borrower  The borrower whose loan to repay.
+   * @param  borrower  The borrower on whose behalf to make a repayment.
    * @param  amount    The amount to repay.
    */
-  function repayLoan(address borrower, uint256 amount) external nonReentrant {
+  function repayBorrow(address borrower, uint256 amount) external nonReentrant {
+    require(amount > 0, 'LS1Borrowing: Cannot repay zero');
+
     uint256 oldBorrowedBalance = _BORROWED_BALANCES_[borrower];
-    require(amount <= oldBorrowedBalance, 'LS1Borrowing: Repay loan amount exceeds borrowed');
+    require(amount <= oldBorrowedBalance, 'LS1Borrowing: Repay > borrowed');
     uint256 newBorrowedBalance = oldBorrowedBalance.sub(amount);
 
     // Update storage.
@@ -106,7 +110,7 @@ abstract contract LS1Borrowing is LS1Staking, LS1BorrowerAllocations {
     // Transfer token from the sender.
     STAKED_TOKEN.safeTransferFrom(msg.sender, address(this), amount);
 
-    emit RepaidLoan(borrower, msg.sender, amount, newBorrowedBalance);
+    emit RepaidBorrow(borrower, msg.sender, amount, newBorrowedBalance);
   }
 
   /**
@@ -116,8 +120,10 @@ abstract contract LS1Borrowing is LS1Staking, LS1BorrowerAllocations {
    * @param  amount    The amount to repay.
    */
   function repayDebt(address borrower, uint256 amount) external nonReentrant {
+    require(amount > 0, 'LS1Borrowing: Cannot repay zero');
+
     uint256 oldDebtAmount = _BORROWER_DEBT_BALANCES_[borrower];
-    require(amount <= oldDebtAmount, 'LS1Borrowing: Repay debt amount exceeds borrower debt');
+    require(amount <= oldDebtAmount, 'LS1Borrowing: Repay > debt');
     uint256 newDebtBalance = oldDebtAmount.sub(amount);
 
     // Update storage.
@@ -137,13 +143,16 @@ abstract contract LS1Borrowing is LS1Staking, LS1BorrowerAllocations {
    * @return The max additional amount that the borrower can borrow right now.
    */
   function getBorrowableAmount(address borrower) external view returns (uint256) {
-    if (_IS_BORROWING_RESTRICTED_[borrower]) {
+    if (_BORROWER_RESTRICTIONS_[borrower]) {
       return 0;
     }
 
     // Get the remaining unused allocation for the borrower.
     uint256 oldBorrowedBalance = _BORROWED_BALANCES_[borrower];
     uint256 borrowerAllocatedBalance = _getAllocatedBalanceForNewBorrowing(borrower);
+    if (borrowerAllocatedBalance <= oldBorrowedBalance) {
+      return 0;
+    }
     uint256 borrowerRemainingAllocatedBalance = borrowerAllocatedBalance.sub(oldBorrowedBalance);
 
     // Don't allow new borrowing to take out funds that are reserved for debt or inactive balances.

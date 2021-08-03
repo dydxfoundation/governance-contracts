@@ -1,11 +1,11 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from '../../../interfaces/IERC20.sol';
-import {SafeCast} from '../../../lib/SafeCast.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
-import {LS1StakedBalances} from './LS1StakedBalances.sol';
+import { IERC20 } from '../../../interfaces/IERC20.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
+import { SafeCast } from '../lib/SafeCast.sol';
+import { LS1StakedBalances } from './LS1StakedBalances.sol';
 
 /**
  * @title LS1Failsafe
@@ -36,7 +36,7 @@ abstract contract LS1Failsafe is LS1StakedBalances {
    *  inactive balance is unbounded (except in that it may grow at most linearly with the number of
    *  epochs that have passed).
    */
-  function failsafeDeleteMyInactiveBalance() external nonReentrant {
+  function failsafeDeleteUserInactiveBalance() external nonReentrant {
     address staker = msg.sender;
     _failsafeDeleteUserInactiveBalance(staker);
   }

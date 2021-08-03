@@ -1,10 +1,10 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {SafeCast} from '../../../lib/SafeCast.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
-import {LS1Roles} from './LS1Roles.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
+import { SafeCast } from '../lib/SafeCast.sol';
+import { LS1Roles } from './LS1Roles.sol';
 
 /**
  * @title LS1EpochSchedule
@@ -51,9 +51,13 @@ abstract contract LS1EpochSchedule is LS1Roles {
   ) internal {
     require(
       block.timestamp < offset,
-      'LS1EpochSchedule: Epoch zero must start after initialization'
+      'LS1EpochSchedule: Epoch zero must be in future'
     );
-    _setBlackoutWindow(blackoutWindow, interval);
+
+    // Don't use _setBlackoutWindow() since the interval is not set yet and validation would fail.
+    _BLACKOUT_WINDOW_ = blackoutWindow;
+    emit BlackoutWindowChanged(blackoutWindow);
+
     _setEpochParameters(interval, offset);
   }
 
@@ -128,8 +132,8 @@ abstract contract LS1EpochSchedule is LS1Roles {
     emit EpochParametersChanged(epochParameters);
   }
 
-  function _setBlackoutWindow(uint256 blackoutWindow, uint256 interval) internal {
-    _validateParamLengths(interval, blackoutWindow);
+  function _setBlackoutWindow(uint256 blackoutWindow) internal {
+    _validateParamLengths(uint256(_EPOCH_PARAMETERS_.interval), blackoutWindow);
     _BLACKOUT_WINDOW_ = blackoutWindow;
     emit BlackoutWindowChanged(blackoutWindow);
   }
@@ -138,11 +142,11 @@ abstract contract LS1EpochSchedule is LS1Roles {
 
   /**
    * @dev Helper function to read params from storage and apply offset to the given timestamp.
-   *  Recall that the formula for epoch number is `n = (t - b) / a`.
    *
    *  NOTE: Reverts if epoch zero has not started.
    *
-   * @return The values `a` and `(t - b)`.
+   * @return The length of an epoch, in seconds.
+   * @return The start of epoch zero, in seconds.
    */
   function _getIntervalAndOffsetTimestamp() private view returns (uint256, uint256) {
     LS1Types.EpochParameters memory epochParameters = _EPOCH_PARAMETERS_;
@@ -165,11 +169,11 @@ abstract contract LS1EpochSchedule is LS1Roles {
     );
     require(
       blackoutWindow >= MIN_BLACKOUT_WINDOW,
-      'LS1EpochSchedule: Blackout window must be at least the minimum'
+      'LS1EpochSchedule: Blackout window too large'
     );
     require(
       interval <= MAX_EPOCH_LENGTH,
-      'LS1EpochSchedule: Epoch length must be at most the maximum'
+      'LS1EpochSchedule: Epoch length too small'
     );
   }
 }

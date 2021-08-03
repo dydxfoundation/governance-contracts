@@ -1,14 +1,14 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {LS1Storage} from './LS1Storage.sol';
+import { LS1Storage } from './LS1Storage.sol';
 
 /**
  * @title LS1Roles
  * @author dYdX
  *
- * @notice Defines roles used in the LiquidityStakingV1 contract. The hierarchy and powers of each role
- *  are described below.
+ * @notice Defines roles used in the LiquidityStakingV1 contract. The hierarchy of roles and powers
+ *  of each role are described below.
  *
  *  Roles:
  *
@@ -32,7 +32,6 @@ import {LS1Storage} from './LS1Storage.sol';
  *      |
  *      +-- DEBT_OPERATOR_ROLE
  *           -> May decrease borrow debt and decrease staker debt.
- *
  */
 abstract contract LS1Roles is LS1Storage {
   bytes32 public constant OWNER_ROLE = keccak256('OWNER_ROLE');
@@ -54,7 +53,7 @@ abstract contract LS1Roles is LS1Storage {
     _setupRole(REWARDS_RATE_ROLE, msg.sender);
     _setupRole(BORROWER_ADMIN_ROLE, msg.sender);
 
-    // Set sender as admin for all roles.
+    // Set OWNER_ROLE as the admin of all roles.
     _setRoleAdmin(OWNER_ROLE, OWNER_ROLE);
     _setRoleAdmin(EPOCH_PARAMETERS_ROLE, OWNER_ROLE);
     _setRoleAdmin(REWARDS_RATE_ROLE, OWNER_ROLE);

@@ -1,10 +1,10 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {IERC20Detailed} from '../../../interfaces/IERC20Detailed.sol';
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Types} from '../lib/LS1Types.sol';
-import {LS1StakedBalances} from './LS1StakedBalances.sol';
+import { IERC20Detailed } from '../../../interfaces/IERC20Detailed.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Types } from '../lib/LS1Types.sol';
+import { LS1StakedBalances } from './LS1StakedBalances.sol';
 
 /**
  * @title LS1ERC20
@@ -23,7 +23,7 @@ abstract contract LS1ERC20 is LS1StakedBalances, IERC20Detailed {
   }
 
   function symbol() external pure override returns (string memory) {
-    return 'dydxUSDC';
+    return 'stkUSDC';
   }
 
   function decimals() external pure override returns (uint8) {
@@ -115,7 +115,7 @@ abstract contract LS1ERC20 is LS1StakedBalances, IERC20Detailed {
     require(recipient != address(0), 'LS1ERC20: Transfer to address(0)');
     require(
       getTransferableBalance(sender) >= amount,
-      'LS1ERC20: Transfer amount exceeds user next epoch active balance'
+      'LS1ERC20: Transfer exceeds next epoch active balance'
     );
 
     _transferCurrentAndNextActiveBalance(sender, recipient, amount);

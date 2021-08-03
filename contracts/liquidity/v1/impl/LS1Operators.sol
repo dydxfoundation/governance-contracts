@@ -1,8 +1,8 @@
 pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '../../../lib/SafeMath.sol';
-import {LS1Staking} from './LS1Staking.sol';
+import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
+import { LS1Staking } from './LS1Staking.sol';
 
 /**
  * @title LS1Operators
