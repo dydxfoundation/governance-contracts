@@ -44,8 +44,8 @@ library SafeCast {
    * @dev Downcast to a uint112, reverting on overflow.
    */
   function toUint112(
-    uint256
-  a)
+    uint256 a
+  )
     internal
     pure
     returns (uint112)
@@ -59,8 +59,8 @@ library SafeCast {
    * @dev Downcast to a uint120, reverting on overflow.
    */
   function toUint120(
-    uint256
-  a)
+    uint256 a
+  )
     internal
     pure
     returns (uint120)
@@ -74,8 +74,8 @@ library SafeCast {
    * @dev Downcast to a uint128, reverting on overflow.
    */
   function toUint128(
-    uint256
-  a)
+    uint256 a
+  )
     internal
     pure
     returns (uint128)
@@ -89,8 +89,8 @@ library SafeCast {
    * @dev Downcast to a uint224, reverting on overflow.
    */
   function toUint224(
-    uint256
-  a)
+    uint256 a
+  )
     internal
     pure
     returns (uint224)
