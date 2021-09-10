@@ -21,7 +21,10 @@ library SafeCast {
     returns (uint16)
   {
     uint16 b = uint16(a);
-    require(uint256(b) == a, 'SafeCast: toUint16 overflow');
+    require(
+      uint256(b) == a,
+      'SafeCast: toUint16 overflow'
+    );
     return b;
   }
 
@@ -36,7 +39,10 @@ library SafeCast {
     returns (uint32)
   {
     uint32 b = uint32(a);
-    require(uint256(b) == a, 'SafeCast: toUint32 overflow');
+    require(
+      uint256(b) == a,
+      'SafeCast: toUint32 overflow'
+    );
     return b;
   }
 
@@ -51,7 +57,10 @@ library SafeCast {
     returns (uint112)
   {
     uint112 b = uint112(a);
-    require(uint256(b) == a, 'SafeCast: toUint112 overflow');
+    require(
+      uint256(b) == a,
+      'SafeCast: toUint112 overflow'
+    );
     return b;
   }
 
@@ -66,7 +75,10 @@ library SafeCast {
     returns (uint120)
   {
     uint120 b = uint120(a);
-    require(uint256(b) == a, 'SafeCast: toUint120 overflow');
+    require(
+      uint256(b) == a,
+      'SafeCast: toUint120 overflow'
+    );
     return b;
   }
 
@@ -81,7 +93,10 @@ library SafeCast {
     returns (uint128)
   {
     uint128 b = uint128(a);
-    require(uint256(b) == a, 'SafeCast: toUint128 overflow');
+    require(
+      uint256(b) == a,
+      'SafeCast: toUint128 overflow'
+    );
     return b;
   }
 
@@ -96,7 +111,10 @@ library SafeCast {
     returns (uint224)
   {
     uint224 b = uint224(a);
-    require(uint256(b) == a, 'SafeCast: toUint224 overflow');
+    require(
+      uint256(b) == a,
+      'SafeCast: toUint224 overflow'
+    );
     return b;
   }
 }
