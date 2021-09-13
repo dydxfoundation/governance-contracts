@@ -205,7 +205,10 @@ abstract contract SM1Rewards is
     address user,
     uint256 userStaked,
     uint256 totalStaked
-  ) internal returns (uint256) {
+  )
+    internal
+    returns (uint256)
+  {
     uint256 globalIndex = _settleGlobalIndexUpToNow(totalStaked);
     return _settleUserRewardsUpToIndex(user, userStaked, globalIndex);
   }
@@ -227,7 +230,10 @@ abstract contract SM1Rewards is
     address user,
     uint256 userStaked,
     uint256 epochNumber
-  ) internal returns (uint256) {
+  )
+    internal
+    returns (uint256)
+  {
     uint256 globalIndex = _EPOCH_INDEXES_[epochNumber];
     return _settleUserRewardsUpToIndex(user, userStaked, globalIndex);
   }
