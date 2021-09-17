@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    // Repeat included files from tsconfig.json.
+    "src",
+    "tasks",
+    "test",
+    // Include configuration files.
+    "./.*.js",
+    "./*.js",
+    "./*.ts"
+  ]
+}
