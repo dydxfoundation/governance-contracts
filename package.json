@@ -1,0 +1,24 @@
+{
+  "name": "@dydxfoundation/governance",
+  "version": "1.0.0",
+  "description": "dYdX governance smart contracts",
+  "main": "dist/src/index.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dydxfoundation/governance-contracts.git"
+  },
+  "keywords": [
+    "dydx",
+    "ethereum"
+  ],
+  "author": "dYdX Foundation",
+  "bugs": {
+    "url": "https://github.com/dydxfoundation/governance-contracts/issues"
+  },
+  "homepage": "https://github.com/dydxfoundation/governance-contracts#readme",
+  "files": [
+    "/dist"
+  ]
+}
