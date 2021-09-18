@@ -4,11 +4,11 @@ pragma abicoder v2;
 
 import { SafeERC20 } from '../../dependencies/open-zeppelin/SafeERC20.sol';
 import { IERC20 } from '../../interfaces/IERC20.sol';
-import { SM1Admin } from '../v1/impl/SM1Admin.sol';
-import { SM1Getters } from '../v1/impl/SM1Getters.sol';
-import { SM1Operators } from '../v1/impl/SM1Operators.sol';
-import { SM1Slashing } from '../v1/impl/SM1Slashing.sol';
-import { SM1Staking } from '../v1/impl/SM1Staking.sol';
+import { SM1Admin } from '../v1_1/impl/SM1Admin.sol';
+import { SM1Getters } from '../v1_1/impl/SM1Getters.sol';
+import { SM1Operators } from '../v1_1/impl/SM1Operators.sol';
+import { SM1Slashing } from '../v1_1/impl/SM1Slashing.sol';
+import { SM1Staking } from '../v1_1/impl/SM1Staking.sol';
 
 /**
  * @title SafetyModuleV2

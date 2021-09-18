@@ -6,6 +6,7 @@ import { SafeERC20 } from '../../../dependencies/open-zeppelin/SafeERC20.sol';
 import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import { IERC20 } from '../../../interfaces/IERC20.sol';
 import { Math } from '../../../utils/Math.sol';
+import { SafeCast } from '../lib/SafeCast.sol';
 import { SM1EpochSchedule } from './SM1EpochSchedule.sol';
 
 /**
@@ -55,6 +56,7 @@ import { SM1EpochSchedule } from './SM1EpochSchedule.sol';
 abstract contract SM1Rewards is
   SM1EpochSchedule
 {
+  using SafeCast for uint256;
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
@@ -138,7 +140,7 @@ abstract contract SM1Rewards is
   function __SM1Rewards_init()
     internal
   {
-    _GLOBAL_INDEX_TIMESTAMP_ = Math.max(block.timestamp, DISTRIBUTION_START);
+    _GLOBAL_INDEX_TIMESTAMP_ = Math.max(block.timestamp, DISTRIBUTION_START).toUint32();
   }
 
   /**
@@ -252,12 +254,13 @@ abstract contract SM1Rewards is
     returns (uint256)
   {
     uint256 settleUpToTimestamp = getStartOfEpoch(epochNumber.add(1));
-    uint256 previouslySettledTimestamp = _GLOBAL_INDEX_TIMESTAMP_;
 
     uint256 globalIndex = _settleGlobalIndexUpToTimestamp(totalStaked, settleUpToTimestamp);
     _EPOCH_INDEXES_[epochNumber] = globalIndex;
     return globalIndex;
   }
+
+  // ============ Private Functions ============
 
   /**
    * @dev Updates the global index, reflecting cumulative rewards given out per staked token.
@@ -270,7 +273,7 @@ abstract contract SM1Rewards is
   function _settleGlobalIndexUpToNow(
     uint256 totalStaked
   )
-    internal
+    private
     returns (uint256)
   {
     return _settleGlobalIndexUpToTimestamp(totalStaked, block.timestamp);
@@ -293,7 +296,7 @@ abstract contract SM1Rewards is
     uint256 userStaked,
     uint256 newGlobalIndex
   )
-    internal
+    private
     returns (uint256)
   {
     uint256 oldAccruedRewards = _USER_REWARDS_BALANCES_[user];
@@ -323,8 +326,6 @@ abstract contract SM1Rewards is
     return newAccruedRewards;
   }
 
-  // ============ Private Functions ============
-
   /**
    * @dev Updates the global index, reflecting cumulative rewards given out per staked token.
    *
@@ -342,7 +343,7 @@ abstract contract SM1Rewards is
     private
     returns (uint256)
   {
-    uint256 oldGlobalIndex = _GLOBAL_INDEX_;
+    uint256 oldGlobalIndex = uint256(_GLOBAL_INDEX_);
 
     // The goal of this function is to calculate rewards earned since the last global index update.
     // These rewards are earned over the time interval which is the intersection of the intervals
@@ -352,7 +353,7 @@ abstract contract SM1Rewards is
     //   `_GLOBAL_INDEX_TIMESTAMP_ >= DISTRIBUTION_START`
     //
     // Get the start and end of the time interval under consideration.
-    uint256 intervalStart = _GLOBAL_INDEX_TIMESTAMP_;
+    uint256 intervalStart = uint256(_GLOBAL_INDEX_TIMESTAMP_);
     uint256 intervalEnd = Math.min(settleUpToTimestamp, DISTRIBUTION_END);
 
     // Return early if the interval has length zero (incl. case where intervalEnd < intervalStart).
@@ -360,12 +361,14 @@ abstract contract SM1Rewards is
       return oldGlobalIndex;
     }
 
-    // Update the stored timestamp of the last global index update.
-    _GLOBAL_INDEX_TIMESTAMP_ = intervalEnd;
+    // Note: If we reach this point, we must update _GLOBAL_INDEX_TIMESTAMP_.
 
     uint256 emissionPerSecond = _REWARDS_PER_SECOND_;
 
     if (emissionPerSecond == 0 || totalStaked == 0) {
+      // Ensure a log is emitted if the timestamp changed, even if the index does not change.
+      _GLOBAL_INDEX_TIMESTAMP_ = intervalEnd.toUint32();
+      emit GlobalIndexUpdated(oldGlobalIndex);
       return oldGlobalIndex;
     }
 
@@ -375,7 +378,10 @@ abstract contract SM1Rewards is
 
     // Calculate, update, and return the new global index.
     uint256 newGlobalIndex = oldGlobalIndex.add(indexDelta);
-    _GLOBAL_INDEX_ = newGlobalIndex;
+
+    // Update storage. (Shared storage slot.)
+    _GLOBAL_INDEX_TIMESTAMP_ = intervalEnd.toUint32();
+    _GLOBAL_INDEX_ = newGlobalIndex.toUint224();
 
     emit GlobalIndexUpdated(newGlobalIndex);
     return newGlobalIndex;
