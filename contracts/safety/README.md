@@ -19,7 +19,7 @@ First, the new `SafetyModuleV2` implementation contract must be deployed. It has
 
 Next, the `SM2Recovery` contract is deployed. It contains the exact addresses and owed DYDX amounts to be distributed.
 
-These two contracts are deployed as follows. Note that hardhat must be configured for mainnet via [./hardhat.config.ts](./hardhat.config.ts). This can be accomplished by passing in the `ALCHEMY_KEY` and `MNEMONIC` environment variables. **IMPORTANT:** Using a `MNEMONIC` in this way is highly insecure. On mainnet, a temporary mnemonic or an entirely different method should be used.
+These two contracts are deployed as follows. Note that hardhat must be configured for mainnet via [hardhat.config.ts](/hardhat.config.ts). This can be accomplished by passing in the `ALCHEMY_KEY` and `MNEMONIC` environment variables. **IMPORTANT:** Using a `MNEMONIC` in this way is highly insecure. On mainnet, a temporary mnemonic or an entirely different method should be used.
 
 ```bash
 export ALCHEMY_KEY=<...>
