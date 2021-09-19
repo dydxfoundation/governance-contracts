@@ -49,7 +49,7 @@ contract SM2Recovery is
     // Hard-coded list of amounts owed, calculated by taking the staked amount for each address and
     // adding 10% additional compensation.
     //
-    // Updated: September 14, 2021 UTC.
+    // Snapshot taken on September 14, 2021 UTC, last tx was on September 9, 2021 UTC.
     _OWED_AMOUNTS_[0x8031EEC1118D1321387b1870F32984f72b447b04] = 64268082313114004568;
     _OWED_AMOUNTS_[0x5AcABC3222A7b74884bEC8efe28A7A69A7920818] = 552458868361822400896;
     _OWED_AMOUNTS_[0x5F5A46a8471F60b1E9F2eD0b8fc21Ba8b48887D8] = 235077596410469150;

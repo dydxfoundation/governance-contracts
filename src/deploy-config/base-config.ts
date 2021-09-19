@@ -164,7 +164,12 @@ const config = {
 
   // Safety Module recovery.
   //
-  // Compensation amount is 10% of what was initially staked and stuck in the Safey Module.
+  // Compensation for each user is 10% of what was initially staked and stuck in the Safety Module.
+  // This amount was calculated by taking 10% of each user's staked balance, rounding down, and
+  // summing the results.
+  //
+  // Snapshot of staked balances taken on September 14, 2021 UTC, last tx was on September 9.
+  //
   SM_RECOVERY_COMPENSATION_AMOUNT: '15745887438533773204745', // About 15746 DYDX.
   //
   // Distribution start is unchanged from the mainnet deployment
