@@ -56,11 +56,11 @@ abstract contract SM1Storage is
   /// @dev The emission rate of rewards.
   uint256 internal _REWARDS_PER_SECOND_;
 
-  /// @dev The cumulative rewards earned per staked token.
-  uint256 internal _GLOBAL_INDEX_;
+  /// @dev The cumulative rewards earned per staked token. (Shared storage slot.)
+  uint224 internal _GLOBAL_INDEX_;
 
-  /// @dev The timestamp at which the global index was last updated.
-  uint256 internal _GLOBAL_INDEX_TIMESTAMP_;
+  /// @dev The timestamp at which the global index was last updated. (Shared storage slot.)
+  uint32 internal _GLOBAL_INDEX_TIMESTAMP_;
 
   /// @dev The value of the global index when the user's staked balance was last updated.
   mapping(address => uint256) internal _USER_INDEXES_;
