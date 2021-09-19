@@ -5,14 +5,14 @@ import {
 
 import hre from '../hre';
 
-export async function evmSnapshot() {
+export async function evmSnapshot(): Promise<string> {
   return hre.ethers.provider.send('evm_snapshot', []);
 }
 
 export async function evmReset(
   id: string,
-) {
-  return hre.ethers.provider.send('evm_revert', [id]);
+): Promise<void> {
+  await hre.ethers.provider.send('evm_revert', [id]);
 }
 
 export async function latestBlockTimestamp() {

@@ -2,7 +2,17 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 import { getHre } from '../../hre';
 
-const IMPERSONATED_ACCOUNT_STIPEND = '0x1000000000000000';
+export const IMPERSONATED_ACCOUNT_STIPEND = '0x1000000000000000';
+
+export async function fundAccount(
+  address: string,
+): Promise<void> {
+  const [firstSigner] = await getHre().ethers.getSigners();
+  await firstSigner.sendTransaction({
+    to: address,
+    value: IMPERSONATED_ACCOUNT_STIPEND,
+  });
+}
 
 export async function impersonateAccount(
   address: string,
@@ -17,10 +27,6 @@ export async function impersonateAccount(
 export async function impersonateAndFundAccount(
   address: string,
 ): Promise<SignerWithAddress> {
-  const [deployer] = await getHre().ethers.getSigners();
-  await deployer.sendTransaction({
-    to: address,
-    value: IMPERSONATED_ACCOUNT_STIPEND,
-  });
+  await fundAccount(address);
   return impersonateAccount(address);
 }

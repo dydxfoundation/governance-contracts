@@ -1,6 +1,20 @@
 import { signTypedData_v4 } from 'eth-sig-util';
 import { fromRpcSig, ECDSASignature } from 'ethereumjs-util';
 
+import config from '../../src/config';
+import hre from '../hre';
+
+export async function getChainIdForSigning(): Promise<number> {
+  if (config.FORK_MAINNET) {
+    return 1;
+  }
+  const network = await hre.ethers.provider.getNetwork();
+  if (!network.chainId) {
+    throw new Error(`Could not get chainId from network ${network}`);
+  }
+  return network.chainId;
+}
+
 export const buildPermitParams = (
   chainId: number,
   dydxTokenAddress: string,

@@ -1,8 +1,33 @@
 import BNJS from 'bignumber.js';
+import {
+  BigNumberish,
+  BytesLike,
+} from 'ethers';
 
+import { deployPhase1 } from './migrations/phase-1';
+import { deployPhase2 } from './migrations/phase-2';
+import { deploySafetyModuleRecovery } from './migrations/safety-module-recovery';
 export * from './deploy-config/types';
 
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
+
 export type BigNumberable = BNJS | string | number;
+
+export type DeployedContracts = (
+  UnwrapPromise<ReturnType<typeof deployPhase1>> &
+  UnwrapPromise<ReturnType<typeof deployPhase2>> &
+  UnwrapPromise<ReturnType<typeof deploySafetyModuleRecovery>>
+);
+
+export type Proposal = [
+  string,
+  string[],
+  BigNumberish[],
+  string[],
+  BytesLike[],
+  boolean[],
+  string,
+];
 
 export enum DelegationType {
   VOTING_POWER = 0,

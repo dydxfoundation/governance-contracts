@@ -9,7 +9,6 @@ import { Role } from '../../src/types';
 import { SafetyModuleV1__factory } from '../../types';
 import { TestContext, describeContract } from '../helpers/describe-contract';
 import { latestBlockTimestamp } from '../helpers/evm';
-import hre from '../hre';
 
 let staker: SignerWithAddress;
 
@@ -17,14 +16,42 @@ function init(ctx: TestContext) {
   [staker] = ctx.users;
 }
 
-describeContract('SafetyModuleV2 initialization', init, (ctx: TestContext) => {
+describeContract('SafetyModuleV2 initial state', init, (ctx: TestContext) => {
 
-  it('Staked token is set during initialization', async () => {
+  describe('Proxy admin', () => {
+
+    it('The admin of the proxy is set to the proxy admin', async () => {
+      const proxyAdminAddress = await ctx.safetyModuleProxyAdmin.getProxyAdmin(ctx.safetyModule.address);
+      expect(proxyAdminAddress).to.equal(ctx.safetyModuleProxyAdmin.address);
+    });
+
+    it('The implementation is set to the V2 implementation', async () => {
+      const implementationAddress = await ctx.safetyModuleProxyAdmin.getProxyImplementation(
+        ctx.safetyModule.address,
+      );
+      expect(implementationAddress).to.equal(ctx.safetyModuleNewImpl.address);
+    });
+  });
+
+  it('Staked token is set during contract creation', async () => {
     expect(await ctx.safetyModule.STAKED_TOKEN()).to.equal(ctx.dydxToken.address);
   });
 
-  it('Rewards token is set during initialization', async () => {
+  it('Rewards token is set during contract creation', async () => {
     expect(await ctx.safetyModule.REWARDS_TOKEN()).to.equal(ctx.dydxToken.address);
+  });
+
+  it('Rewards vault is set during contract creation', async () => {
+    expect(await ctx.safetyModule.REWARDS_TREASURY()).to.equal(ctx.rewardsTreasury.address);
+  });
+
+  it('Distribution start and end are set during contract creation', async () => {
+    expect(await ctx.safetyModule.DISTRIBUTION_START()).to.equal(
+      ctx.config.SM_RECOVERY_DISTRIBUTION_START,
+    );
+    expect(await ctx.safetyModule.DISTRIBUTION_END()).to.equal(
+      ctx.config.SM_RECOVERY_DISTRIBUTION_END,
+    );
   });
 
   it('Short timelock has all roles except the operator roles', async () => {
@@ -43,10 +70,6 @@ describeContract('SafetyModuleV2 initialization', init, (ctx: TestContext) => {
     for (const role of SM_ROLE_HASHES) {
       expect(await ctx.safetyModule.getRoleAdmin(role)).to.equal(getRole(Role.OWNER_ROLE));
     }
-  });
-
-  it('Rewards vault is set during initialization', async () => {
-    expect(await ctx.safetyModule.REWARDS_TREASURY()).to.equal(ctx.rewardsTreasury.address);
   });
 
   it('Blackout window is set during initialization', async () => {
@@ -69,11 +92,14 @@ describeContract('SafetyModuleV2 initialization', init, (ctx: TestContext) => {
   });
 
   it('Initializes the exchange rate to a value of one', async () => {
-    console.log('SM address', ctx.safetyModule.address);
     const exchangeRateBase = await ctx.safetyModule.EXCHANGE_RATE_BASE();
     const exchangeRate = await ctx.safetyModule.getExchangeRate();
     expect(exchangeRate.eq(0)).to.be.false('Exchange rate was zero');
     expect(exchangeRate).to.equal(exchangeRateBase);
+  });
+
+  it('Initializes with no exchange rate snapshots', async () => {
+    expect(await ctx.safetyModule.getExchangeRateSnapshotCount()).to.equal(0);
   });
 
   it('Total active current balance is initially zero', async () => {
@@ -106,6 +132,10 @@ describeContract('SafetyModuleV2 initialization', init, (ctx: TestContext) => {
 
   it('User inactive next balance is initially zero', async () => {
     expect(await ctx.safetyModule.getInactiveBalanceNextEpoch(staker.address)).to.equal(0);
+  });
+
+  it('Has no DYDX tokens', async () => {
+    expect(await ctx.dydxToken.balanceOf(ctx.safetyModule.address)).to.equal(0);
   });
 
   it('Cannot initialize with epoch zero in the past', async () => {

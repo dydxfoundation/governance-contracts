@@ -4,6 +4,7 @@ import config from '../config';
 import { ONE_DAY_SECONDS } from '../lib/constants';
 import baseConfig, { BaseConfig } from './base-config';
 import hardhatConfig from './hardhat-config';
+import mainnetForkConfig from './mainnet-fork-config';
 import mainnetPhase1Config from './mainnet-phase-1-config';
 import mainnetPhase2Config from './mainnet-phase-2-config';
 import { DeployConfig, TreasuryVesterConfig } from './types';
@@ -37,7 +38,13 @@ export function getDeployConfig({
   } else if (getOldMainnetPhase2) {
     Object.assign(deployConfig, mainnetPhase2Config);
   } else if (config.isHardhat()) {
-    Object.assign(deployConfig, hardhatConfig);
+    if (config.FORK_MAINNET) {
+      Object.assign(deployConfig, mainnetForkConfig);
+    } else {
+      Object.assign(deployConfig, hardhatConfig);
+    }
+  } else if (config.isMainnet()) {
+    Object.assign(deployConfig, mainnetPhase2Config);
   } else {
     // Need to add a new configuration file to set the value of EPOCH_ZERO_START.
     throw new Error('Deployment configuration is not known for this network.');

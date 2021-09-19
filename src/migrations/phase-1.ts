@@ -7,7 +7,7 @@ import {
   Executor__factory,
 } from '../../types';
 import { getDeployConfig } from '../deploy-config';
-import { getHre } from '../hre';
+import { getDeployerSigner } from '../deploy-config/get-deployer-address';
 import { ZERO_ADDRESS } from '../lib/constants';
 import { log } from '../lib/logging';
 import { waitForTx } from '../lib/util';
@@ -31,8 +31,7 @@ export async function deployPhase1({
 } = {}) {
   log('Beginning phase 1 deployment\n');
   const deployConfig = getDeployConfig();
-
-  const [deployer] = await getHre().ethers.getSigners();
+  const deployer = await getDeployerSigner();
   const deployerAddress = deployer.address;
   log(`Beginning deployment with deployer ${deployerAddress}\n`);
 

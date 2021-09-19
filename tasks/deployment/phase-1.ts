@@ -1,7 +1,7 @@
 import { types } from 'hardhat/config';
 
-import { deployPhase1 } from '../../src/deployment/phase-1';
 import { hardhatTask } from '../../src/hre';
+import { deployPhase1 } from '../../src/migrations/phase-1';
 
 hardhatTask('deploy:phase-1', 'Phase 1 of governance deployment.')
   .addParam('startStep', 'Which step to start with', 1, types.int)

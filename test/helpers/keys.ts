@@ -4,10 +4,6 @@ import hre from '../hre';
 
 const HARDHAT_MNEMONIC = 'test test test test test test test test test test test junk';
 
-export function getDeployerKey() {
-  return getKey(0);
-}
-
 export function getUserKeys() {
   return _.range(1, 10).map(getKey);
 }

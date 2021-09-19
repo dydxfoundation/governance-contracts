@@ -3,23 +3,21 @@ import BNJS from 'bignumber.js';
 import { expect } from 'chai';
 import _ from 'lodash';
 
-import config from '../../src/config';
 import { AFFECTED_STAKERS, getOwedAmount, getStakedAmount } from '../../src/lib/affected-stakers';
-import { impersonateAccount } from '../../src/migrations/helpers/impersonate-account';
+import { fundAccount, impersonateAccount, IMPERSONATED_ACCOUNT_STIPEND } from '../../src/migrations/helpers/impersonate-account';
 import { SM2Recovery } from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
+import { getAffectedStakersForTest } from '../helpers/get-affected-stakers-for-test';
 
 const EXPECTED_TOTAL_STAKED = '157458874385337732047640';
 const EXPECTED_TOTAL_OWED = '173204761823871505252385';
 
-let numTestStakers: number;
 let testStakers: string[];
 let testAllStakers: boolean;
 let contract: SM2Recovery;
 
 function init(ctx: TestContext) {
-  numTestStakers = config.HARDHAT_SIMULATE_AFFECTED_STAKERS;
-  testStakers = AFFECTED_STAKERS.slice(0, numTestStakers);
+  testStakers = getAffectedStakersForTest();
   testAllStakers = testStakers.length == AFFECTED_STAKERS.length;
   contract = ctx.safetyModuleRecovery;
 }
@@ -60,6 +58,11 @@ describeContract('SM2Recovery', init, (ctx: TestContext) => {
 
   it('Affected stakers can claim the owed amount', async () => {
     for (const stakerAddress of testStakers) {
+      // Fund account if needed. This is useful e.g. when using mainnet forking.
+      if ((await ctx.dydxToken.balanceOf(stakerAddress)).lt(IMPERSONATED_ACCOUNT_STIPEND)) {
+        await fundAccount(stakerAddress);
+      }
+
       const expectedOwedAmount = getOwedAmount(stakerAddress);
       // Note: Assume that the staker was already funded with ETH during deployment.
       const staker = await impersonateAccount(stakerAddress);
@@ -71,10 +74,9 @@ describeContract('SM2Recovery', init, (ctx: TestContext) => {
 
       // Claim the owed amount.
       const balanceBefore = await ctx.dydxToken.balanceOf(stakerAddress);
-      expect(balanceBefore).to.equal(0);
       await contractAsStaker.claim();
       const balanceAfter = await ctx.dydxToken.balanceOf(stakerAddress);
-      expect(balanceAfter).to.equal(expectedOwedAmount);
+      expect(balanceAfter).to.equal(balanceBefore.add(expectedOwedAmount));
       const contractOwedAmountAfter = await contract.getOwedAmount(stakerAddress);
       expect(contractOwedAmountAfter).to.equal(0);
       const claimableAmountAfter = await contractAsStaker.callStatic.claim();
@@ -89,7 +91,7 @@ describeContract('SM2Recovery', init, (ctx: TestContext) => {
   });
 
   it('Tested with at least three test stakers', () => {
-    // Fail if the configured numTestStakers is too low.
-    expect(numTestStakers).to.be.greaterThanOrEqual(3);
+    // Fail on hardhat network if the configured numTestStakers is too low.
+    expect(testStakers.length).to.be.greaterThanOrEqual(3);
   });
 });

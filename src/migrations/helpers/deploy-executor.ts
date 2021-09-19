@@ -18,7 +18,7 @@ export async function deployExecutor(
     config.MINIMUM_DELAY,
     config.MAXIMUM_DELAY,
     config.PROPOSITION_THRESHOLD,
-    config.VOTING_DURATION,
+    config.VOTING_DURATION_BLOCKS,
     config.VOTE_DIFFERENTIAL,
     config.MINIMUM_QUORUM,
   );

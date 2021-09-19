@@ -1,35 +1,38 @@
 import { expect } from 'chai';
 import { parseEther } from 'ethers/lib/utils';
 
+import config from '../../src/config';
 import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../src/lib/constants';
 import { waitForTx } from '../../src/lib/util';
 import { describeContract, TestContext } from '../helpers/describe-contract';
-import { getDeployerKey } from '../helpers/keys';
-import { buildPermitParams, getSignatureFromTypedData } from '../helpers/signature-helpers';
+import { getUserKeys } from '../helpers/keys';
+import { buildPermitParams, getChainIdForSigning, getSignatureFromTypedData } from '../helpers/signature-helpers';
 import hre from '../hre';
 
 const SAFETY_MODULE_EIP_712_DOMAIN_NAME = 'dYdX Safety Module';
 
-let ownerKey: string;
+let userKeys: string[];
 
 function init() {
-  ownerKey = getDeployerKey();
+  userKeys = getUserKeys();
 }
 
 describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestContext) => {
 
   it('sanity check chain ID', async () => {
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    expect(!!chainId).to.be.true('Network does not have chainId');
-    const configChainId = hre.network.config.chainId;
-    expect(configChainId).to.be.equal(chainId);
+    // Skip when forking mainnet, since these won't match.
+    if (!config.FORK_MAINNET) {
+      const chainId = await getChainIdForSigning();
+      const configChainId = hre.network.config.chainId;
+      expect(configChainId).to.be.equal(chainId);
+    }
   });
 
   it('Reverts submitting a permit with 0 expiration', async () => {
-    const owner = ctx.deployer.address;
-    const spender = ctx.users[0].address;
+    const owner = ctx.users[0].address;
+    const spender = ctx.users[1].address;
 
-    const { chainId } = await hre.ethers.provider.getNetwork();
+    const chainId = await getChainIdForSigning();
     const expiration = 0;
     const nonce = (await ctx.safetyModule.nonces(owner)).toNumber();
     const permitAmount = parseEther('2').toString();
@@ -44,7 +47,7 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
       SAFETY_MODULE_EIP_712_DOMAIN_NAME,
     );
 
-    const ownerPrivateKey = ownerKey;
+    const ownerPrivateKey = userKeys[0];
 
     expect((await ctx.safetyModule.allowance(owner, spender)).toString()).to.be.equal(
       '0',
@@ -55,7 +58,7 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
 
     await expect(
       ctx.safetyModule
-        .connect(ctx.users[0])
+        .connect(ctx.users[1])
         .permit(owner, spender, permitAmount, expiration, v, r, s),
     ).to.be.revertedWith('INVALID_EXPIRATION');
 
@@ -66,13 +69,11 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
   });
 
   it('Submits a permit with maximum expiration length', async () => {
-    const owner = ctx.deployer.address;
-    const spender = ctx.users[0].address;
+    const owner = ctx.users[0].address;
+    const spender = ctx.users[1].address;
 
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    const configChainId = hre.network.config.chainId;
+    const chainId = await getChainIdForSigning();
 
-    expect(configChainId).to.be.equal(chainId);
     const deadline = MAX_UINT_AMOUNT;
     const nonce = (await ctx.safetyModule.nonces(owner)).toNumber();
     const permitAmount = parseEther('2').toString();
@@ -87,7 +88,7 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
       SAFETY_MODULE_EIP_712_DOMAIN_NAME,
     );
 
-    const ownerPrivateKey = ownerKey;
+    const ownerPrivateKey = userKeys[0];
 
     expect((await ctx.safetyModule.allowance(owner, spender)).toString()).to.be.equal(
       '0',
@@ -98,7 +99,7 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
 
     await waitForTx(
       await ctx.safetyModule
-        .connect(ctx.users[0])
+        .connect(ctx.users[1])
         .permit(owner, spender, permitAmount, deadline, v, r, s),
     );
 
@@ -106,10 +107,10 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
   });
 
   it('Cancels the previous permit', async () => {
-    const owner = ctx.deployer.address;
-    const spender = ctx.users[0].address;
+    const owner = ctx.users[0].address;
+    const spender = ctx.users[1].address;
 
-    const { chainId } = await hre.ethers.provider.getNetwork();
+    const chainId = await getChainIdForSigning();
     const deadline = MAX_UINT_AMOUNT;
 
     {
@@ -127,7 +128,7 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
         SAFETY_MODULE_EIP_712_DOMAIN_NAME,
       );
 
-      const ownerPrivateKey = ownerKey;
+      const ownerPrivateKey = userKeys[0];
 
       expect((await ctx.safetyModule.allowance(owner, spender)).toString()).to.be.equal(
         '0',
@@ -137,7 +138,7 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
       const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
       await ctx.safetyModule
-        .connect(ctx.users[0])
+        .connect(ctx.users[1])
         .permit(owner, spender, permitAmount, deadline, v, r, s);
     }
 
@@ -155,7 +156,7 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
         SAFETY_MODULE_EIP_712_DOMAIN_NAME,
       );
 
-      const ownerPrivateKey = ownerKey;
+      const ownerPrivateKey = userKeys[0];
 
       const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
@@ -166,7 +167,7 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
 
       await waitForTx(
         await ctx.safetyModule
-          .connect(ctx.users[0])
+          .connect(ctx.users[1])
           .permit(owner, spender, permitAmount, deadline, v, r, s),
       );
       expect((await ctx.safetyModule.allowance(owner, spender)).toString()).to.be.equal(
@@ -179,10 +180,10 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
   });
 
   it('Tries to submit a permit with invalid nonce', async () => {
-    const owner = ctx.deployer.address;
-    const spender = ctx.users[0].address;
+    const owner = ctx.users[0].address;
+    const spender = ctx.users[1].address;
 
-    const { chainId } = await hre.ethers.provider.getNetwork();
+    const chainId = await getChainIdForSigning();
     const deadline = MAX_UINT_AMOUNT;
     const nonce = 1000;
     const permitAmount = '0';
@@ -197,20 +198,20 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
       SAFETY_MODULE_EIP_712_DOMAIN_NAME,
     );
 
-    const ownerPrivateKey = ownerKey;
+    const ownerPrivateKey = userKeys[0];
 
     const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     await expect(
-      ctx.safetyModule.connect(ctx.users[0]).permit(owner, spender, permitAmount, deadline, v, r, s),
+      ctx.safetyModule.connect(ctx.users[1]).permit(owner, spender, permitAmount, deadline, v, r, s),
     ).to.be.revertedWith('INVALID_SIGNATURE');
   });
 
   it('Tries to submit a permit with invalid expiration (previous to the current block)', async () => {
-    const owner = ctx.deployer.address;
-    const spender = ctx.users[0].address;
+    const owner = ctx.users[0].address;
+    const spender = ctx.users[1].address;
 
-    const { chainId } = await hre.ethers.provider.getNetwork();
+    const chainId = await getChainIdForSigning();
     const expiration = '1';
     const nonce = (await ctx.safetyModule.nonces(owner)).toNumber();
     const permitAmount = '0';
@@ -225,22 +226,22 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
       SAFETY_MODULE_EIP_712_DOMAIN_NAME,
     );
 
-    const ownerPrivateKey = ownerKey;
+    const ownerPrivateKey = userKeys[0];
 
     const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     await expect(
       ctx.safetyModule
-        .connect(ctx.users[0])
+        .connect(ctx.users[1])
         .permit(owner, spender, expiration, permitAmount, v, r, s),
     ).to.be.revertedWith('INVALID_EXPIRATION');
   });
 
   it('Tries to submit a permit with invalid signature', async () => {
-    const owner = ctx.deployer.address;
-    const spender = ctx.users[0].address;
+    const owner = ctx.users[0].address;
+    const spender = ctx.users[1].address;
 
-    const { chainId } = await hre.ethers.provider.getNetwork();
+    const chainId = await getChainIdForSigning();
     const deadline = MAX_UINT_AMOUNT;
     const nonce = (await ctx.safetyModule.nonces(owner)).toNumber();
     const permitAmount = '0';
@@ -255,22 +256,22 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
       SAFETY_MODULE_EIP_712_DOMAIN_NAME,
     );
 
-    const ownerPrivateKey = ownerKey;
+    const ownerPrivateKey = userKeys[0];
 
     const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     await expect(
       ctx.safetyModule
-        .connect(ctx.users[0])
+        .connect(ctx.users[1])
         .permit(owner, ZERO_ADDRESS, permitAmount, deadline, v, r, s),
     ).to.be.revertedWith('INVALID_SIGNATURE');
   });
 
   it('Tries to submit a permit with invalid owner', async () => {
-    const owner = ctx.deployer.address;
-    const spender = ctx.users[0].address;
+    const owner = ctx.users[0].address;
+    const spender = ctx.users[1].address;
 
-    const { chainId } = await hre.ethers.provider.getNetwork();
+    const chainId = await getChainIdForSigning();
     const expiration = MAX_UINT_AMOUNT;
     const nonce = (await ctx.safetyModule.nonces(owner)).toNumber();
     const permitAmount = '0';
@@ -285,13 +286,13 @@ describeContract('Safety Module Staked DYDX - ERC20 Permit', init, (ctx: TestCon
       SAFETY_MODULE_EIP_712_DOMAIN_NAME,
     );
 
-    const ownerPrivateKey = ownerKey;
+    const ownerPrivateKey = userKeys[0];
 
     const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     await expect(
       ctx.safetyModule
-        .connect(ctx.users[0])
+        .connect(ctx.users[1])
         .permit(ZERO_ADDRESS, spender, expiration, permitAmount, v, r, s),
     ).to.be.revertedWith('INVALID_OWNER');
   });

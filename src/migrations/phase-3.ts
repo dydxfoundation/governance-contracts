@@ -10,7 +10,7 @@ import {
   Treasury__factory,
 } from '../../types';
 import { getDeployConfig } from '../deploy-config';
-import { getHre } from '../hre';
+import { getDeployerSigner } from '../deploy-config/get-deployer-address';
 import { log } from '../lib/logging';
 import { getRole, toWad, waitForTx } from '../lib/util';
 import { Role } from '../types';
@@ -57,8 +57,7 @@ export async function deployPhase3({
 }) {
   log('Beginning phase 3 deployment\n');
   const deployConfig = getDeployConfig();
-
-  const [deployer] = await getHre().ethers.getSigners();
+  const deployer = await getDeployerSigner();
   const deployerAddress = deployer.address;
   log(`Beginning deployment with deployer ${deployerAddress}\n`);
 

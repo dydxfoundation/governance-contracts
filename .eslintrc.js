@@ -101,7 +101,7 @@ module.exports = {
     'function-paren-newline': 'off', // Broken in TypeScript: https://github.com/typescript-eslint/typescript-eslint/issues/942
     'global-require': 'warn',
     'import/extensions': ['warn', {
-      extension: 'never',
+      json: 'always',
     }],
     'import/no-extraneous-dependencies': 'off',
     'import/order': ['warn',

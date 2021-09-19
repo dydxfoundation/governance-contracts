@@ -1,13 +1,18 @@
+import { Interface } from 'ethers/lib/utils';
+
 import {
+  DydxGovernor__factory,
   SafetyModuleV2,
   SafetyModuleV2__factory,
   SM2Recovery,
   SM2Recovery__factory,
 } from '../../types';
 import { getDeployConfig } from '../deploy-config';
+import { getDeployerSigner } from '../deploy-config/get-deployer-address';
 import { getHre } from '../hre';
 import { log } from '../lib/logging';
 import { waitForTx } from '../lib/util';
+import { Proposal } from '../types';
 import { deployUpgradeable } from './helpers/deploy-upgradeable';
 
 export async function deploySafetyModuleRecovery({
@@ -29,8 +34,7 @@ export async function deploySafetyModuleRecovery({
 }) {
   log('Beginning safety module recovery deployment\n');
   const deployConfig = getDeployConfig();
-
-  const [deployer] = await getHre().ethers.getSigners();
+  const deployer = await getDeployerSigner();
   const deployerAddress = deployer.address;
   log(`Beginning deployment with deployer ${deployerAddress}\n`);
 
@@ -38,7 +42,7 @@ export async function deploySafetyModuleRecovery({
   let safetyModuleRecovery: SM2Recovery;
 
   if (startStep <= 1) {
-    console.log('Step 1. Deploy new safety module implementation contract.');
+    log('Step 1. Deploy new safety module implementation contract.');
     safetyModuleNewImpl = await new SafetyModuleV2__factory(deployer).deploy(
       dydxTokenAddress,
       dydxTokenAddress,
@@ -56,7 +60,7 @@ export async function deploySafetyModuleRecovery({
   }
 
   if (startStep <= 2) {
-    console.log('Step 2. Deploy the upgradeable Safety Module recovery contract.');
+    log('Step 2. Deploy the upgradeable Safety Module recovery contract.');
     [safetyModuleRecovery] = await deployUpgradeable(
       SM2Recovery__factory,
       deployer,
@@ -76,5 +80,58 @@ export async function deploySafetyModuleRecovery({
   return {
     safetyModuleNewImpl,
     safetyModuleRecovery,
+  };
+}
+
+export async function createSafetyModuleRecoveryProposal({
+  proposalIpfsHashHex,
+  governorAddress,
+  longTimelockAddress,
+  safetyModuleAddress,
+  safetyModuleProxyAdminAddress,
+  safetyModuleNewImplAddress,
+  safetyModuleRecoveryAddress,
+}: {
+  proposalIpfsHashHex: string,
+  governorAddress: string,
+  longTimelockAddress: string,
+  safetyModuleAddress: string,
+  safetyModuleProxyAdminAddress: string,
+  safetyModuleNewImplAddress: string,
+  safetyModuleRecoveryAddress: string,
+}) {
+  const hre = getHre();
+  const deployConfig = getDeployConfig();
+  const deployer = await getDeployerSigner();
+  const deployerAddress = deployer.address;
+  log(`Creating safety module recovery proposal with proposer ${deployerAddress}\n`);
+
+  const initializeCalldata = new Interface(SafetyModuleV2__factory.abi).encodeFunctionData(
+    'initialize',
+    [
+      safetyModuleRecoveryAddress,
+      deployConfig.SM_RECOVERY_COMPENSATION_AMOUNT,
+    ],
+  );
+
+  const governor = await new DydxGovernor__factory(deployer).attach(governorAddress);
+  const proposalId = await governor.getProposalsCount();
+  const proposal: Proposal = [
+    longTimelockAddress,
+    [safetyModuleProxyAdminAddress],
+    ['0'],
+    ['upgradeAndCall(address,address,bytes)'],
+    [hre.ethers.utils.defaultAbiCoder.encode(
+      ['address', 'address', 'bytes'],
+      [safetyModuleAddress, safetyModuleNewImplAddress, initializeCalldata],
+    )],
+    [false],
+    proposalIpfsHashHex,
+  ];
+
+  await waitForTx(await governor.create(...proposal));
+
+  return {
+    proposalId,
   };
 }

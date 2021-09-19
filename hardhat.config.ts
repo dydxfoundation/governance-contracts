@@ -7,6 +7,7 @@ import {
   HttpNetworkUserConfig,
 } from 'hardhat/types';
 
+import config from './src/config';
 import { NetworkName } from './src/types';
 
 import '@typechain/hardhat';
@@ -21,7 +22,6 @@ const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
 const MNEMONIC = process.env.MNEMONIC || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
-const FORK_MAINNET = process.env.FORK_MAINNET === 'true';
 
 // Load hardhat tasks.
 if (!SKIP_LOAD) {
@@ -56,7 +56,7 @@ function getRemoteNetworkConfig(
 }
 
 function getHardhatConfig(): HardhatNetworkUserConfig {
-  const config: HardhatNetworkUserConfig = {
+  const networkConfig: HardhatNetworkUserConfig = {
     hardfork: 'berlin',
     blockGasLimit: 15000000,
     chainId: 31337,
@@ -64,13 +64,14 @@ function getHardhatConfig(): HardhatNetworkUserConfig {
     throwOnCallFailures: true,
   };
 
-  if (FORK_MAINNET) {
-    config.forking = {
+  if (config.FORK_MAINNET) {
+    networkConfig.forking = {
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+      blockNumber: config.FORK_BLOCK_NUMBER,
     };
   }
 
-  return config;
+  return networkConfig;
 }
 
 const hardhatConfig: HardhatUserConfig = {

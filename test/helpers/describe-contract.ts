@@ -3,12 +3,13 @@ import chai from 'chai';
 import dirtyChai from 'dirty-chai';
 import { solidity } from 'ethereum-waffle';
 
+import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
-import { DeployConfig } from '../../src/types';
+import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
+import { DeployConfig, DeployedContracts } from '../../src/types';
 import hre from '../hre';
-import { DeployedContracts } from '../migrations/deploy-contracts-for-test';
 import { evmSnapshot, evmReset } from './evm';
-import { getDeployedContractsForTest } from './get-deployed-contracts';
+import { getDeployedContractsOnceForTest } from './get-deployed-contracts-for-test';
 
 export interface TestContext extends DeployedContracts {
   config: DeployConfig;
@@ -36,36 +37,56 @@ export function describeContract(
 
     // Runs before any before() calls made within the describeContract() call.
     before(async () => {
-      const accounts = await hre.ethers.getSigners();
-      ctx.deployer = accounts[0];
-      ctx.users = accounts.slice(1);
+      ctx.deployer = await getDeployerSigner();
+
+      if (config.isHardhat()) {
+        const accounts = await hre.ethers.getSigners();
+        ctx.users = accounts.slice(1);
+      } else {
+        ctx.users = [];
+      }
 
       // Deploy contracts before taking the pre-init snapshot.
-      const deployedContracts = await getDeployedContractsForTest();
+      const deployedContracts = await getDeployedContractsOnceForTest();
       Object.assign(
         ctx,
         deployedContracts,
       );
 
-      preInitSnapshotId = await evmSnapshot();
+      preInitSnapshotId = await maybeEvmSnapshot();
       await init(ctx);
-      postInitSnapshotId = await evmSnapshot();
+      postInitSnapshotId = await maybeEvmSnapshot();
     });
 
     // Runs before any beforeEach() calls made within the describeContract() call.
     beforeEach(async () => {
-      await evmReset(postInitSnapshotId);
-      postInitSnapshotId = await evmSnapshot();
+      await maybeEvmReset(postInitSnapshotId);
+      postInitSnapshotId = await maybeEvmSnapshot();
     });
 
     // Runs before any after() calls made within the describeContract() call.
     after(async () => {
       if (typeof preInitSnapshotId !== 'undefined') {
-        await evmReset(preInitSnapshotId);
-        preInitSnapshotId = await evmSnapshot();
+        await maybeEvmReset(preInitSnapshotId);
+        preInitSnapshotId = await maybeEvmSnapshot();
       }
     });
 
     tests(ctx);
   });
+}
+
+async function maybeEvmSnapshot(): Promise<string> {
+  if (config.isHardhat()) {
+    return evmSnapshot();
+  }
+  return '';
+}
+
+async function maybeEvmReset(
+  id: string,
+): Promise<void> {
+  if (config.isHardhat()) {
+    await evmReset(id);
+  }
 }

@@ -8,7 +8,7 @@ export interface TimelockConfig {
   MINIMUM_DELAY: number;
   MAXIMUM_DELAY: number;
   PROPOSITION_THRESHOLD: number;
-  VOTING_DURATION: number;
+  VOTING_DURATION_BLOCKS: number;
   VOTE_DIFFERENTIAL: number;
   MINIMUM_QUORUM: number;
 }

@@ -13,7 +13,7 @@ import {
   latestBlockTimestamp,
 } from '../helpers/evm';
 import { getUserKeys } from '../helpers/keys';
-import { buildDelegateByTypeParams, buildDelegateParams, getSignatureFromTypedData } from '../helpers/signature-helpers';
+import { buildDelegateByTypeParams, buildDelegateParams, getChainIdForSigning, getSignatureFromTypedData } from '../helpers/signature-helpers';
 import hre from '../hre';
 
 const SAFETY_MODULE_EIP_712_DOMAIN_NAME = 'dYdX Safety Module';
@@ -339,8 +339,7 @@ describeContract('Safety Module Staked DYDX - Power Delegation', init, (ctx: Tes
     expect(priorDelegatee).to.be.equal(user1.address);
 
     // Prepare params to sign message
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    expect(!!chainId).to.be.true('Network does not have chainId');
+    const chainId = await getChainIdForSigning();
 
     const nonce = (await ctx.safetyModule.nonces(user1.address)).toString();
     const expiration = MAX_UINT_AMOUNT;
@@ -406,8 +405,7 @@ describeContract('Safety Module Staked DYDX - Power Delegation', init, (ctx: Tes
     );
 
     // Prepare parameters to sign message
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    expect(!!chainId).to.be.true('Network does not have chainId');
+    const chainId = await getChainIdForSigning();
 
     const nonce = (await ctx.safetyModule.nonces(user1.address)).toString();
     const expiration = MAX_UINT_AMOUNT;
@@ -487,8 +485,7 @@ describeContract('Safety Module Staked DYDX - Power Delegation', init, (ctx: Tes
     );
 
     // Prepare parameters to sign message
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    expect(!!chainId).to.be.true('Network does not have chainId');
+    const chainId = await getChainIdForSigning();
 
     const nonce = (await ctx.safetyModule.nonces(user2.address)).toString();
     const expiration = MAX_UINT_AMOUNT;
@@ -572,8 +569,7 @@ describeContract('Safety Module Staked DYDX - Power Delegation', init, (ctx: Tes
     const [ user1, user2] = ctx.users;
 
     // Prepare params to sign message
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    expect(!!chainId).to.be.true('Network does not have chainId');
+    const chainId = await getChainIdForSigning();
 
     const nonce = (await ctx.safetyModule.nonces(user1.address)).toString();
     const expiration = MAX_UINT_AMOUNT;
@@ -603,8 +599,7 @@ describeContract('Safety Module Staked DYDX - Power Delegation', init, (ctx: Tes
     const [ user1, user2] = ctx.users;
 
     // Prepare params to sign message
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    expect(!!chainId).to.be.true('Network does not have chainId');
+    const chainId = await getChainIdForSigning();
 
     const expiration = MAX_UINT_AMOUNT;
     const msgParams = buildDelegateByTypeParams(
@@ -633,8 +628,7 @@ describeContract('Safety Module Staked DYDX - Power Delegation', init, (ctx: Tes
     const [ user1, user2] = ctx.users;
 
     // Prepare params to sign message
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    expect(!!chainId).to.be.true('Network does not have chainId');
+    const chainId = await getChainIdForSigning();
 
     const nonce = (await ctx.safetyModule.nonces(user1.address)).toString();
     const expiration = '0';
@@ -664,8 +658,7 @@ describeContract('Safety Module Staked DYDX - Power Delegation', init, (ctx: Tes
     const [ , user2, , user4] = ctx.users;
 
     // Prepare parameters to sign message
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    expect(!!chainId).to.be.true('Network does not have chainId');
+    const chainId = await getChainIdForSigning();
 
     const nonce = (await ctx.safetyModule.nonces(user2.address)).toString();
     const expiration = MAX_UINT_AMOUNT;
@@ -691,8 +684,7 @@ describeContract('Safety Module Staked DYDX - Power Delegation', init, (ctx: Tes
     const [ , user2, , user4] = ctx.users;
 
     // Prepare parameters to sign message
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    expect(!!chainId).to.be.true('Network does not have chainId');
+    const chainId = await getChainIdForSigning();
 
     const nonce = MAX_UINT_AMOUNT;
     const expiration = MAX_UINT_AMOUNT;
@@ -718,8 +710,7 @@ describeContract('Safety Module Staked DYDX - Power Delegation', init, (ctx: Tes
     const [ , user2, , user4] = ctx.users;
 
     // Prepare parameters to sign message
-    const { chainId } = await hre.ethers.provider.getNetwork();
-    expect(!!chainId).to.be.true('Network does not have chainId');
+    const chainId = await getChainIdForSigning();
 
     const nonce = (await ctx.safetyModule.nonces(user2.address)).toString();
     const expiration = '0';

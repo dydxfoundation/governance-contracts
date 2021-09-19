@@ -659,23 +659,25 @@ export class StakingHelper {
     const signer = this.users[stakerAddress];
 
     // Get initial ERC20 token balances.
-    // const vaultBalanceBefore = await this.token.balanceOf(this.vault);
-    // const recipientBalanceBefore = await this.token.balanceOf(recipientAddress);
+    const vaultBalanceBefore = await this.token.balanceOf(this.vaultAddress);
+    const recipientBalanceBefore = await this.token.balanceOf(recipientAddress);
 
     // Calculate the expected rewards.
     const rewardsRate = await this.contract.getRewardsPerSecond();
     const end = BigNumber.from(endTimestamp || await latestBlockTimestamp());
     const expectedRewards = new BNJS(end.sub(startTimestamp).mul(rewardsRate).toString()).times(stakerShare).toFixed(0);
 
+    const optionsWithRounding = {
+      ...options,
+      roundingTolerance: rewardsRate.mul(2),
+    };
+
     // Preview rewards.
     const claimable = await signer.callStatic.claimRewards(recipientAddress);
     expectEqualExceptRounding(
       claimable,
       expectedRewards,
-      {
-        ...options,
-        roundingTolerance: rewardsRate.mul(2),
-      },
+      optionsWithRounding,
       'claimRewards: callStatic claimable',
     );
 
@@ -691,18 +693,23 @@ export class StakingHelper {
     expectEqualExceptRounding(
       log.args[2],
       expectedRewards,
-      {
-        ...options,
-        roundingTolerance: rewardsRate.mul(2),
-      },
+      optionsWithRounding,
       'claimRewards: logged rewards',
     );
 
     // Check changes in ERC20 token balances.
-    // const vaultBalanceAfter = await this.token.balanceOf(this.vault);
-    // const recipientBalanceAfter = await this.token.balanceOf(recipientAddress);
-    // expectEq(vaultBalanceBefore.sub(vaultBalanceAfter), expectedRewards);
-    // expectEq(recipientBalanceAfter.sub(recipientBalanceBefore), expectedRewards);
+    const vaultBalanceAfter = await this.token.balanceOf(this.vaultAddress);
+    const recipientBalanceAfter = await this.token.balanceOf(recipientAddress);
+    expectEqualExceptRounding(
+      vaultBalanceBefore.sub(vaultBalanceAfter),
+      expectedRewards,
+      optionsWithRounding,
+    );
+    expectEqualExceptRounding(
+      recipientBalanceAfter.sub(recipientBalanceBefore),
+      expectedRewards,
+      optionsWithRounding,
+    );
 
     return claimable;
   }

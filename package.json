@@ -10,7 +10,8 @@
     "fix": "npm run lint -- --fix",
     "lint": "eslint --ext .ts,.js .",
     "test": "SKIP_LOAD=true TS_NODE_TRANSPILE_ONLY=1 npx hardhat test",
-    "test:full": "STAKING_TESTS_CHECK_INVARIANTS=true npm run test"
+    "test:full": "STAKING_TESTS_CHECK_INVARIANTS=true HARDHAT_SIMULATE_AFFECTED_STAKERS=99 npm run test",
+    "test:fork": "TEST_SM_RECOVERY_WITH_PROPOSAL=true FORK_MAINNET=true npm run test:full"
   },
   "repository": {
     "type": "git",
