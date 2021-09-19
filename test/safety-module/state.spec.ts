@@ -4,11 +4,8 @@ import { BigNumber } from 'ethers';
 
 import { SM_ROLE_HASHES } from '../../src/lib/constants';
 import { getRole } from '../../src/lib/util';
-import { deployUpgradeable } from '../../src/migrations/helpers/deploy-upgradeable';
 import { Role } from '../../src/types';
-import { SafetyModuleV1__factory } from '../../types';
 import { TestContext, describeContract } from '../helpers/describe-contract';
-import { latestBlockTimestamp } from '../helpers/evm';
 
 let staker: SignerWithAddress;
 
@@ -136,28 +133,5 @@ describeContract('SafetyModuleV2 initial state', init, (ctx: TestContext) => {
 
   it('Has no DYDX tokens', async () => {
     expect(await ctx.dydxToken.balanceOf(ctx.safetyModule.address)).to.equal(0);
-  });
-
-  it('Cannot initialize with epoch zero in the past', async () => {
-    const pastTimestamp = await latestBlockTimestamp() - 1;
-    // Note: Since this reverts within InitializableUpgradeabilityProxy, there is no reason string.
-    await expect(
-      deployUpgradeable(
-        SafetyModuleV1__factory,
-        ctx.deployer,
-        [
-          ctx.dydxToken.address,
-          ctx.dydxToken.address,
-          ctx.rewardsTreasury.address,
-          ctx.config.SM_DISTRIBUTION_START,
-          ctx.config.SM_DISTRIBUTION_END,
-        ],
-        [
-          ctx.config.EPOCH_LENGTH,
-          pastTimestamp,
-          ctx.config.BLACKOUT_WINDOW,
-        ],
-      ),
-    ).to.be.reverted();
   });
 });

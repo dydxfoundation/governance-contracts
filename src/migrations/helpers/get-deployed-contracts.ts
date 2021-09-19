@@ -12,13 +12,16 @@ import {
   TreasuryVester__factory,
 } from '../../../types';
 import config from '../../config';
+import { getDeployerSigner } from '../../deploy-config/get-deployer-address';
 import mainnetAddresses from '../../deployed-addresses/mainnet.json';
-import { getHre, getNetworkName } from '../../hre';
+import { getNetworkName } from '../../hre';
 import { DeployedContracts } from '../../types';
 
 type DeployedAddresses = { [k in keyof DeployedContracts]: string };
 
-export function getDeployedContracts(): DeployedContracts {
+export async function getDeployedContracts(): Promise<DeployedContracts> {
+  const deployer = await getDeployerSigner();
+
   let deployedAddresses: DeployedAddresses;
   if (
     config.isMainnet() ||
@@ -29,25 +32,23 @@ export function getDeployedContracts(): DeployedContracts {
     throw new Error(`Deployed addresses not found for network ${getNetworkName()}`);
   }
 
-  const signer = getHre().ethers.provider.getSigner();
-
   return {
-    dydxToken: new DydxToken__factory(signer).attach(deployedAddresses.dydxToken),
-    governor: new DydxGovernor__factory(signer).attach(deployedAddresses.governor),
-    shortTimelock: new Executor__factory(signer).attach(deployedAddresses.shortTimelock),
-    longTimelock: new Executor__factory(signer).attach(deployedAddresses.longTimelock),
-    merklePauserTimelock: new Executor__factory(signer).attach(deployedAddresses.merklePauserTimelock),
-    rewardsTreasury: new Treasury__factory(signer).attach(deployedAddresses.rewardsTreasury),
-    rewardsTreasuryProxyAdmin: new ProxyAdmin__factory(signer).attach(deployedAddresses.rewardsTreasuryProxyAdmin),
-    safetyModule: new SafetyModuleV1__factory(signer).attach(deployedAddresses.safetyModule),
-    safetyModuleProxyAdmin: new ProxyAdmin__factory(signer).attach(deployedAddresses.safetyModuleProxyAdmin),
-    strategy: new GovernanceStrategy__factory(signer).attach(deployedAddresses.strategy),
-    communityTreasury: new Treasury__factory(signer).attach(deployedAddresses.communityTreasury),
-    communityTreasuryProxyAdmin: new ProxyAdmin__factory(signer).attach(deployedAddresses.communityTreasuryProxyAdmin),
-    rewardsTreasuryVester: new TreasuryVester__factory(signer).attach(deployedAddresses.rewardsTreasuryVester),
-    communityTreasuryVester: new TreasuryVester__factory(signer).attach(deployedAddresses.communityTreasuryVester),
-    claimsProxy: new ClaimsProxy__factory(signer).attach(deployedAddresses.claimsProxy),
-    safetyModuleNewImpl: new SafetyModuleV2__factory(signer).attach(deployedAddresses.safetyModuleNewImpl),
-    safetyModuleRecovery: new SM2Recovery__factory(signer).attach(deployedAddresses.safetyModuleRecovery),
+    dydxToken: new DydxToken__factory(deployer).attach(deployedAddresses.dydxToken),
+    governor: new DydxGovernor__factory(deployer).attach(deployedAddresses.governor),
+    shortTimelock: new Executor__factory(deployer).attach(deployedAddresses.shortTimelock),
+    longTimelock: new Executor__factory(deployer).attach(deployedAddresses.longTimelock),
+    merklePauserTimelock: new Executor__factory(deployer).attach(deployedAddresses.merklePauserTimelock),
+    rewardsTreasury: new Treasury__factory(deployer).attach(deployedAddresses.rewardsTreasury),
+    rewardsTreasuryProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.rewardsTreasuryProxyAdmin),
+    safetyModule: new SafetyModuleV1__factory(deployer).attach(deployedAddresses.safetyModule),
+    safetyModuleProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.safetyModuleProxyAdmin),
+    strategy: new GovernanceStrategy__factory(deployer).attach(deployedAddresses.strategy),
+    communityTreasury: new Treasury__factory(deployer).attach(deployedAddresses.communityTreasury),
+    communityTreasuryProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.communityTreasuryProxyAdmin),
+    rewardsTreasuryVester: new TreasuryVester__factory(deployer).attach(deployedAddresses.rewardsTreasuryVester),
+    communityTreasuryVester: new TreasuryVester__factory(deployer).attach(deployedAddresses.communityTreasuryVester),
+    claimsProxy: new ClaimsProxy__factory(deployer).attach(deployedAddresses.claimsProxy),
+    safetyModuleNewImpl: new SafetyModuleV2__factory(deployer).attach(deployedAddresses.safetyModuleNewImpl),
+    safetyModuleRecovery: new SM2Recovery__factory(deployer).attach(deployedAddresses.safetyModuleRecovery),
   };
 }

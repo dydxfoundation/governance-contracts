@@ -12,7 +12,7 @@ import {
   ProxyAdmin__factory,
   SafetyModuleV2__factory,
 } from '../../types';
-import { advanceBlock, increaseTimeAndMine, latestBlock } from '../helpers/evm';
+import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
 
 const MOCK_PROPOSAL_IPFS_HASH = (
   '0x0000000000000000000000000000000000000000000000000000000000000000'

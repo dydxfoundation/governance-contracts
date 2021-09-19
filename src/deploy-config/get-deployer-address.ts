@@ -20,9 +20,8 @@ export async function getDeployerSigner(): Promise<SignerWithAddress> {
       return accounts[0];
     }
   } else if (config.isMainnet()) {
-    return {
-      address: MAINNET_DEPLOYER_ADDRESS,
-    } as SignerWithAddress;
+    // Return default signer.
+    return hre.ethers.getSigner(MAINNET_DEPLOYER_ADDRESS);
   } else {
     throw new Error(`Deployer address not known for network ${getNetworkName()}`);
   }

@@ -4,15 +4,12 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import BNJS from 'bignumber.js';
 import { expect } from 'chai';
-import { DateTime } from 'luxon';
 
-import config from '../../../src/config';
 import { ZERO_ADDRESS } from '../../../src/lib/constants';
 import { deployUpgradeable } from '../../../src/migrations/helpers/deploy-upgradeable';
 import { SafetyModuleV1, SafetyModuleV11__factory } from '../../../types';
 import { describeContract, TestContext } from '../../helpers/describe-contract';
 import {
-  increaseTimeAndMine,
   incrementTimeToTimestamp,
   latestBlockTimestamp,
 } from '../../helpers/evm';

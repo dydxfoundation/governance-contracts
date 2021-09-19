@@ -37,14 +37,9 @@ export function describeContract(
 
     // Runs before any before() calls made within the describeContract() call.
     before(async () => {
+      const accounts = await hre.ethers.getSigners();
       ctx.deployer = await getDeployerSigner();
-
-      if (config.isHardhat()) {
-        const accounts = await hre.ethers.getSigners();
-        ctx.users = accounts.slice(1);
-      } else {
-        ctx.users = [];
-      }
+      ctx.users = accounts.slice(1);
 
       // Deploy contracts before taking the pre-init snapshot.
       const deployedContracts = await getDeployedContractsOnceForTest();
