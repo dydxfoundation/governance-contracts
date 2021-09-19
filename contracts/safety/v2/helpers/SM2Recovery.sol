@@ -4,6 +4,7 @@ pragma abicoder v2;
 
 import { SafeERC20 } from '../../../dependencies/open-zeppelin/SafeERC20.sol';
 import { IERC20 } from '../../../interfaces/IERC20.sol';
+import { VersionedInitializable } from '../../../utils/VersionedInitializable.sol';
 
 /**
  * @title SM2Recovery
@@ -11,7 +12,9 @@ import { IERC20 } from '../../../interfaces/IERC20.sol';
  *
  * @notice Distributes funds to stakers as part of the Safety Module v1 -> v2 recovery process.
  */
-contract SM2Recovery {
+contract SM2Recovery is
+  VersionedInitializable
+{
   using SafeERC20 for IERC20;
 
   // ============ Events ============
@@ -35,11 +38,18 @@ contract SM2Recovery {
     IERC20 token
   ) {
     TOKEN = token;
+  }
 
+  // ============ External Functions ============
+
+  function initialize()
+    external
+    initializer
+  {
     // Hard-coded list of amounts owed, calculated by taking the staked amount for each address and
     // adding 10% additional compensation.
     //
-    // Last updated: September 14, 2021 UTC.
+    // Updated: September 14, 2021 UTC.
     _OWED_AMOUNTS_[0x8031EEC1118D1321387b1870F32984f72b447b04] = 64268082313114004568;
     _OWED_AMOUNTS_[0x5AcABC3222A7b74884bEC8efe28A7A69A7920818] = 552458868361822400896;
     _OWED_AMOUNTS_[0x5F5A46a8471F60b1E9F2eD0b8fc21Ba8b48887D8] = 235077596410469150;
@@ -98,8 +108,6 @@ contract SM2Recovery {
     _OWED_AMOUNTS_[0xE8b67eBf4825FEC2AB6c010A01064f5fa54672a5] = 2200000000000000000000;
   }
 
-  // ============ External Functions ============
-
   function claim()
     external
     returns (uint256)
@@ -124,5 +132,21 @@ contract SM2Recovery {
     returns (uint256)
   {
     return _OWED_AMOUNTS_[staker];
+  }
+
+  // ============ Internal Functions ============
+
+  /**
+   * @dev Returns the revision of the implementation contract.
+   *
+   * @return The revision number.
+   */
+  function getRevision()
+    internal
+    pure
+    override
+    returns (uint256)
+  {
+    return 1;
   }
 }
