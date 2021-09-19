@@ -5,7 +5,7 @@ import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address'
 import { log } from '../../src/lib/logging';
 import { waitForTx } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
-import { createSafetyModuleRecoveryProposal } from '../../src/migrations/safety-module-recovery';
+import { createSafetyModuleRecoveryProposal } from '../../src/migrations/safety-module-recovery-proposal';
 import {
   DydxGovernor__factory,
   DydxToken__factory,
