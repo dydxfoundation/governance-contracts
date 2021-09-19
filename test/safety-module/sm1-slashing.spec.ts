@@ -9,7 +9,7 @@ import { deployUpgradeable } from '../../src/migrations/helpers/deploy-upgradeab
 import {
   MintableERC20__factory,
   SafetyModuleV1,
-  SafetyModuleV1__factory,
+  SafetyModuleV11__factory,
 } from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
 import {
@@ -311,7 +311,7 @@ describeContract('SM1Slashing', init, (ctx: TestContext) => {
       );
       const distributionStart_2 = await latestBlockTimestamp() + 100;
       const [safetyModule_2] = await deployUpgradeable(
-        SafetyModuleV1__factory,
+        SafetyModuleV11__factory,
         ctx.deployer,
         [
           mockDydxToken.address,

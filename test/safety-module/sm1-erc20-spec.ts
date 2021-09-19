@@ -3,7 +3,11 @@ import BNJS from 'bignumber.js';
 import { expect } from 'chai';
 
 import { ZERO_ADDRESS } from '../../src/lib/constants';
-import { SafetyModuleV1 } from '../../types';
+import {
+  SafetyModuleV1,
+  MockSafetyModuleSubclass,
+  MockSafetyModuleSubclass__factory,
+} from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
 import { latestBlockTimestamp } from '../helpers/evm';
 import { StakingHelper } from '../helpers/staking-helper';
@@ -17,6 +21,7 @@ let staker2: SignerWithAddress;
 
 // Users calling the liquidity staking contract.
 let stakerSigner1: SafetyModuleV1;
+let mockSubclassSigner1: MockSafetyModuleSubclass;
 
 let contract: StakingHelper;
 
@@ -26,6 +31,14 @@ async function init(ctx: TestContext) {
 
   // Users calling the liquidity staking contract.
   stakerSigner1 = ctx.safetyModule.connect(staker1);
+  const distributionStart_2 = await latestBlockTimestamp() + 500;
+  mockSubclassSigner1 = await new MockSafetyModuleSubclass__factory(staker1).deploy(
+    ctx.dydxToken.address,
+    ctx.dydxToken.address,
+    ctx.rewardsTreasury.address,
+    distributionStart_2,
+    ctx.config.SM_DISTRIBUTION_END,
+  );
 
   // Use helper class to automatically check contract invariants after every update.
   contract = new StakingHelper(
@@ -142,9 +155,15 @@ describeContract('SM1Erc20', init, (ctx: TestContext) => {
       );
     });
 
-    it('cannot approve for address(0)', async () => {
+    it('cannot approve to address(0)', async () => {
       await expect(ctx.safetyModule.approve(ZERO_ADDRESS, 1)).to.be.revertedWith(
         'SM1ERC20: Approve to address(0)',
+      );
+    });
+
+    it('cannot approve from address(0)', async () => {
+      await expect(mockSubclassSigner1.mockApproveFromZero(staker1.address, 1)).to.be.revertedWith(
+        'SM1ERC20: Approve from address(0)',
       );
     });
   });
@@ -242,6 +261,18 @@ describeContract('SM1Erc20', init, (ctx: TestContext) => {
       await expect(
         stakerSigner1.transfer(staker2.address, stakerInitialBalance),
       ).to.be.revertedWith('SM1ERC20: Transfer exceeds next epoch active balance');
+    });
+
+    it('cannot transfer to address(0)', async () => {
+      await expect(ctx.safetyModule.transfer(ZERO_ADDRESS, 1)).to.be.revertedWith(
+        'SM1ERC20: Transfer to address(0)',
+      );
+    });
+
+    it('cannot transfer from address(0)', async () => {
+      await expect(mockSubclassSigner1.mockTransferFromZero(staker1.address, 1)).to.be.revertedWith(
+        'SM1ERC20: Transfer from address(0)',
+      );
     });
   });
 

@@ -12,6 +12,8 @@ First, the new `SafetyModuleV2` implementation contract must be deployed. It has
 * A new initializer function which:
   * Calls `transfer()` to send all held DYDX to the specified recovery contract.
   * Calls `transferFrom()` to send the specified additional compensation amount from the rewards treasury to the specified recovery contract.
+  * Restores functionality to the Safety Module by setting the correct exchange rate.
+  * Deletes data set by the original initializer, which is now garbage due to the shift in the storage layout.
 * `DISTRIBUTION_END` is updated to account for the delayed start to the Safety Module rewards.
 * `getRevision()` updated to return 2
 

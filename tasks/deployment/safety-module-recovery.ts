@@ -5,9 +5,9 @@ import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-r
 
 hardhatTask('deploy:safety-module-recovery', 'Deploy the Safety Module recovery contracts.')
   .addParam('startStep', 'Which step to start with', 1, types.int)
-  .addParam('dydxTokenAddress', 'Previously deployed dYdX token address', '', types.string)
-  .addParam('rewardsTreasuryAddress', 'Previously deployed rewards treasury address', '', types.string)
-  .addOptionalParam('safetyModuleNewImplAddress', 'Previously deployed SafetyModuleV2 implementation contract', '', types.string)
+  .addParam('dydxTokenAddress', 'Previously deployed dYdX token address', undefined, types.string)
+  .addParam('rewardsTreasuryAddress', 'Previously deployed rewards treasury address', undefined, types.string)
+  .addOptionalParam('safetyModuleNewImplAddress', 'Previously deployed SafetyModuleV2 implementation contract', undefined, types.string)
   .setAction(async (args) => {
     const {
       safetyModuleNewImpl,
