@@ -9,5 +9,10 @@ hardhatTask('deploy:safety-module-recovery', 'Deploy the Safety Module recovery 
   .addParam('rewardsTreasuryAddress', 'Previously deployed rewards treasury address', '', types.string)
   .addOptionalParam('safetyModuleNewImplAddress', 'Previously deployed SafetyModuleV2 implementation contract', '', types.string)
   .setAction(async (args) => {
-    await deploySafetyModuleRecovery(args);
+    const {
+      safetyModuleNewImpl,
+      safetyModuleRecovery,
+    } = await deploySafetyModuleRecovery(args);
+    console.log(`New Safety Module implementation deployed to: ${safetyModuleNewImpl.address}`);
+    console.log(`Safety Module recovery contract deployed to: ${safetyModuleRecovery.address}`);
   });
