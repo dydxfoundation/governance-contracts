@@ -1,5 +1,6 @@
 import BNJS from 'bignumber.js';
-import { BigNumberish } from 'ethers';
+
+export * from './deploy-config/types';
 
 export type BigNumberable = BNJS | string | number;
 
@@ -23,22 +24,4 @@ export enum Role {
   REWARDS_RATE_ROLE = 'REWARDS_RATE_ROLE',
   SLASHER_ROLE = 'SLASHER_ROLE',
   STAKE_OPERATOR_ROLE = 'STAKE_OPERATOR_ROLE',
-}
-
-export interface TimelockConfig {
-  DELAY: number;
-  GRACE_PERIOD: number;
-  MINIMUM_DELAY: number;
-  MAXIMUM_DELAY: number;
-  PROPOSITION_THRESHOLD: number;
-  VOTING_DURATION: number;
-  VOTE_DIFFERENTIAL: number;
-  MINIMUM_QUORUM: number;
-}
-
-export interface TreasuryVesterConfig {
-  VESTING_AMOUNT: BigNumberish;
-  VESTING_BEGIN: number;
-  VESTING_CLIFF: number;
-  VESTING_END: number;
 }

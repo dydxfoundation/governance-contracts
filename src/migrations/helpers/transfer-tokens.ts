@@ -1,10 +1,10 @@
 import { BigNumberish } from 'ethers';
 
-import { DydxToken } from '../../types';
-import config from '../config';
-import { promptYes } from '../helpers/prompt';
-import { log } from '../logging';
-import { waitForTx } from '../util';
+import { DydxToken } from '../../../types';
+import config from '../../config';
+import { log } from '../../lib/logging';
+import { promptYes } from '../../lib/prompt';
+import { waitForTx } from '../../lib/util';
 
 /**
  * Transfer DYDX tokens, prompting for confirmation on mainnet.

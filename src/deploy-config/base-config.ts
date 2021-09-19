@@ -10,29 +10,18 @@ import { DateTime } from 'luxon';
 import {
   ONE_DAY_BLOCKS,
   ONE_DAY_SECONDS,
-  ONE_YEAR_SECONDS,
-} from '../constants';
-import { TimelockConfig, TreasuryVesterConfig } from '../types';
-import { toWad } from '../util';
-
-// The mainnet start time of epoch zero.
-const EPOCH_ZERO_START_UTC = '2021-08-03T15:00:00';
-const EPOCH_ZERO_START = DateTime.fromISO(EPOCH_ZERO_START_UTC, { zone: 'utc' }).toSeconds();
+} from '../lib/constants';
+import { toWad } from '../lib/util';
+import { TimelockConfig } from './types';
 
 // Schedule parameters.
 const EPOCH_LENGTH = 28 * ONE_DAY_SECONDS;
 const BLACKOUT_WINDOW = 14 * ONE_DAY_SECONDS;
 const MERKLE_DISTRIBUTOR_WAITING_PERIOD = 7 * ONE_DAY_SECONDS;
-const TRANSFERS_RESTRICTED_BEFORE = (
-  EPOCH_ZERO_START +
-  EPOCH_LENGTH +
-  MERKLE_DISTRIBUTOR_WAITING_PERIOD +
-  ONE_DAY_SECONDS
-);
 
 // Equal to 65 epochs plus a portion of an epoch, to account for leftover rewards due to the
 // different start dates of the two staking modules.
-export const REWARDS_DISTRIBUTION_LENGTH = 157_679_998;
+const REWARDS_DISTRIBUTION_LENGTH = 157_679_998;
 
 // Staking parameters.
 //
@@ -86,32 +75,11 @@ const MERKLE_PAUSER_TIMELOCK_CONFIG: TimelockConfig = {
   MINIMUM_QUORUM: 100,
 };
 
-const REWARDS_TREASURY_VESTER_CONFIG: TreasuryVesterConfig = {
-  VESTING_AMOUNT: new BNJS(toWad(450_000_000)).minus(REWARDS_TREASURY_FRONTLOADED_FUNDS).toFixed(),
-  VESTING_BEGIN: EPOCH_ZERO_START,
-  VESTING_CLIFF: EPOCH_ZERO_START,
-  VESTING_END: EPOCH_ZERO_START + 5 * ONE_YEAR_SECONDS,
-};
-
-const COMMUNITY_TREASURY_VESTER_CONFIG: TreasuryVesterConfig = {
-  VESTING_AMOUNT: toWad(50_000_000),
-  VESTING_BEGIN: EPOCH_ZERO_START,
-  VESTING_CLIFF: EPOCH_ZERO_START,
-  VESTING_END: EPOCH_ZERO_START + 5 * ONE_YEAR_SECONDS,
-};
-
 const config = {
-  // Main schedule parameters.
-  EPOCH_ZERO_START,
+  // Common schedule parameters.
   EPOCH_LENGTH,
   BLACKOUT_WINDOW,
-  TRANSFERS_RESTRICTED_BEFORE,
-  TRANSFER_RESTRICTION_LIFTED_NO_LATER_THAN: TRANSFERS_RESTRICTED_BEFORE + 30 * ONE_DAY_SECONDS,
-  MINTING_RESTRICTED_BEFORE: TRANSFERS_RESTRICTED_BEFORE + 5 * ONE_YEAR_SECONDS,
-  LS_DISTRIBUTION_START: EPOCH_ZERO_START,
-  LS_DISTRIBUTION_END: EPOCH_ZERO_START + REWARDS_DISTRIBUTION_LENGTH,
-  SM_DISTRIBUTION_START: TRANSFERS_RESTRICTED_BEFORE,
-  SM_DISTRIBUTION_END: TRANSFERS_RESTRICTED_BEFORE + REWARDS_DISTRIBUTION_LENGTH,
+  REWARDS_DISTRIBUTION_LENGTH,
 
   // DYDX token parameters.
   MINT_MAX_PERCENT: 2,
@@ -119,14 +87,16 @@ const config = {
   // Governance parameters.
   VOTING_DELAY_BLOCKS: 6570, // One day, assuming average block time of 13s.
 
+  // Treasury parameters.
+  REWARDS_TREASURY_VESTING_AMOUNT: new BNJS(toWad(450_000_000))
+    .minus(REWARDS_TREASURY_FRONTLOADED_FUNDS)
+    .toFixed(),
+  COMMUNITY_TREASURY_VESTING_AMOUNT: toWad(50_000_000),
+
   // Timelock parameters.
   LONG_TIMELOCK_CONFIG,
   SHORT_TIMELOCK_CONFIG,
   MERKLE_PAUSER_TIMELOCK_CONFIG,
-
-  // Treasury parameters.
-  REWARDS_TREASURY_VESTER_CONFIG,
-  COMMUNITY_TREASURY_VESTER_CONFIG,
 
   // Merkle Distributor.
   MERKLE_DISTRIBUTOR_WAITING_PERIOD,
@@ -150,6 +120,22 @@ const config = {
 
   // Initial token allocations.
   TOKEN_ALLOCATIONS: {
+    TEST_TOKENS_1: {
+      ADDRESS: '0xeb74327ddd3f0d359321f06d84a9d3871b4d96a4',
+      AMOUNT: toWad(2),
+    },
+    TEST_TOKENS_2: {
+      ADDRESS: '0xb03414a51a625e8ce16d284e34941ba66c5683c9',
+      AMOUNT: toWad(2),
+    },
+    TEST_TOKENS_3: {
+      ADDRESS: '0x1eec5afab429859c46db6552bc973bdd525fd7b1',
+      AMOUNT: toWad(2),
+    },
+    TEST_TOKENS_4: {
+      ADDRESS: '0x69112552fac655bb76a3e0ee7779843451db02b6',
+      AMOUNT: toWad(2),
+    },
     DYDX_FOUNDATION: {
       ADDRESS: '0xb4fbF1Cd41BB174ABeFf6001B85490b58b117B22',
       AMOUNT: toWad(293_355_248.288681),
@@ -163,8 +149,43 @@ const config = {
       AMOUNT: toWad(90_703_573.352682),
     },
   },
+
+  // Addresses which were used on mainnet for token custody testing.
+  TOKEN_TEST_ADDRESSES: [
+    '0xeb74327ddd3f0d359321f06d84a9d3871b4d96a4',
+    '0xb03414a51a625e8ce16d284e34941ba66c5683c9',
+    '0x1eec5afab429859c46db6552bc973bdd525fd7b1',
+    '0x69112552fac655bb76a3e0ee7779843451db02b6',
+    '0x688134aefae00632d36754ca9f085bd25072e2f0',
+    '0xb50309682298fecf08ea07792154fa26f05fd7e5',
+    '0x49fae0a92272ec68583eb009f4c40bcf91b9010f',
+    '0xad2955994fb189117478eec154153ba7d0f835ca',
+  ],
+
+  // Safety Module recovery.
+  //
+  // Compensation amount is 10% of what was initially staked and stuck in the Safey Module.
+  SM_RECOVERY_COMPENSATION_AMOUNT: '15745887438533773204745', // About 15746 DYDX.
+  //
+  // Distribution start is unchanged from the mainnet deployment
+  SM_RECOVERY_DISTRIBUTION_START: (
+    DateTime.fromISO('2021-09-08T15:00:00', { zone: 'utc' }).toSeconds()
+  ),
+  //
+  // Calculate the distribution end as follows:
+  //
+  //   25,000,000 - 15745.887438533773204745 DYDX are available as rewards once staking resumes.
+  //   The rewards rate is unchanged at 0.1585489619 DYDX per second, so we can issue rewards for
+  //   157580685 whole seconds.
+  //
+  //   Assuming for now that the earliest staking may resume (counting 18 days from when a proposal
+  //   is created) is 2021-10-08T15:00:00 UTC, we arrive at the following time.
+  //
+  SM_RECOVERY_DISTRIBUTION_END: (
+    DateTime.fromISO('2026-10-06T11:24:45', { zone: 'utc' }).toSeconds()
+  ),
 };
 
-export type DeployConfig = typeof config;
+export type BaseConfig = typeof config;
 
 export default config;

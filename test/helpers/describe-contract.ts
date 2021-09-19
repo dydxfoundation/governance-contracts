@@ -3,11 +3,12 @@ import chai from 'chai';
 import dirtyChai from 'dirty-chai';
 import { solidity } from 'ethereum-waffle';
 
-import { DeployConfig, getDeployConfig } from '../../src/deploy-config';
-import { DeployedContracts } from '../../src/deployment/deploy-contracts';
+import { getDeployConfig } from '../../src/deploy-config';
+import { DeployConfig } from '../../src/types';
 import hre from '../hre';
+import { DeployedContracts } from '../migrations/deploy-contracts-for-test';
 import { evmSnapshot, evmReset } from './evm';
-import { getDeployedContracts } from './get-deployed-contracts';
+import { getDeployedContractsForTest } from './get-deployed-contracts';
 
 export interface TestContext extends DeployedContracts {
   config: DeployConfig;
@@ -40,7 +41,7 @@ export function describeContract(
       ctx.users = accounts.slice(1);
 
       // Deploy contracts before taking the pre-init snapshot.
-      const deployedContracts = await getDeployedContracts();
+      const deployedContracts = await getDeployedContractsForTest();
       Object.assign(
         ctx,
         deployedContracts,
@@ -59,8 +60,10 @@ export function describeContract(
 
     // Runs before any after() calls made within the describeContract() call.
     after(async () => {
-      await evmReset(preInitSnapshotId);
-      preInitSnapshotId = await evmSnapshot();
+      if (typeof preInitSnapshotId !== 'undefined') {
+        await evmReset(preInitSnapshotId);
+        preInitSnapshotId = await evmSnapshot();
+      }
     });
 
     tests(ctx);

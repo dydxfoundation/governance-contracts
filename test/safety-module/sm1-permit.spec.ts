@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { parseEther } from 'ethers/lib/utils';
 
-import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../src/constants';
-import { waitForTx } from '../../src/util';
+import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../src/lib/constants';
+import { waitForTx } from '../../src/lib/util';
 import { describeContract, TestContext } from '../helpers/describe-contract';
 import { getDeployerKey } from '../helpers/keys';
 import { buildPermitParams, getSignatureFromTypedData } from '../helpers/signature-helpers';

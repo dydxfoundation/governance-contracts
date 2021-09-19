@@ -7,7 +7,7 @@ import { describeContract, TestContext } from '../helpers/describe-contract';
 import {
   advanceBlock,
   increaseTimeAndMine,
-  incrementTimeToTimestamp, latestBlock,
+  latestBlock,
 } from '../helpers/evm';
 
 // Safety Module contract connected to the first user by default.
@@ -19,12 +19,9 @@ async function init(ctx: TestContext) {
   // Send tokens to first user.
   await ctx.dydxToken.transfer(ctx.users[0].address, 100_000_000);
   await ctx.dydxToken.connect(ctx.users[0]).approve(ctx.safetyModule.address, 100_000_000);
-
-  // Elapse the token transfer restriction.
-  await incrementTimeToTimestamp(ctx.config.TRANSFERS_RESTRICTED_BEFORE);
 }
 
-describeContract('Safety Module getPowerAtBlock()', init, (ctx: TestContext) => {
+describeContract('Safety Module snapshots - getPowerAtBlock()', init, (ctx: TestContext) => {
 
   it('Governance power is initially zero', async () => {
     await expectPowerAtBlock(ctx.users[0], 0, 0);

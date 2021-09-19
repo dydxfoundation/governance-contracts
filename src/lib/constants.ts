@@ -1,6 +1,8 @@
+import { Role } from '../types';
+import { getRole } from './util';
+
 export const ONE_DAY_SECONDS = 60 * 60 * 24;
 export const ONE_DAY_BLOCKS = 6570; // Assume 13s per block
-export const ONE_YEAR_SECONDS = ONE_DAY_SECONDS * 365;
 
 export const ONE_ADDRESS = '0x0000000000000000000000000000000000000001';
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -9,3 +11,12 @@ export const MAX_UINT_AMOUNT = (
 );
 
 export const LS_SHORTFALL_INDEX_BASE = 1e36;
+
+export const SM_ROLE_HASHES = [
+  Role.OWNER_ROLE,
+  Role.SLASHER_ROLE,
+  Role.EPOCH_PARAMETERS_ROLE,
+  Role.REWARDS_RATE_ROLE,
+  Role.CLAIM_OPERATOR_ROLE,
+  Role.STAKE_OPERATOR_ROLE,
+].map(getRole);

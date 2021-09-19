@@ -1,16 +1,16 @@
 import {
   DeployedContracts,
-  deployContracts,
-} from '../../src/deployment/deploy-contracts';
+  deployContractsForTest,
+} from '../migrations/deploy-contracts-for-test';
 
 let deployedContracts: DeployedContracts;
 
 /**
  * Helper to make sure contracts are only deployed once.
  */
-export async function getDeployedContracts(): Promise<DeployedContracts> {
+export async function getDeployedContractsForTest(): Promise<DeployedContracts> {
   if (!deployedContracts) {
-    deployedContracts = await deployContracts();
+    deployedContracts = await deployContractsForTest();
   }
   return deployedContracts;
 }

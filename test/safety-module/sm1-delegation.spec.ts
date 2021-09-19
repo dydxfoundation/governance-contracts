@@ -1,15 +1,14 @@
 import { expect } from 'chai';
 import { parseEther } from 'ethers/lib/utils';
 
-import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../src/constants';
-import { waitForTx } from '../../src/util';
+import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../src/lib/constants';
+import { waitForTx } from '../../src/lib/util';
 import {
   DoubleTransferHelper__factory,
 } from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
 import {
   advanceBlock,
-  incrementTimeToTimestamp,
   latestBlock,
   latestBlockTimestamp,
 } from '../helpers/evm';
@@ -30,9 +29,6 @@ async function init(ctx: TestContext) {
     await ctx.dydxToken.connect(ctx.deployer).transfer(user.address, amount);
     await ctx.dydxToken.connect(user).approve(ctx.safetyModule.address, amount);
   }
-
-  // Advance to when transfers are enabled. Note that this is after the distribution start.
-  await incrementTimeToTimestamp(await ctx.dydxToken._transfersRestrictedBefore());
 }
 
 describeContract('Safety Module Staked DYDX - Power Delegation', init, (ctx: TestContext) => {

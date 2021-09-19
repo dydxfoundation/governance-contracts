@@ -2,8 +2,8 @@ import { JsonFragment } from '@ethersproject/abi';
 import { Contract, Signer } from 'ethers';
 import { Interface } from 'ethers/lib/utils';
 
-import { InitializableAdminUpgradeabilityProxy__factory, ProxyAdmin, ProxyAdmin__factory } from '../../types';
-import { waitForTx } from '../util';
+import { InitializableAdminUpgradeabilityProxy__factory, ProxyAdmin, ProxyAdmin__factory } from '../../../types';
+import { waitForTx } from '../../lib/util';
 
 // Generic type for typechain contract factories. Different from ethers ContractFactory.
 type TypechainContractFactoryClass<T, U extends unknown[]> = {
@@ -53,4 +53,22 @@ export async function deployUpgradeable<T extends Contract, U extends unknown[]>
     implementation,
     proxyAdmin,
   ];
+}
+
+export async function upgradeContract<T extends Contract, U extends unknown[]>(
+  factory: TypechainContractFactoryClass<T, U>,
+  deployer: Signer,
+  proxyAddress: string,
+  proxyAdmin: ProxyAdmin,
+  constructorArgs: U,
+): Promise<T> {
+  const newImplementation = await new factory(deployer).deploy(...constructorArgs);
+  await waitForTx(newImplementation.deployTransaction);
+  await waitForTx(
+    await proxyAdmin.upgrade(
+      proxyAddress,
+      newImplementation.address,
+    ),
+  );
+  return newImplementation;
 }

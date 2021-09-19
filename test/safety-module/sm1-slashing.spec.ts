@@ -5,7 +5,7 @@ import BNJS from 'bignumber.js';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 
-import { deployUpgradeable } from '../../src/deployment/deploy-upgradeable';
+import { deployUpgradeable } from '../../src/migrations/helpers/deploy-upgradeable';
 import {
   MintableERC20__factory,
   SafetyModuleV1,
@@ -27,15 +27,11 @@ let staker1: SignerWithAddress;
 let staker2: SignerWithAddress;
 let fundsRecipient: SignerWithAddress;
 
-let distributionStart: string;
-
 let contract: StakingHelper;
 
 async function init(ctx: TestContext) {
   // Users.
   [staker1, staker2, fundsRecipient] = ctx.users;
-
-  distributionStart = (await ctx.safetyModule.DISTRIBUTION_START()).toString();
 
   // Use helper class to automatically check contract invariants after every update.
   contract = new StakingHelper(
@@ -55,9 +51,6 @@ async function init(ctx: TestContext) {
 
   // Set initial rewards rate to zero.
   await contract.setRewardsPerSecond(0);
-
-  // Start rewards.
-  await incrementTimeToTimestamp(distributionStart);
 }
 
 describeContract('SM1Slashing', init, (ctx: TestContext) => {

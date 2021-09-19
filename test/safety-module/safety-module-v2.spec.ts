@@ -2,10 +2,14 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 
-import { deployUpgradeable } from '../../src/deployment/deploy-upgradeable';
+import { SM_ROLE_HASHES } from '../../src/lib/constants';
+import { getRole } from '../../src/lib/util';
+import { deployUpgradeable } from '../../src/migrations/helpers/deploy-upgradeable';
+import { Role } from '../../src/types';
 import { SafetyModuleV1__factory } from '../../types';
 import { TestContext, describeContract } from '../helpers/describe-contract';
 import { latestBlockTimestamp } from '../helpers/evm';
+import hre from '../hre';
 
 let staker: SignerWithAddress;
 
@@ -13,57 +17,50 @@ function init(ctx: TestContext) {
   [staker] = ctx.users;
 }
 
-describeContract('SafetyModuleV1 initialization', init, (ctx: TestContext) => {
+describeContract('SafetyModuleV2 initialization', init, (ctx: TestContext) => {
 
   it('Staked token is set during initialization', async () => {
-    expect(await ctx.safetyModule.STAKED_TOKEN()).to.be.equal(ctx.dydxToken.address);
+    expect(await ctx.safetyModule.STAKED_TOKEN()).to.equal(ctx.dydxToken.address);
   });
 
   it('Rewards token is set during initialization', async () => {
-    expect(await ctx.safetyModule.REWARDS_TOKEN()).to.be.equal(ctx.dydxToken.address);
+    expect(await ctx.safetyModule.REWARDS_TOKEN()).to.equal(ctx.dydxToken.address);
   });
 
-  it('Deployer has proper roles set during initialization and is admin of all roles', async () => {
-    const roles: string[] = await Promise.all([
-      ctx.safetyModule.OWNER_ROLE(),
-      ctx.safetyModule.EPOCH_PARAMETERS_ROLE(),
-      ctx.safetyModule.REWARDS_RATE_ROLE(),
-    ]);
-
-    // deployer should have all roles except claimOperator, stakeOperator, and debtOperator.
-    for (const role of roles) {
-      expect(await ctx.safetyModule.hasRole(role, ctx.deployer.address)).to.be.true();
+  it('Short timelock has all roles except the operator roles', async () => {
+    const roleHashes = [
+      Role.OWNER_ROLE,
+      Role.SLASHER_ROLE,
+      Role.EPOCH_PARAMETERS_ROLE,
+      Role.REWARDS_RATE_ROLE,
+    ].map(getRole);
+    for (const role of roleHashes) {
+      expect(await ctx.safetyModule.hasRole(role, ctx.shortTimelock.address)).to.be.true();
     }
+  });
 
-    const stakeOperatorRole: string = await ctx.safetyModule.STAKE_OPERATOR_ROLE();
-    expect(await ctx.safetyModule.hasRole(stakeOperatorRole, ctx.deployer.address)).to.be.false();
-
-    const ownerRole: string = roles[0];
-    const allRoles: string[] = roles.concat(stakeOperatorRole);
-    for (const role of allRoles) {
-      expect(await ctx.safetyModule.getRoleAdmin(role)).to.equal(ownerRole);
+  it('All roles are admined by the OWNER_ROLE', async () => {
+    for (const role of SM_ROLE_HASHES) {
+      expect(await ctx.safetyModule.getRoleAdmin(role)).to.equal(getRole(Role.OWNER_ROLE));
     }
   });
 
   it('Rewards vault is set during initialization', async () => {
-    expect(await ctx.safetyModule.REWARDS_TREASURY()).to.be.equal(ctx.rewardsTreasury.address);
+    expect(await ctx.safetyModule.REWARDS_TREASURY()).to.equal(ctx.rewardsTreasury.address);
   });
 
   it('Blackout window is set during initialization', async () => {
-    expect(await ctx.safetyModule.getBlackoutWindow()).to.be.equal(ctx.config.BLACKOUT_WINDOW);
+    expect(await ctx.safetyModule.getBlackoutWindow()).to.equal(ctx.config.BLACKOUT_WINDOW);
   });
 
   it('Emissions per second is initially zero', async () => {
-    expect(await ctx.safetyModule.getRewardsPerSecond()).to.be.equal(ctx.config.SM_REWARDS_PER_SECOND);
+    expect(await ctx.safetyModule.getRewardsPerSecond()).to.equal(ctx.config.SM_REWARDS_PER_SECOND);
   });
 
   it('Epoch parameters are set during initialization', async () => {
-    const latestTimestamp = await latestBlockTimestamp();
-
     const epochParameters = await ctx.safetyModule.getEpochParameters();
-    expect(epochParameters.interval).to.be.equal(ctx.config.EPOCH_LENGTH);
-    // expect offset to be at least later than now (was initialized to 60 seconds after current blocktime)
-    expect(epochParameters.offset).to.be.at.least(latestTimestamp);
+    expect(epochParameters.interval).to.equal(ctx.config.EPOCH_LENGTH);
+    expect(epochParameters.offset).to.equal(ctx.config.EPOCH_ZERO_START);
   });
 
   it('Domain separator is set during initialization', async () => {
@@ -72,10 +69,11 @@ describeContract('SafetyModuleV1 initialization', init, (ctx: TestContext) => {
   });
 
   it('Initializes the exchange rate to a value of one', async () => {
+    console.log('SM address', ctx.safetyModule.address);
     const exchangeRateBase = await ctx.safetyModule.EXCHANGE_RATE_BASE();
     const exchangeRate = await ctx.safetyModule.getExchangeRate();
+    expect(exchangeRate.eq(0)).to.be.false('Exchange rate was zero');
     expect(exchangeRate).to.equal(exchangeRateBase);
-    expect(exchangeRate.eq(0)).to.be.false();
   });
 
   it('Total active current balance is initially zero', async () => {

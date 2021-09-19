@@ -8,6 +8,8 @@ import {
   Executor__factory,
   GovernanceStrategy,
   GovernanceStrategy__factory,
+  ProxyAdmin,
+  ProxyAdmin__factory,
   SafetyModuleV1,
   SafetyModuleV1__factory,
   Treasury,
@@ -15,14 +17,14 @@ import {
   TreasuryVester__factory,
   Treasury__factory,
 } from '../../types';
-import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../constants';
 import { getDeployConfig } from '../deploy-config';
 import { getHre } from '../hre';
-import { log } from '../logging';
+import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../lib/constants';
+import { log } from '../lib/logging';
+import { getRole, toWad, waitForTx } from '../lib/util';
 import { Role } from '../types';
-import { getRole, toWad, waitForTx } from '../util';
-import { deployUpgradeable } from './deploy-upgradeable';
-import { transferWithPrompt } from './transfer-tokens';
+import { deployUpgradeable } from './helpers/deploy-upgradeable';
+import { transferWithPrompt } from './helpers/transfer-tokens';
 
 export async function deployPhase2({
   startStep = 0,
@@ -35,9 +37,12 @@ export async function deployPhase2({
 
   // Phase 2 deployed contracts.
   rewardsTreasuryAddress,
+  rewardsTreasuryProxyAdminAddress,
   safetyModuleAddress,
+  safetyModuleProxyAdminAddress,
   strategyAddress,
   communityTreasuryAddress,
+  communityTreasuryProxyAdminAddress,
   rewardsTreasuryVesterAddress,
   communityTreasuryVesterAddress,
   claimsProxyAddress,
@@ -52,9 +57,12 @@ export async function deployPhase2({
 
   // Phase 2 deployed contracts.
   rewardsTreasuryAddress?: string,
+  rewardsTreasuryProxyAdminAddress?: string,
   safetyModuleAddress?: string,
+  safetyModuleProxyAdminAddress?: string,
   strategyAddress?: string,
   communityTreasuryAddress?: string,
+  communityTreasuryProxyAdminAddress?: string,
   rewardsTreasuryVesterAddress?: string,
   communityTreasuryVesterAddress?: string,
   claimsProxyAddress?: string,
@@ -74,9 +82,12 @@ export async function deployPhase2({
 
   // Phase 2 deployed contracts.
   let rewardsTreasury: Treasury;
+  let rewardsTreasuryProxyAdmin: ProxyAdmin;
   let safetyModule: SafetyModuleV1;
+  let safetyModuleProxyAdmin: ProxyAdmin;
   let strategy: GovernanceStrategy;
   let communityTreasury: Treasury;
+  let communityTreasuryProxyAdmin: ProxyAdmin;
   let rewardsTreasuryVester: TreasuryVester;
   let communityTreasuryVester: TreasuryVester;
   let claimsProxy: ClaimsProxy;
@@ -88,23 +99,28 @@ export async function deployPhase2({
 
   if (startStep <= 1) {
     log('Step 1. Deploy upgradeable Rewards Treasury');
-    [rewardsTreasury] = await deployUpgradeable(
+    [rewardsTreasury, , rewardsTreasuryProxyAdmin] = await deployUpgradeable(
       Treasury__factory,
       deployer,
       [],
       [],
     );
     rewardsTreasuryAddress = rewardsTreasury.address;
+    rewardsTreasuryProxyAdminAddress = rewardsTreasuryProxyAdmin.address;
   } else {
     if (!rewardsTreasuryAddress) {
       throw new Error('Expected parameter rewardsTreasuryAddress to be specified.');
     }
+    if (!rewardsTreasuryProxyAdminAddress) {
+      throw new Error('Expected parameter rewardsTreasuryProxyAdminAddress to be specified.');
+    }
     rewardsTreasury = new Treasury__factory(deployer).attach(rewardsTreasuryAddress);
+    rewardsTreasuryProxyAdmin = new ProxyAdmin__factory(deployer).attach(rewardsTreasuryProxyAdminAddress);
   }
 
   if (startStep <= 2) {
     log('Step 2. Deploy and initialize upgradeable Safety Module');
-    [safetyModule] = await deployUpgradeable(
+    [safetyModule, , safetyModuleProxyAdmin] = await deployUpgradeable(
       SafetyModuleV1__factory,
       deployer,
       [
@@ -121,11 +137,16 @@ export async function deployPhase2({
       ],
     );
     safetyModuleAddress = safetyModule.address;
+    safetyModuleProxyAdminAddress = safetyModuleProxyAdmin.address;
   } else {
     if (!safetyModuleAddress) {
       throw new Error('Expected parameter safetyModuleAddress to be specified.');
     }
+    if (!safetyModuleProxyAdminAddress) {
+      throw new Error('Expected parameter safetyModuleProxyAdminAddress to be specified.');
+    }
     safetyModule = new SafetyModuleV1__factory(deployer).attach(safetyModuleAddress);
+    safetyModuleProxyAdmin = new ProxyAdmin__factory(deployer).attach(safetyModuleProxyAdminAddress);
   }
 
   if (startStep <= 3) {
@@ -151,18 +172,23 @@ export async function deployPhase2({
 
   if (startStep <= 5) {
     log('Step 5. Deploy upgradeable Community Treasury');
-    [communityTreasury] = await deployUpgradeable(
+    [communityTreasury, , communityTreasuryProxyAdmin] = await deployUpgradeable(
       Treasury__factory,
       deployer,
       [],
       [],
     );
     communityTreasuryAddress = communityTreasury.address;
+    communityTreasuryProxyAdminAddress = communityTreasuryProxyAdmin.address;
   } else {
     if (!communityTreasuryAddress) {
       throw new Error('Expected parameter communityTreasuryAddress to be specified.');
     }
+    if (!communityTreasuryProxyAdminAddress) {
+      throw new Error('Expected parameter communityTreasuryProxyAdminAddress to be specified.');
+    }
     communityTreasury = new Treasury__factory(deployer).attach(communityTreasuryAddress);
+    communityTreasuryProxyAdmin = new ProxyAdmin__factory(deployer).attach(communityTreasuryProxyAdminAddress);
   }
 
   if (startStep <= 6) {
@@ -270,6 +296,7 @@ export async function deployPhase2({
       await governor.grantRole(getRole(Role.OWNER_ROLE), longTimelock.address),
       await governor.grantRole(getRole(Role.ADD_EXECUTOR_ROLE), shortTimelock.address),
     ];
+
     await Promise.all(txs.map((tx) => waitForTx(tx)));
   }
 
@@ -282,11 +309,16 @@ export async function deployPhase2({
     );
   }
 
+  log('\n=== PHASE 2 DEPLOYMENT COMPLETE ===\n');
+
   return {
     rewardsTreasury,
+    rewardsTreasuryProxyAdmin,
     safetyModule,
+    safetyModuleProxyAdmin,
     strategy,
     communityTreasury,
+    communityTreasuryProxyAdmin,
     rewardsTreasuryVester,
     communityTreasuryVester,
     claimsProxy,

@@ -6,12 +6,13 @@ import {
   Executor,
   Executor__factory,
 } from '../../types';
-import { ZERO_ADDRESS } from '../constants';
 import { getDeployConfig } from '../deploy-config';
 import { getHre } from '../hre';
-import { log } from '../logging';
-import { waitForTx } from '../util';
-import { deployExecutor } from './deploy-executor';
+import { ZERO_ADDRESS } from '../lib/constants';
+import { log } from '../lib/logging';
+import { waitForTx } from '../lib/util';
+import { deployExecutor } from './helpers/deploy-executor';
+import { transferWithPrompt } from './helpers/transfer-tokens';
 
 export async function deployPhase1({
   startStep = 0,
@@ -141,7 +142,34 @@ export async function deployPhase1({
     );
   }
 
-  log('=== PHASE 1 DEPLOYMENT COMPLETE ===\n');
+  if (startStep <= 8) {
+    log('Step 8. Add test addresses to token transfer allowlist');
+    await waitForTx(
+      await dydxToken.addToTokenTransferAllowlist(
+        deployConfig.TOKEN_TEST_ADDRESSES,
+      ),
+    );
+  }
+
+  if (startStep <= 9) {
+    log('Step 9. Send test tokens.');
+
+    const testAllocations = [
+      deployConfig.TOKEN_ALLOCATIONS.TEST_TOKENS_1,
+      deployConfig.TOKEN_ALLOCATIONS.TEST_TOKENS_2,
+      deployConfig.TOKEN_ALLOCATIONS.TEST_TOKENS_3,
+      deployConfig.TOKEN_ALLOCATIONS.TEST_TOKENS_4,
+    ];
+    for (const allocation of testAllocations) {
+      await transferWithPrompt(
+        dydxToken,
+        allocation.ADDRESS,
+        allocation.AMOUNT,
+      );
+    }
+  }
+
+  log('\n=== PHASE 1 DEPLOYMENT COMPLETE ===\n');
   const contracts = [
     ['DydxToken', dydxTokenAddress],
     ['Governor', governorAddress],

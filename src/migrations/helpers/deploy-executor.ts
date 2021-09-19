@@ -3,8 +3,8 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
   Executor,
   Executor__factory,
-} from '../../types';
-import { TimelockConfig } from '../types';
+} from '../../../types';
+import { TimelockConfig } from '../../types';
 
 export async function deployExecutor(
   deployer: SignerWithAddress,

@@ -2,7 +2,7 @@ import BNJS from 'bignumber.js';
 import { ContractTransaction } from 'ethers';
 import Web3 from 'web3';
 
-import { BigNumberable, Role } from './types';
+import { BigNumberable, Role } from '../types';
 
 export function getRole(
   role: Role,

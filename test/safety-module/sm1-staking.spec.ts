@@ -2,8 +2,9 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import BNJS from 'bignumber.js';
 import { expect } from 'chai';
 
-import { ZERO_ADDRESS } from '../../src/constants';
-import { SafetyModuleV1 } from '../../types';
+import { ZERO_ADDRESS } from '../../src/lib/constants';
+import { deployUpgradeable } from '../../src/migrations/helpers/deploy-upgradeable';
+import { SafetyModuleV1, SafetyModuleV11__factory } from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
 import {
   incrementTimeToTimestamp,
@@ -23,7 +24,6 @@ let fundsRecipient: SignerWithAddress;
 let stakerSigner1: SafetyModuleV1;
 let stakerSigner2: SafetyModuleV1;
 
-let distributionStart: string;
 let distributionEnd: string;
 
 let contract: StakingHelper;
@@ -36,7 +36,6 @@ async function init(ctx: TestContext) {
   stakerSigner1 = ctx.safetyModule.connect(staker1);
   stakerSigner2 = ctx.safetyModule.connect(staker2);
 
-  distributionStart = (await ctx.safetyModule.DISTRIBUTION_START()).toString();
   distributionEnd = (await ctx.safetyModule.DISTRIBUTION_END()).toString();
 
   // Use helper class to automatically check contract invariants after every update.
@@ -71,14 +70,30 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
 
   describe('stake', () => {
 
-    it('User cannot successfully stake if epoch zero has not started', async () => {
-      await expect(stakerSigner1.stake(stakerInitialBalance)).to.be.revertedWith(
+    it('User cannot stake if epoch zero has not started', async () => {
+      const newDistributionStart = await latestBlockTimestamp() + 100;
+      const [smBeforeEpochZero] = await deployUpgradeable(
+        SafetyModuleV11__factory,
+        ctx.deployer,
+        [
+          ctx.dydxToken.address,
+          ctx.dydxToken.address,
+          ctx.rewardsTreasury.address,
+          newDistributionStart,
+          ctx.config.SM_DISTRIBUTION_END,
+        ],
+        [
+          ctx.config.EPOCH_LENGTH,
+          newDistributionStart, // Must be in the future.
+          ctx.config.BLACKOUT_WINDOW,
+        ],
+      );
+      await expect(smBeforeEpochZero.stake(stakerInitialBalance)).to.be.revertedWith(
         'SM1EpochSchedule: Epoch zero has not started',
       );
     });
 
     it('User can successfully stake if epoch zero has started', async () => {
-      await incrementTimeToTimestamp(distributionStart);
       await contract.stake(staker1, stakerInitialBalance);
 
       // `dydxToken` should be transferred to SafetyModuleV1 contract, and user should be given an
@@ -94,8 +109,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
   describe('requestWithdrawal', () => {
 
     it('User with nonzero staked balance can request a withdrawal after epoch zero has started', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
       await contract.requestWithdrawal(staker1, stakerInitialBalance);
 
@@ -126,13 +139,12 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
     });
 
     it('User with nonzero staked balance cannot request a withdrawal during blackout window', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
 
       const withinBlackoutWindow = (
+        await latestBlockTimestamp() +
+        Number(await ctx.safetyModule.getTimeRemainingInCurrentEpoch()) +
         ctx.config.EPOCH_LENGTH +
-        Number(distributionStart) -
         ctx.config.BLACKOUT_WINDOW
       );
       await incrementTimeToTimestamp(withinBlackoutWindow);
@@ -151,9 +163,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
     });
 
     it('User with zero staked balance cannot request a withdrawal', async () => {
-      // increment time to past epoch zero
-      await incrementTimeToTimestamp(distributionStart);
-
       await expect(contract.requestWithdrawal(staker1, 1)).to.be.revertedWith(
         'SM1Staking: Withdraw request exceeds next active balance',
       );
@@ -163,8 +172,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
   describe('withdrawStake', () => {
 
     it('Staker can request and withdraw full balance', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
       await contract.requestWithdrawal(staker1, stakerInitialBalance);
       await contract.elapseEpoch(); // increase time to next epoch, so user can withdraw funds
@@ -181,8 +188,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
     });
 
     it('Staker can request full balance and make multiple partial withdrawals', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
       await contract.requestWithdrawal(staker1, stakerInitialBalance);
       await contract.elapseEpoch(); // increase time to next epoch, so user can withdraw funds
@@ -203,8 +208,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
     });
 
     it('Staker can make multiple partial requests and then a full withdrawal', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
       await contract.requestWithdrawal(staker1, 100);
       await contract.requestWithdrawal(staker1, 10);
@@ -214,8 +217,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
     });
 
     it('Staker can make multiple partial requests and then multiple partial withdrawals', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
       await contract.requestWithdrawal(staker1, 100);
       await contract.requestWithdrawal(staker1, 10);
@@ -227,8 +228,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
     });
 
     it('Staker cannot withdraw funds if none are staked', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await expect(
         stakerSigner1.withdrawStake(staker1.address, stakerInitialBalance),
       ).to.be.revertedWith('SM1Staking: Withdraw amount exceeds staker inactive balance');
@@ -238,8 +237,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
   describe('withdrawMaxStake', () => {
 
     it('Staker can request and withdraw full balance', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
       await contract.requestWithdrawal(staker1, stakerInitialBalance);
       await contract.elapseEpoch(); // increase time to next epoch, so user can withdraw funds
@@ -256,8 +253,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
     });
 
     it('Staker can try to withdraw max stake even if there is none', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.withdrawMaxStake(staker1, staker1);
     });
   });
@@ -265,8 +260,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
   describe('Transfer events', () => {
 
     it('Emits transfer events as expected', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await expect(ctx.safetyModule.connect(staker1).stake(stakerInitialBalance))
         .to.emit(ctx.safetyModule, 'Transfer')
         .withArgs(ZERO_ADDRESS, staker1.address, stakerInitialBalance);
@@ -288,8 +281,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
   describe('claimRewards', () => {
 
     it('User with staked balance can claim rewards', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       // Repeat with different rewards rates.
       await contract.stake(staker1, stakerInitialBalance);
       let lastTimestamp = await latestBlockTimestamp();
@@ -308,8 +299,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
     });
 
     it('User with nonzero staked balance for one epoch but emission rate was zero cannot claim rewards', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
 
       // increase time to next epoch, so user can earn rewards
@@ -325,8 +314,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
     });
 
     it('Multiple users can stake, requestWithdrawal, withdrawStake, and claimRewards', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       // change EMISSION_RATE to be greater than 0
       const emissionRate = 1;
       await contract.setRewardsPerSecond(emissionRate);
@@ -412,8 +399,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
   describe('transfer', () => {
 
     it('User with staked balance can transfer to another user', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
 
       await contract.transfer(staker1, staker2, stakerInitialBalance);
@@ -423,8 +408,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
     });
 
     it('User with staked balance for one epoch can transfer to another user and claim rewards', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       // change EMISSION_RATE to be greater than 0
       const emissionRate = 1;
       await expect(ctx.safetyModule.connect(ctx.deployer).setRewardsPerSecond(emissionRate))
@@ -457,8 +440,6 @@ describeContract('SM1Staking', init, (ctx: TestContext) => {
   describe('transferFrom', () => {
 
     it('User with staked balance can transfer to another user', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
 
       await contract.approve(staker1, staker2, stakerInitialBalance);

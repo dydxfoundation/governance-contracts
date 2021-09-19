@@ -2,7 +2,9 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 
-import { ONE_DAY_SECONDS } from '../../src/constants';
+import { ONE_DAY_SECONDS } from '../../src/lib/constants';
+import { deployUpgradeable } from '../../src/migrations/helpers/deploy-upgradeable';
+import { SafetyModuleV11, SafetyModuleV11__factory } from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { StakingHelper } from '../helpers/staking-helper';
@@ -13,17 +15,17 @@ const stakerInitialBalance: number = 1_000_000;
 let stakers: SignerWithAddress[];
 
 let initialOffset: BigNumber;
-
 let contract: StakingHelper;
+
+// Second Safety Module for test cases to test behavior before epoch zero.
+let smBeforeEpochZero: SafetyModuleV11;
+let smBeforeEpochZeroInitialOffset: number;
 
 async function init(ctx: TestContext) {
   // Users.
   stakers = ctx.users.slice(1, 3); // 2 stakers
 
-  const epochParams: {
-    interval: BigNumber,
-    offset: BigNumber,
-  } = await ctx.safetyModule.getEpochParameters();
+  const epochParams = await ctx.safetyModule.getEpochParameters();
   initialOffset = epochParams.offset;
 
   // Use helper class to automatically check contract invariants after every update.
@@ -40,6 +42,26 @@ async function init(ctx: TestContext) {
 
   // Mint staked tokens and set allowances.
   await Promise.all(stakers.map((s) => contract.mintAndApprove(s, stakerInitialBalance)));
+
+  // Create a second, separate instance of the Safety Module, which can be used when we want to
+  // test against a safety module which has not yet started epoch zero.
+  smBeforeEpochZeroInitialOffset = await latestBlockTimestamp() + 500;
+  [smBeforeEpochZero] = await deployUpgradeable(
+    SafetyModuleV11__factory,
+    ctx.deployer,
+    [
+      ctx.dydxToken.address,
+      ctx.dydxToken.address,
+      ctx.rewardsTreasury.address,
+      smBeforeEpochZeroInitialOffset,
+      ctx.config.SM_DISTRIBUTION_END,
+    ],
+    [
+      ctx.config.EPOCH_LENGTH,
+      smBeforeEpochZeroInitialOffset, // Must be in the future.
+      ctx.config.BLACKOUT_WINDOW,
+    ],
+  );
 }
 
 describeContract('SM1Admin', init, (ctx: TestContext) => {
@@ -60,34 +82,34 @@ describeContract('SM1Admin', init, (ctx: TestContext) => {
       // Double epoch length.
       // We would now be in the blackout window, except that it doesn't apply before epoch zero.
       const newEpochLength = ctx.config.EPOCH_LENGTH * 2;
-      await contract.setEpochParameters(newEpochLength, initialOffset);
+      await smBeforeEpochZero.setEpochParameters(newEpochLength, smBeforeEpochZeroInitialOffset);
 
       // Increase blackout window to fill the whole epoch.
-      await contract.setBlackoutWindow(newEpochLength);
+      await smBeforeEpochZero.setBlackoutWindow(newEpochLength);
 
       // Decrease blackout window to zero.
-      await contract.setBlackoutWindow(0);
+      await smBeforeEpochZero.setBlackoutWindow(0);
 
       // Decrease epoch length.
-      await contract.setEpochParameters(1, initialOffset);
+      await smBeforeEpochZero.setEpochParameters(1, smBeforeEpochZeroInitialOffset);
 
       // Set different offsets. Any offset should be valid as long as it's in the future.
-      await contract.setEpochParameters(ctx.config.EPOCH_LENGTH, currentTime + 30);
-      await contract.setEpochParameters(ctx.config.EPOCH_LENGTH, currentTime + 100000);
+      await smBeforeEpochZero.setEpochParameters(ctx.config.EPOCH_LENGTH, currentTime + 30);
+      await smBeforeEpochZero.setEpochParameters(ctx.config.EPOCH_LENGTH, currentTime + 100000);
     });
 
-    it('Can set epoch parameters which jump past the start of epoch zero', async () => {
+    it('Cannot set epoch parameters which jump past the start of epoch zero', async () => {
       const currentTime = await latestBlockTimestamp();
-      await expect(contract.setEpochParameters(ctx.config.EPOCH_LENGTH, currentTime)).to.be.revertedWith(
+      await expect(smBeforeEpochZero.setEpochParameters(ctx.config.EPOCH_LENGTH, currentTime)).to.be.revertedWith(
         'SM1Admin: Started epoch zero',
       );
       await expect(
-        contract.setEpochParameters(ctx.config.EPOCH_LENGTH, currentTime - 10000),
+        smBeforeEpochZero.setEpochParameters(ctx.config.EPOCH_LENGTH, currentTime - 10000),
       ).to.be.revertedWith('SM1Admin: Started epoch zero');
     });
 
     it('Can set the emission rate', async () => {
-      await contract.setRewardsPerSecond(123);
+      await smBeforeEpochZero.setRewardsPerSecond(123);
     });
   });
 

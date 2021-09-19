@@ -8,9 +8,9 @@ import _ from 'lodash';
 import config from '../../src/config';
 import {
   ZERO_ADDRESS,
-} from '../../src/constants';
+} from '../../src/lib/constants';
+import { getRole } from '../../src/lib/util';
 import { Role } from '../../src/types';
-import { getRole } from '../../src/util';
 import {
   ERC20,
   LiquidityStakingV1,

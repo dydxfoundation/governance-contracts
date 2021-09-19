@@ -5,10 +5,10 @@
 import { BigNumber } from 'bignumber.js';
 import _ from 'lodash';
 
-import { ConfigError } from '../errors';
 import {
   getNetworkName,
 } from '../hre';
+import { ConfigError } from '../lib/errors';
 import {
   BigNumberable,
   NetworkName,

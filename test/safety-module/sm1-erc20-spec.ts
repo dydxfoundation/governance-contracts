@@ -2,10 +2,10 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import BNJS from 'bignumber.js';
 import { expect } from 'chai';
 
-import { ZERO_ADDRESS } from '../../src/constants';
+import { ZERO_ADDRESS } from '../../src/lib/constants';
 import { SafetyModuleV1 } from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
-import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
+import { latestBlockTimestamp } from '../helpers/evm';
 import { StakingHelper } from '../helpers/staking-helper';
 
 const stakerInitialBalance: number = 1_000_000;
@@ -18,8 +18,6 @@ let staker2: SignerWithAddress;
 // Users calling the liquidity staking contract.
 let stakerSigner1: SafetyModuleV1;
 
-let distributionStart: string;
-
 let contract: StakingHelper;
 
 async function init(ctx: TestContext) {
@@ -28,8 +26,6 @@ async function init(ctx: TestContext) {
 
   // Users calling the liquidity staking contract.
   stakerSigner1 = ctx.safetyModule.connect(staker1);
-
-  distributionStart = (await ctx.safetyModule.DISTRIBUTION_START()).toString();
 
   // Use helper class to automatically check contract invariants after every update.
   contract = new StakingHelper(
@@ -80,8 +76,6 @@ describeContract('SM1Erc20', init, (ctx: TestContext) => {
     });
 
     it('totalSupply increases when users stake funds and does not decrease when funds are inactive', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
 
       expect(await ctx.safetyModule.totalSupply()).to.equal(stakerInitialBalance);
@@ -113,8 +107,6 @@ describeContract('SM1Erc20', init, (ctx: TestContext) => {
     });
 
     it('User balance increases when user stakes funds and does not decrease when funds are inactive', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
 
       expect(await ctx.safetyModule.balanceOf(staker1.address)).to.equal(stakerInitialBalance);
@@ -200,8 +192,6 @@ describeContract('SM1Erc20', init, (ctx: TestContext) => {
     });
 
     it('User with staked balance can transfer to another user', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
 
       expect(await ctx.safetyModule.getTransferableBalance(staker1.address)).to.equal(
@@ -214,8 +204,6 @@ describeContract('SM1Erc20', init, (ctx: TestContext) => {
     });
 
     it('User with staked balance for one epoch can transfer to another user and claim rewards', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       // change EMISSION_RATE to be greater than 0
       const emissionRate = 1;
       await expect(ctx.safetyModule.connect(ctx.deployer).setRewardsPerSecond(emissionRate))
@@ -245,8 +233,6 @@ describeContract('SM1Erc20', init, (ctx: TestContext) => {
     });
 
     it('User cannot transfer funds that are going to be inactive in the next epoch', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
 
       await contract.requestWithdrawal(staker1, stakerInitialBalance);
@@ -262,8 +248,6 @@ describeContract('SM1Erc20', init, (ctx: TestContext) => {
   describe('transferFrom', () => {
 
     it('User with staked balance can transfer to another user', async () => {
-      await incrementTimeToTimestamp(distributionStart);
-
       await contract.stake(staker1, stakerInitialBalance);
 
       await contract.approve(staker1, staker2, stakerInitialBalance);

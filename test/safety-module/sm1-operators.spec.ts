@@ -4,9 +4,6 @@ import { expect } from 'chai';
 import { Role } from '../../src/types';
 import { SafetyModuleV1 } from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
-import {
-  incrementTimeToTimestamp,
-} from '../helpers/evm';
 import { StakingHelper } from '../helpers/staking-helper';
 
 const stakerInitialBalance: number = 1_000_000;
@@ -18,8 +15,6 @@ let operator: SignerWithAddress;
 // Smart contract callers.
 let operatorSigner: SafetyModuleV1;
 
-let distributionStart: string;
-
 let contract: StakingHelper;
 
 async function init(ctx: TestContext) {
@@ -28,8 +23,6 @@ async function init(ctx: TestContext) {
   operator = ctx.users[3];
 
   operatorSigner = ctx.safetyModule.connect(operator);
-
-  distributionStart = (await ctx.safetyModule.DISTRIBUTION_START()).toString();
 
   // Use helper class to automatically check contract invariants after every update.
   contract = new StakingHelper(
@@ -58,10 +51,6 @@ describeContract('SM1Operator', init, (ctx: TestContext) => {
   });
 
   describe('Stake and claim operators', () => {
-
-    beforeEach(async () => {
-      await incrementTimeToTimestamp(distributionStart);
-    });
 
     it('The stake operator can withdraw stake on behalf of a user', async () => {
       const largeBalance = stakerInitialBalance * 100;
