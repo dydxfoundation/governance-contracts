@@ -31,7 +31,7 @@ npx hardhat --network mainnet deploy:safety-module-recovery \
 The newly deployed addresses will be logged to the console. The governance proposal to perform the upgrade can be created as follows. The proposer must have 2% of the total DYDX supply (20M tokens) in their account and/or delegated to them as “proposition power.”
 
 ```bash
-npx hardhat --network mainnet deploy:safety-module-recovery \
+npx hardhat --network mainnet deploy:safety-module-recovery-proposal \
   --proposal-ipfs-hash-hex              0x...                                      \
   --governor-address                    0x7E9B1672616FF6D6629Ef2879419aaE79A9018D2 \
   --long-timelock-address               0xEcaE9BF44A21d00E2350a42127A377Bf5856d84B \
