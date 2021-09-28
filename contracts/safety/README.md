@@ -68,6 +68,7 @@ npm run test:fork
 Read-only tests can be run against mainnet directly, using the following command. By design, several test cases will **fail** until the Safety Module fix has been implemented on mainnet.
 
 ```bash
+OVERRIDE_DEPLOYER_ADDRESS=0x301DF37d653b281AF83a1DDf4464eF21A622eC83 \
 npx hardhat test --network mainnet \
   test/safety-module/state.spec.ts \
   test/safety-module/storage-slots.spec.ts \
