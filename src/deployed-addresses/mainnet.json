@@ -14,7 +14,7 @@
   "rewardsTreasuryVester": "0xb9431E19B29B952d9358025f680077C3Fd37292f",
   "communityTreasuryVester": "0x08a90Fe0741B7DeF03fB290cc7B273F1855767D8",
   "claimsProxy": "0x0fd829C3365A225FB9226e75c97c3A114bD3199e",
-  "safetyModuleNewImpl": "0xae85d401d852218ae335645662bbf565c82e7cf1",
-  "safetyModuleRecovery": "0x17805aa3d13fe9e6966d3dc557329025c2e20f6f",
-  "safetyModuleRecoveryProxyAdmin": "0x9861b05a0334ff0bcd4f760665300d9c3acec178"
+  "safetyModuleNewImpl": "0xAe85D401D852218AE335645662bBF565C82E7cf1",
+  "safetyModuleRecovery": "0xF3f6e3fad2D453ca0Ce3c8580ecBE801F04c5662",
+  "safetyModuleRecoveryProxyAdmin": "0x9861b05A0334Ff0BcD4f760665300D9c3aCEc178"
 }
