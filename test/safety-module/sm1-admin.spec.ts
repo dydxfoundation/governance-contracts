@@ -6,7 +6,7 @@ import { ONE_DAY_SECONDS } from '../../src/lib/constants';
 import { deployUpgradeable } from '../../src/migrations/helpers/deploy-upgradeable';
 import { SafetyModuleV11, SafetyModuleV11__factory } from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
-import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
+import { increaseTimeAndMine, incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { StakingHelper } from '../helpers/staking-helper';
 
 const stakerInitialBalance: number = 1_000_000;
@@ -116,38 +116,35 @@ describeContract('SM1Admin', init, (ctx: TestContext) => {
   describe('After epoch zero has started', () => {
 
     beforeEach(async () => {
-      // Move us roughly midway into epoch 2 (right before blackout window).
-      const newTimestamp = initialOffset.toNumber() + ctx.config.EPOCH_LENGTH * 2.49;
-      await incrementTimeToTimestamp(newTimestamp);
-      expect(await ctx.safetyModule.getCurrentEpoch()).to.equal(2);
+      const latestTimestamp = await latestBlockTimestamp();
+      // Move roughly midway into an epoch, before the blackout window.
+      const timeRemainingInEpoch = (
+        ctx.config.EPOCH_LENGTH -
+        ((latestTimestamp - ctx.config.EPOCH_ZERO_START) % ctx.config.EPOCH_LENGTH)
+      );
+      const timeToElapse = timeRemainingInEpoch + ctx.config.EPOCH_LENGTH * 0.49;
+      await increaseTimeAndMine(timeToElapse);
     });
 
-    it('Can set epoch parameters which maintain current epoch and blackout status', async () => {
-      //                               v now
-      // Initial schedule:
-      // |           |           |           |
-      // 0           1           2           3
-      //
-      // New schedule:
-      //                     |   |   |   |
-      //                     0   1   2   3
-      await contract.setBlackoutWindow(ctx.config.BLACKOUT_WINDOW / 4); // Can be at most half epoch length.
+    it('Can set epoch parameters which keep the same epoch number', async () => {
+      const latestTimestamp = await latestBlockTimestamp();
+      const currentEpoch = (await contract.getCurrentEpoch()).toNumber();
+      const newEpochLength = ctx.config.EPOCH_LENGTH / 3;
+
+      // Change the blackout period.
+      await contract.setBlackoutWindow(ctx.config.BLACKOUT_WINDOW / 4);
+
+      // Set an epoch schedule with shorter epochs.
       await contract.setEpochParameters(
-        ctx.config.EPOCH_LENGTH / 3,
-        initialOffset.add(ctx.config.EPOCH_LENGTH * 5 / 3),
+        newEpochLength,
+        latestTimestamp - ((currentEpoch + 0.5) * newEpochLength),
       );
-      //
-      // New schedule:
-      // |                       |                       |
-      // 1                       2                       3
+
+      // Set an epoch schedule with longer epochs.
+      const newEpochLength2 = ctx.config.EPOCH_LENGTH * 2;
       await contract.setEpochParameters(
-        ctx.config.EPOCH_LENGTH * 2,
-        initialOffset.sub(ctx.config.EPOCH_LENGTH * 2),
-      );
-      // Another schedule, with epoch zero further in the past.
-      await contract.setEpochParameters(
-        ctx.config.EPOCH_LENGTH * 3,
-        initialOffset.sub(ctx.config.EPOCH_LENGTH * 6),
+        newEpochLength2,
+        latestTimestamp - ((currentEpoch + 0.5) * newEpochLength2),
       );
     });
 
@@ -159,18 +156,11 @@ describeContract('SM1Admin', init, (ctx: TestContext) => {
       );
     });
 
-    it('Can set blackout parameters which move us into the blackout window', async () => {
-      const newEpochLength = ctx.config.EPOCH_LENGTH + ONE_DAY_SECONDS * 2;
-      await contract.setEpochParameters(
-        newEpochLength,
-        initialOffset,
-      );
-
-      const midwayThroughEpoch2: BigNumber = initialOffset.add(newEpochLength * 5 / 2);
-      await incrementTimeToTimestamp(midwayThroughEpoch2);
-
+    it('Can set blackout window length which move us into the blackout window', async () => {
       // Expand the blackout window to include the current timestamp.
-      await contract.setBlackoutWindow(newEpochLength / 2);
+      await contract.setBlackoutWindow(ctx.config.EPOCH_LENGTH * 4 / 5);
+
+      expect(await ctx.safetyModule.inBlackoutWindow()).to.be.true();
     });
 
     it('Cannot set epoch parameters which decrease the current epoch number', async () => {
@@ -202,14 +192,18 @@ describeContract('SM1Admin', init, (ctx: TestContext) => {
   describe('While in the blackout window', () => {
 
     beforeEach(async () => {
-      // Move us to the middle of the blackout window of epoch 2.
-      const newTimestamp = (
-        initialOffset.toNumber() +
+      // Move to the middle of a blackout window.
+      const latestTimestamp = await latestBlockTimestamp();
+      const timeRemainingInEpoch = (
+        ctx.config.EPOCH_LENGTH -
+        ((latestTimestamp - ctx.config.EPOCH_ZERO_START) % ctx.config.EPOCH_LENGTH)
+      );
+      const timeToElapse = (
+        timeRemainingInEpoch +
         ctx.config.EPOCH_LENGTH * 3 -
         ctx.config.BLACKOUT_WINDOW / 2
       );
-      await incrementTimeToTimestamp(newTimestamp);
-      expect(await ctx.safetyModule.getCurrentEpoch()).to.equal(2);
+      await increaseTimeAndMine(timeToElapse);
       expect(await ctx.safetyModule.inBlackoutWindow()).to.be.true();
     });
 

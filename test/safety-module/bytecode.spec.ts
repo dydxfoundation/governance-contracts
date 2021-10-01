@@ -14,12 +14,14 @@ describeContract('SafetyModule contract bytecode', init, (ctx: TestContext) => {
     );
   });
 
-  it('The implementation has the expected bytecode', async () => {
-
+  it('The current implementation has the expected bytecode', async () => {
+    const currentImplementationAddress = await ctx.safetyModuleProxyAdmin.getProxyImplementation(
+      ctx.safetyModule.address,
+    );
     await verifyContract(
       'contracts/safety/v2/',
       'SafetyModuleV2',
-      ctx.safetyModuleNewImpl.address,
+      currentImplementationAddress,
       {
         DISTRIBUTION_START: ctx.config.SM_RECOVERY_DISTRIBUTION_START,
         DISTRIBUTION_END: ctx.config.SM_RECOVERY_DISTRIBUTION_END,
