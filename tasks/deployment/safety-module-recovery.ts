@@ -9,11 +9,16 @@ hardhatTask('deploy:safety-module-recovery', 'Deploy the Safety Module recovery 
   .addParam('shortTimelockAddress', 'Previously deployed short timelock executor address', undefined, types.string)
   .addParam('rewardsTreasuryAddress', 'Previously deployed rewards treasury address', undefined, types.string)
   .addOptionalParam('safetyModuleNewImplAddress', 'Previously deployed SafetyModuleV2 implementation contract', undefined, types.string)
+  .addOptionalParam('safetyModuleRecoveryAddress', 'Previously deployed SM2Recovery contract', undefined, types.string)
+  .addOptionalParam('safetyModuleRecoveryProxyAdminAddress', 'Previously deployed SM2Recovery Proxy Admin contract', undefined, types.string)
   .setAction(async (args: {
     startStep: number,
     dydxTokenAddress: string,
     shortTimelockAddress: string,
     rewardsTreasuryAddress: string,
+    safetyModuleNewImplAddress: string,
+    safetyModuleRecoveryAddress: string,
+    safetyModuleRecoveryProxyAdminAddress: string,
   }) => {
     const {
       safetyModuleNewImpl,
