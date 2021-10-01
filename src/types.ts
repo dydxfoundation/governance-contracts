@@ -9,7 +9,7 @@ import { deployPhase2 } from './migrations/phase-2';
 import { deploySafetyModuleRecovery } from './migrations/safety-module-recovery';
 export * from './deploy-config/types';
 
-type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
+export type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
 
 export type BigNumberable = BNJS | string | number;
 

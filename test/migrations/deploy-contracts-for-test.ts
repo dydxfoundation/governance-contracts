@@ -11,7 +11,7 @@ import { deployPhase1 } from '../../src/migrations/phase-1';
 import { deployPhase2 } from '../../src/migrations/phase-2';
 import { deployPhase3 } from '../../src/migrations/phase-3';
 import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-recovery';
-import { DeployedContracts } from '../../src/types';
+import { DeployedContracts, UnwrapPromise } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './execute-safety-module-upgrade';
@@ -22,7 +22,7 @@ import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProp
  * We use the mainnet deployments scripts to mimic the mainnet environment as closely as possible.
  */
 export async function deployContractsForTest(): Promise<
-  Omit<DeployedContracts, 'safetyModuleNewImpl' | 'safetyModuleRecovery'>
+  Omit<DeployedContracts, 'safetyModuleNewImpl' | 'safetyModuleRecovery' | 'safetyModuleRecoveryProxyAdmin'>
 > {
   // Phase 1: Deploy core governance contracts.
   const phase1Contracts = await deployPhase1();
@@ -70,11 +70,12 @@ export async function deployContractsForTest(): Promise<
 }
 
 export async function applySafetyModuleRecoveryForTest(
-  deployedContracts: Omit<DeployedContracts, 'safetyModuleNewImpl' | 'safetyModuleRecovery'>,
+  deployedContracts: UnwrapPromise<ReturnType<typeof deployContractsForTest>>,
 ) {
   // Deploy contracts for Safety Module recovery.
   const smRecoveryContracts = await deploySafetyModuleRecovery({
     dydxTokenAddress: deployedContracts.dydxToken.address,
+    shortTimelockAddress: deployedContracts.shortTimelock.address,
     rewardsTreasuryAddress: deployedContracts.rewardsTreasury.address,
   });
 
