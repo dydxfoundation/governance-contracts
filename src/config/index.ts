@@ -8,7 +8,7 @@ import {
 const configSchema = {
   DEPLOYMENT_LOGS: parseBoolean({ default: null }),
   FORK_MAINNET: parseBoolean({ default: false }),
-  FORK_BLOCK_NUMBER: parseInteger({ default: 13332000 }),
+  FORK_BLOCK_NUMBER: parseInteger({ default: 13333910 }),
   HARDHAT_SIMULATE_AFFECTED_STAKERS: parseInteger({ default: 3 }),
   OVERRIDE_DEPLOYER_ADDRESS: parseString({ default: null }),
   PROMPT_AUTO_YES: parseBoolean({ default: false }),
