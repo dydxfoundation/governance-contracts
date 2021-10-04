@@ -1,5 +1,8 @@
+import BNJS from 'bignumber.js';
+import { BigNumber } from 'ethers';
 import { Interface } from 'ethers/lib/utils';
 
+import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
 import { log } from '../../src/lib/logging';
@@ -13,6 +16,8 @@ import {
   SafetyModuleV2__factory,
 } from '../../types';
 import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
+
+const MAINNET_PROPOSAL_ID = 0;
 
 const MOCK_PROPOSAL_IPFS_HASH = (
   '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -37,43 +42,70 @@ export async function executeSafetyModuleUpgradeViaProposal({
 }): Promise<void> {
   const deployConfig = getDeployConfig();
   const deployer = await getDeployerSigner();
-  const governor = await new DydxGovernor__factory(deployer).attach(governorAddress);
+  const dydxToken = new DydxToken__factory(deployer).attach(dydxTokenAddress);
+  const governor = new DydxGovernor__factory(deployer).attach(governorAddress);
 
-  // Give tokens to the deployer that it can use to create and vote on the proposal.
-  const topEoaHolderAddress = '0xf95746b2c3d120b78fd1cb3f9954cb451c2163e4';
-  const topEoaHolder = await impersonateAndFundAccount(topEoaHolderAddress);
-  const dydxToken = new DydxToken__factory(topEoaHolder).attach(dydxTokenAddress);
-  const balance = await dydxToken.balanceOf(topEoaHolderAddress);
-  await dydxToken.transfer(deployer.address, balance);
+  // Pick a voter with enough tokens to meet the quorum requirement.
+  const voterAddress = deployConfig.TOKEN_ALLOCATIONS.DYDX_TRADING.ADDRESS;
+  let voter = await impersonateAndFundAccount(voterAddress);
+  const voterBalance = await dydxToken.balanceOf(voterAddress);
 
-  log('Creating proposal');
-  const { proposalId } = await createSafetyModuleRecoveryProposal({
-    proposalIpfsHashHex: MOCK_PROPOSAL_IPFS_HASH,
-    governorAddress,
-    longTimelockAddress,
-    safetyModuleAddress,
-    safetyModuleProxyAdminAddress,
-    safetyModuleNewImplAddress,
-    safetyModuleRecoveryAddress,
-  });
+  if (voterBalance.lt(new BNJS('1e26').toFixed())) {
+    throw new Error('Not enough votes to pass the proposal.');
+  }
 
-  log('Waiting for voting to begin');
-  for (let i = 0; i < deployConfig.VOTING_DELAY_BLOCKS; i++) {
-    if (i > 0 && i % 2000 === 0) {
-      log('mining', i);
+  // On mainnet fork, use the proposal ID from the actual mainnet proposal.
+  let proposalId = BigNumber.from(MAINNET_PROPOSAL_ID);
+
+  if (!config.FORK_MAINNET) {
+    // Transfer voter tokens to the deployer to create the prposal.
+    await dydxToken.connect(voter).transfer(deployer.address, voterBalance);
+    voter = deployer;
+
+    log('Creating proposal');
+    ({ proposalId } = await createSafetyModuleRecoveryProposal({
+      proposalIpfsHashHex: MOCK_PROPOSAL_IPFS_HASH,
+      governorAddress,
+      longTimelockAddress,
+      safetyModuleAddress,
+      safetyModuleProxyAdminAddress,
+      safetyModuleNewImplAddress,
+      safetyModuleRecoveryAddress,
+    }));
+
+    log('Waiting for voting to begin');
+    for (let i = 0; i < deployConfig.VOTING_DELAY_BLOCKS + 1; i++) {
+      if (i > 0 && i % 2000 === 0) {
+        log('mining', i);
+      }
+      await advanceBlock();
     }
-    await advanceBlock();
+  }
+
+  let proposalState = await governor.getProposalState(proposalId);
+  if (proposalState !== 2) {
+    throw new Error('Expected proposal to be in the voting phase.');
   }
 
   log('Submitting vote');
-  await waitForTx(await governor.submitVote(proposalId, true));
+  await waitForTx(await governor.connect(voter).submitVote(proposalId, true));
 
   log('Waiting for voting to end');
-  for (let i = 0; i < deployConfig.LONG_TIMELOCK_CONFIG.VOTING_DURATION_BLOCKS; i++) {
-    if (i > 0 && i % 2000 === 0) {
-      log('mining', i);
+  let minedCount = 0;
+  for (;;) {
+    for (let i = 0; i < 2000; i++) {
+      await advanceBlock();
+      minedCount++;
     }
-    await advanceBlock();
+    log('mining', minedCount);
+    proposalState = await governor.getProposalState(proposalId);
+    if (proposalState !== 2) {
+      break;
+    }
+  }
+
+  if (proposalState !== 4) {
+    throw new Error(`Expected proposal to have succeeded but state was ${proposalState}`);
   }
 
   log('Queueing the proposal');
