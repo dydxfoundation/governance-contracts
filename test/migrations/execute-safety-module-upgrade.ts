@@ -40,10 +40,10 @@ export async function executeSafetyModuleUpgradeViaProposal({
   const governor = await new DydxGovernor__factory(deployer).attach(governorAddress);
 
   // Give tokens to the deployer that it can use to create and vote on the proposal.
-  const foundationAddress = getDeployConfig().TOKEN_ALLOCATIONS.DYDX_FOUNDATION.ADDRESS;
-  const foundation = await impersonateAndFundAccount(foundationAddress);
-  const dydxToken = new DydxToken__factory(foundation).attach(dydxTokenAddress);
-  const balance = await dydxToken.balanceOf(foundationAddress);
+  const topEoaHolderAddress = '0xf95746b2c3d120b78fd1cb3f9954cb451c2163e4';
+  const topEoaHolder = await impersonateAndFundAccount(topEoaHolderAddress);
+  const dydxToken = new DydxToken__factory(topEoaHolder).attach(dydxTokenAddress);
+  const balance = await dydxToken.balanceOf(topEoaHolderAddress);
   await dydxToken.transfer(deployer.address, balance);
 
   log('Creating proposal');

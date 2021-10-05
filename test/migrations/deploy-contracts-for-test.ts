@@ -11,7 +11,7 @@ import { deployPhase1 } from '../../src/migrations/phase-1';
 import { deployPhase2 } from '../../src/migrations/phase-2';
 import { deployPhase3 } from '../../src/migrations/phase-3';
 import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-recovery';
-import { DeployedContracts, UnwrapPromise } from '../../src/types';
+import { DeployedContracts } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './execute-safety-module-upgrade';
@@ -21,9 +21,7 @@ import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProp
  *
  * We use the mainnet deployments scripts to mimic the mainnet environment as closely as possible.
  */
-export async function deployContractsForTest(): Promise<
-  Omit<DeployedContracts, 'safetyModuleNewImpl' | 'safetyModuleRecovery' | 'safetyModuleRecoveryProxyAdmin'>
-> {
+export async function deployContractsForTest(): Promise<DeployedContracts>{
   // Phase 1: Deploy core governance contracts.
   const phase1Contracts = await deployPhase1();
 
@@ -62,23 +60,23 @@ export async function deployContractsForTest(): Promise<
     safetyModuleAddress: phase2Contracts.safetyModule.address,
   });
 
-  // Use type assertion since we're missing the return values from deploySafetyModuleRecovery().
+  // Deploy contracts for Safety Module recovery.
+  const smRecoveryContracts = await deploySafetyModuleRecovery({
+    dydxTokenAddress: phase1Contracts.dydxToken.address,
+    shortTimelockAddress: phase1Contracts.shortTimelock.address,
+    rewardsTreasuryAddress: phase2Contracts.rewardsTreasury.address,
+  });
+
   return {
     ...phase1Contracts,
     ...phase2Contracts,
+    ...smRecoveryContracts,
   };
 }
 
-export async function applySafetyModuleRecoveryForTest(
-  deployedContracts: UnwrapPromise<ReturnType<typeof deployContractsForTest>>,
+export async function executeSafetyModuleRecoveryProposalForTest(
+  deployedContracts: DeployedContracts,
 ) {
-  // Deploy contracts for Safety Module recovery.
-  const smRecoveryContracts = await deploySafetyModuleRecovery({
-    dydxTokenAddress: deployedContracts.dydxToken.address,
-    shortTimelockAddress: deployedContracts.shortTimelock.address,
-    rewardsTreasuryAddress: deployedContracts.rewardsTreasury.address,
-  });
-
   // Perform the safety module upgrade to recover funds and restore operation.
   if (config.TEST_SM_RECOVERY_WITH_PROPOSAL) {
     await executeSafetyModuleUpgradeViaProposal({
@@ -87,19 +85,19 @@ export async function applySafetyModuleRecoveryForTest(
       longTimelockAddress: deployedContracts.longTimelock.address,
       safetyModuleAddress: deployedContracts.safetyModule.address,
       safetyModuleProxyAdminAddress: deployedContracts.safetyModuleProxyAdmin.address,
-      safetyModuleNewImplAddress: smRecoveryContracts.safetyModuleNewImpl.address,
-      safetyModuleRecoveryAddress: smRecoveryContracts.safetyModuleRecovery.address,
+      safetyModuleNewImplAddress: deployedContracts.safetyModuleNewImpl.address,
+      safetyModuleRecoveryAddress: deployedContracts.safetyModuleRecovery.address,
     });
   } else {
+    // Simulate the execution of the proposal without actually using the governance process.
     await executeSafetyModuleUpgradeNoProposal({
       longTimelockAddress: deployedContracts.longTimelock.address,
       safetyModuleAddress: deployedContracts.safetyModule.address,
       safetyModuleProxyAdminAddress: deployedContracts.safetyModuleProxyAdmin.address,
-      safetyModuleNewImplAddress: smRecoveryContracts.safetyModuleNewImpl.address,
-      safetyModuleRecoveryAddress: smRecoveryContracts.safetyModuleRecovery.address,
+      safetyModuleNewImplAddress: deployedContracts.safetyModuleNewImpl.address,
+      safetyModuleRecoveryAddress: deployedContracts.safetyModuleRecovery.address,
     });
   }
-  return smRecoveryContracts;
 }
 
 /**

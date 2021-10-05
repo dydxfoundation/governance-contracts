@@ -1,10 +1,10 @@
 import config from '../../src/config';
 import { getDeployedContracts } from '../../src/migrations/helpers/get-deployed-contracts';
-import { DeployedContracts, UnwrapPromise } from '../../src/types';
+import { DeployedContracts } from '../../src/types';
 import {
-  applySafetyModuleRecoveryForTest,
   configureForTest,
   deployContractsForTest,
+  executeSafetyModuleRecoveryProposalForTest,
 } from '../migrations/deploy-contracts-for-test';
 
 let globalDeployedContracts: DeployedContracts;
@@ -34,19 +34,14 @@ async function getDeployedContractsForTest(): Promise<DeployedContracts> {
     return getDeployedContracts();
   }
 
-  let partialDeployedContracts: UnwrapPromise<ReturnType<typeof deployContractsForTest>>;
+  let deployedContracts: DeployedContracts;
   if (config.FORK_MAINNET) {
-    partialDeployedContracts = await getDeployedContracts();
+    deployedContracts = await getDeployedContracts();
   } else {
-    partialDeployedContracts = await deployContractsForTest();
+    deployedContracts = await deployContractsForTest();
   }
 
-  const smRecoveryContracts = await applySafetyModuleRecoveryForTest(partialDeployedContracts);
-  const deployedContracts: DeployedContracts = {
-    ...partialDeployedContracts,
-    ...smRecoveryContracts,
-  };
+  await executeSafetyModuleRecoveryProposalForTest(deployedContracts);
   await configureForTest(deployedContracts);
-
   return deployedContracts;
 }

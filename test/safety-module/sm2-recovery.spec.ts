@@ -24,6 +24,11 @@ function init(ctx: TestContext) {
 
 describeContract('SM2Recovery', init, (ctx: TestContext) => {
 
+  it('Proxy admin is owned by the short timelock', async () => {
+    const owner = await ctx.safetyModuleRecoveryProxyAdmin.owner();
+    expect(owner).to.equal(ctx.shortTimelock.address);
+  });
+
   it('Receives tokens from the Safety Module', async () => {
     // Get the totals for the subset of addrsses being tested.
     const [testTotalStaked, testTotalOwed] = _.reduce(

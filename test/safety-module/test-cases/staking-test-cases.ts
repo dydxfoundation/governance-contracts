@@ -59,6 +59,18 @@ export function addStakingTestCases(
       true,
     );
 
+    // Transfer away any existing DYDX balance.
+    // This is needed when testing on a mainnet fork with the addresses affected by
+    // the Safety Module bug.
+    await ctx.dydxToken.connect(staker1).transfer(
+      ctx.deployer.address,
+      await ctx.dydxToken.balanceOf(staker1.address),
+    );
+    await ctx.dydxToken.connect(staker2).transfer(
+      ctx.deployer.address,
+      await ctx.dydxToken.balanceOf(staker2.address),
+    );
+
     // Mint to stakers.
     await contract.mintAndApprove(staker1, stakerInitialBalance);
     await contract.mintAndApprove(staker2, stakerInitialBalance2);
