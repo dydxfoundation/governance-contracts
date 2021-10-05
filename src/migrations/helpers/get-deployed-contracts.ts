@@ -50,5 +50,6 @@ export async function getDeployedContracts(): Promise<DeployedContracts> {
     claimsProxy: new ClaimsProxy__factory(deployer).attach(deployedAddresses.claimsProxy),
     safetyModuleNewImpl: new SafetyModuleV2__factory(deployer).attach(deployedAddresses.safetyModuleNewImpl),
     safetyModuleRecovery: new SM2Recovery__factory(deployer).attach(deployedAddresses.safetyModuleRecovery),
+    safetyModuleRecoveryProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.safetyModuleRecoveryProxyAdmin),
   };
 }

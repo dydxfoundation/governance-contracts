@@ -25,6 +25,7 @@ These two contracts are deployed as follows. Note that hardhat must be configure
 export ALCHEMY_KEY=<...>
 npx hardhat --network mainnet deploy:safety-module-recovery \
   --dydx-token-address         0x92D6C1e31e14520e676a687F0a93788B716BEff5 \
+  --short-timelock-address     0x64c7d40c07EFAbec2AafdC243bF59eaF2195c6dc \
   --rewards-treasury-address   0x639192D54431F8c816368D3FB4107Bc168d0E871
 ```
 

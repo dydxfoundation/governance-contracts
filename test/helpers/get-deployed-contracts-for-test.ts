@@ -1,6 +1,6 @@
 import config from '../../src/config';
 import { getDeployedContracts } from '../../src/migrations/helpers/get-deployed-contracts';
-import { DeployedContracts } from '../../src/types';
+import { DeployedContracts, UnwrapPromise } from '../../src/types';
 import {
   applySafetyModuleRecoveryForTest,
   configureForTest,
@@ -34,7 +34,7 @@ async function getDeployedContractsForTest(): Promise<DeployedContracts> {
     return getDeployedContracts();
   }
 
-  let partialDeployedContracts: Omit<DeployedContracts, 'safetyModuleNewImpl' | 'safetyModuleRecovery'>;
+  let partialDeployedContracts: UnwrapPromise<ReturnType<typeof deployContractsForTest>>;
   if (config.FORK_MAINNET) {
     partialDeployedContracts = await getDeployedContracts();
   } else {
