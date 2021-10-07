@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
+import * as dotenv from 'dotenv';
 import { HardhatUserConfig } from 'hardhat/config';
 import {
   HardhatNetworkUserConfig,
@@ -14,6 +15,8 @@ import '@typechain/hardhat';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
 import 'solidity-coverage';
+
+dotenv.config();
 
 // Should be set when running hardhat compile or hardhat typechain.
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
