@@ -1,6 +1,7 @@
 .DS_Store
 .coverage*
 .env.local
+.env
 .idea
 .vscode
 coverage.json
