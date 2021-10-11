@@ -8,25 +8,34 @@ import { IExecutorWithTimelock } from './IExecutorWithTimelock.sol';
 interface IPriorityTimelockExecutor is
   IExecutorWithTimelock
 {
-
   /**
-   * @dev emitted when a priority controller is added or removed
-   * @param account address added or removed
-   * @param isPriorityController whether the account is now a priority controller
+   * @dev Emitted when a priority controller is added or removed.
+   *
+   * @param  account               The address added or removed.
+   * @param  isPriorityController  Whether the account is now a priority controller.
    */
-  event PriorityControllerUpdated(address account, bool isPriorityController);
-
+  event PriorityControllerUpdated(
+    address account,
+    bool isPriorityController
+  );
 
   /**
-   * @dev emitted when a new priority period is set
-   * @param priorityPeriod new priority period
+   * @dev Emitted when a new priority period is set.
+   *
+   * @param  priorityPeriod  New priority period.
    **/
-  event NewPriorityPeriod(uint256 priorityPeriod);
+  event NewPriorityPeriod(
+    uint256 priorityPeriod
+  );
 
   /**
-   * @dev emitted when an action is locked or unlocked for execution by a priority controller
-   * @param actionHash hash of the action
-   * @param isUnlockedForExecution whether the proposal is executable during the priority period
+   * @dev Emitted when an action is locked or unlocked for execution by a priority controller.
+   *
+   * @param  actionHash              Hash of the action.
+   * @param  isUnlockedForExecution  Whether the proposal is executable during the priority period.
    */
-  event UpdatedActionPriorityStatus(bytes32 actionHash, bool isUnlockedForExecution);
+  event UpdatedActionPriorityStatus(
+    bytes32 actionHash,
+    bool isUnlockedForExecution
+  );
 }
