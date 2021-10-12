@@ -30,7 +30,8 @@
     "/dist"
   ],
   "dependencies": {
-    "@chainlink/contracts": "^0.2.1"
+    "@chainlink/contracts": "^0.2.1",
+    "dotenv": "^10.0.0"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
