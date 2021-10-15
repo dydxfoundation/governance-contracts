@@ -187,10 +187,10 @@ const config = {
   //   157580685 whole seconds.
   //
   //   Assuming for now that the earliest staking may resume (counting 18 days from when a proposal
-  //   is created) is 2021-10-08T15:00:00 UTC, we arrive at the following time.
+  //   is created) is 2021-11-02T01:00:00 UTC, we arrive at the following time.
   //
   SM_RECOVERY_DISTRIBUTION_END: (
-    DateTime.fromISO('2026-10-06T11:24:45', { zone: 'utc' }).toSeconds()
+    DateTime.fromISO('2026-10-30T21:24:45', { zone: 'utc' }).toSeconds()
   ),
 };
 
