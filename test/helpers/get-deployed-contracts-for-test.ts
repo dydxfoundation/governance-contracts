@@ -42,14 +42,6 @@ async function getDeployedContractsForTest(): Promise<DeployedContracts> {
     deployedContracts = await deployContractsForTest();
   }
 
-  // TODO: Remove after the new implementation contract is deployed on mainnet.
-  const { safetyModuleNewImpl } = await deploySafetyModuleRecovery({
-    dydxTokenAddress: deployedContracts.dydxToken.address,
-    shortTimelockAddress: deployedContracts.shortTimelock.address,
-    rewardsTreasuryAddress: deployedContracts.rewardsTreasury.address,
-  });
-  deployedContracts.safetyModuleNewImpl = safetyModuleNewImpl;
-
   await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
   await configureForTest(deployedContracts);
   return deployedContracts;
