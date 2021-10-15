@@ -164,13 +164,16 @@ const config = {
 
   // Safety Module recovery.
   //
-  // Compensation for each user is 10% of what was initially staked and stuck in the Safety Module.
-  // This amount was calculated by taking 10% of each user's staked balance, rounding down, and
-  // summing the results.
+  // The owed amount is the amount that was initially staked and stuck in the Safety Module,
+  // plus additional compensation.
   //
-  // Snapshot of staked balances taken on September 14, 2021 UTC, last tx was on September 9.
+  // Compensation for each user is 10% of what they staked, rounded down to the nearest 1e-18 DYDX.
+  // The total owed amount is calculated by summing the staked amounts and compensation amounts
+  // for all users who staked to the Safety Module.
   //
-  SM_RECOVERY_COMPENSATION_AMOUNT: '15745887438533773204745', // About 15746 DYDX.
+  // Snapshot of staked balances taken on September 14, 2021 UTC. The last tx was on September 9.
+  //
+  SM_RECOVERY_OWED_AMOUNT: '173204761823871505252385', // About 173205 DYDX.
   //
   // Distribution start is unchanged from the mainnet deployment
   SM_RECOVERY_DISTRIBUTION_START: (

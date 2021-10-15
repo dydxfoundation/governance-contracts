@@ -31,12 +31,12 @@ async function init(ctx: TestContext) {
 
   // Users calling the liquidity staking contract.
   stakerSigner1 = ctx.safetyModule.connect(staker1);
-  const distributionStart_2 = await latestBlockTimestamp() + 500;
+  const distributionStart2 = await latestBlockTimestamp() + 500;
   mockSubclassSigner1 = await new MockSafetyModuleSubclass__factory(staker1).deploy(
     ctx.dydxToken.address,
     ctx.dydxToken.address,
     ctx.rewardsTreasury.address,
-    distributionStart_2,
+    distributionStart2,
     ctx.config.SM_DISTRIBUTION_END,
   );
 

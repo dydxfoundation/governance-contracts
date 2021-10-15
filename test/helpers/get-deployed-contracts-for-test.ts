@@ -1,10 +1,11 @@
 import config from '../../src/config';
 import { getDeployedContracts } from '../../src/migrations/helpers/get-deployed-contracts';
+import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-recovery';
 import { DeployedContracts } from '../../src/types';
 import {
   configureForTest,
   deployContractsForTest,
-  executeSafetyModuleRecoveryProposalForTest,
+  executeSafetyModuleRecoveryProposalsForTest,
 } from '../migrations/deploy-contracts-for-test';
 
 let globalDeployedContracts: DeployedContracts;
@@ -41,7 +42,15 @@ async function getDeployedContractsForTest(): Promise<DeployedContracts> {
     deployedContracts = await deployContractsForTest();
   }
 
-  await executeSafetyModuleRecoveryProposalForTest(deployedContracts);
+  // TODO: Remove after the new implementation contract is deployed on mainnet.
+  const { safetyModuleNewImpl } = await deploySafetyModuleRecovery({
+    dydxTokenAddress: deployedContracts.dydxToken.address,
+    shortTimelockAddress: deployedContracts.shortTimelock.address,
+    rewardsTreasuryAddress: deployedContracts.rewardsTreasury.address,
+  });
+  deployedContracts.safetyModuleNewImpl = safetyModuleNewImpl;
+
+  await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
   await configureForTest(deployedContracts);
   return deployedContracts;
 }

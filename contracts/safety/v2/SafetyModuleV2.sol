@@ -55,30 +55,20 @@ contract SafetyModuleV2 is
    *
    *  Responsible for the following:
    *
-   *    1. Funds recovery and staker compensation:
-   *        - Transfer all Safety Module DYDX to the recovery contract.
-   *        - Transfer compensation amount from the rewards treasury to the recovery contract.
+   *    1. Funds recovery:
+   *        - Transfer all Safety Module DYDX to the rewards treasury.
    *
    *    2. Storage recovery and cleanup:
    *        - Set the _EXCHANGE_RATE_ to EXCHANGE_RATE_BASE.
    *        - Clean up invalid storage values at slots 115 and 125.
-   *
-   * @param  recoveryContract            The address of the contract which will distribute
-   *                                     recovered funds to stakers.
-   * @param  recoveryCompensationAmount  Amount to transfer out of the rewards treasury, for staker
-   *                                     compensation, on top of the return of staked funds.
    */
-  function initialize(
-    address recoveryContract,
-    uint256 recoveryCompensationAmount
-  )
+  function initialize()
     external
     initializer
   {
     // Funds recovery and staker compensation.
     uint256 balance = STAKED_TOKEN.balanceOf(address(this));
-    STAKED_TOKEN.safeTransfer(recoveryContract, balance);
-    REWARDS_TOKEN.safeTransferFrom(REWARDS_TREASURY, recoveryContract, recoveryCompensationAmount);
+    STAKED_TOKEN.safeTransfer(REWARDS_TREASURY, balance);
 
     // Storage recovery and cleanup.
     __SM1ExchangeRate_init();
