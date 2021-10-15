@@ -2,11 +2,10 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 
-import { ONE_DAY_SECONDS } from '../../src/lib/constants';
 import { deployUpgradeable } from '../../src/migrations/helpers/deploy-upgradeable';
 import { SafetyModuleV11, SafetyModuleV11__factory } from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
-import { increaseTimeAndMine, incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
+import { increaseTimeAndMine, latestBlockTimestamp } from '../helpers/evm';
 import { StakingHelper } from '../helpers/staking-helper';
 
 const stakerInitialBalance: number = 1_000_000;

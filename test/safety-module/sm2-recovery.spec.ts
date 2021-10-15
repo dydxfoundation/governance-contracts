@@ -3,13 +3,12 @@ import BNJS from 'bignumber.js';
 import { expect } from 'chai';
 import _ from 'lodash';
 
-import { AFFECTED_STAKERS, getOwedAmount, getStakedAmount } from '../../src/lib/affected-stakers';
+import { AFFECTED_STAKERS, getOwedAmount } from '../../src/lib/affected-stakers';
 import { fundAccount, impersonateAccount, IMPERSONATED_ACCOUNT_STIPEND } from '../../src/migrations/helpers/impersonate-account';
 import { SM2Recovery } from '../../types';
 import { describeContract, TestContext } from '../helpers/describe-contract';
 import { getAffectedStakersForTest } from '../helpers/get-affected-stakers-for-test';
 
-const EXPECTED_TOTAL_STAKED = '157458874385337732047640';
 const EXPECTED_TOTAL_OWED = '173204761823871505252385';
 
 let testStakers: string[];
@@ -30,34 +29,21 @@ describeContract('SM2Recovery', init, (ctx: TestContext) => {
   });
 
   it('Receives tokens from the Safety Module', async () => {
-    // Get the totals for the subset of addrsses being tested.
-    const [testTotalStaked, testTotalOwed] = _.reduce(
-      testStakers,
-      ([accStaked, accOwed], stakerAddress) => {
-        return [
-          accStaked.plus(getStakedAmount(stakerAddress)),
-          accOwed.plus(getOwedAmount(stakerAddress)),
-        ];
-      },
-      [new BNJS(0), new BNJS(0)],
-    );
-
+    // Get the totals for the subset of addresses being tested.
     const balance = await ctx.dydxToken.balanceOf(contract.address);
+    expect(balance).to.equal(EXPECTED_TOTAL_OWED);
 
     // Verify the contract balance in the “full test” case with all stakers.
     if (testAllStakers) {
-      expect(balance).to.equal(testTotalOwed.toFixed());
-      expect(balance).to.equal(EXPECTED_TOTAL_OWED);
-    }
-
-    // Verify the contract balance in the case with a subset of stakers.
-    else {
-      expect(balance).to.equal(
-        new BNJS(EXPECTED_TOTAL_OWED)
-          .minus(EXPECTED_TOTAL_STAKED)
-          .plus(testTotalStaked)
-          .toFixed(),
+      const testTotalOwed = _.reduce(
+        testStakers,
+        (accOwed, stakerAddress) => {
+          return accOwed.plus(getOwedAmount(stakerAddress));
+        },
+        new BNJS(0),
       );
+
+      expect(balance).to.equal(testTotalOwed.toFixed());
     }
   });
 

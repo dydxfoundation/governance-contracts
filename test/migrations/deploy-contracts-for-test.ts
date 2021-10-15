@@ -14,7 +14,8 @@ import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-r
 import { DeployedContracts } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
-import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './execute-safety-module-upgrade';
+import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
+import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -74,7 +75,7 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
   };
 }
 
-export async function executeSafetyModuleRecoveryProposalForTest(
+export async function executeSafetyModuleRecoveryProposalsForTest(
   deployedContracts: DeployedContracts,
 ) {
   // Perform the safety module upgrade to recover funds and restore operation.
@@ -86,15 +87,26 @@ export async function executeSafetyModuleRecoveryProposalForTest(
       safetyModuleAddress: deployedContracts.safetyModule.address,
       safetyModuleProxyAdminAddress: deployedContracts.safetyModuleProxyAdmin.address,
       safetyModuleNewImplAddress: deployedContracts.safetyModuleNewImpl.address,
+    });
+    await fundSafetyModuleRecoveryViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      rewardsTreasuryAddress: deployedContracts.rewardsTreasury.address,
       safetyModuleRecoveryAddress: deployedContracts.safetyModuleRecovery.address,
     });
   } else {
-    // Simulate the execution of the proposal without actually using the governance process.
+    // Simulate the execution of the proposals without actually using the governance process.
     await executeSafetyModuleUpgradeNoProposal({
       longTimelockAddress: deployedContracts.longTimelock.address,
       safetyModuleAddress: deployedContracts.safetyModule.address,
       safetyModuleProxyAdminAddress: deployedContracts.safetyModuleProxyAdmin.address,
       safetyModuleNewImplAddress: deployedContracts.safetyModuleNewImpl.address,
+    });
+    await fundSafetyModuleRecoveryNoProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      rewardsTreasuryAddress: deployedContracts.rewardsTreasury.address,
       safetyModuleRecoveryAddress: deployedContracts.safetyModuleRecovery.address,
     });
   }

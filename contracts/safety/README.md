@@ -8,10 +8,9 @@ Instructions are given below to deploy the fix via a governance proposal and run
 
 ## Safety Module Recovery Deployment
 
-First, the new `SafetyModuleV2` implementation contract must be deployed. It has the following changes:
+First, the new `SafetyModuleV2` implementation contract is deployed. It has the following changes:
 * A new initializer function which:
-  * Calls `transfer()` to send all held DYDX to the specified recovery contract.
-  * Calls `transferFrom()` to send the specified additional compensation amount from the rewards treasury to the specified recovery contract.
+  * Calls `transfer()` to send all held DYDX to the rewards treasury.
   * Restores functionality to the Safety Module by setting the correct exchange rate.
   * Deletes data set by the original initializer, which is now garbage due to the shift in the storage layout.
 * `DISTRIBUTION_END` is updated to account for the delayed start to the Safety Module rewards.
@@ -29,16 +28,33 @@ npx hardhat --network mainnet deploy:safety-module-recovery \
   --rewards-treasury-address   0x639192D54431F8c816368D3FB4107Bc168d0E871
 ```
 
-The newly deployed addresses will be logged to the console. The governance proposal to perform the upgrade can be created as follows. The proposer must have 2% of the total DYDX supply (20M tokens) in their account and/or delegated to them as “proposition power.”
+The newly deployed addresses will be logged to the console.
+
+## Governance Proposal: Safety Module Fix
+
+Following the deployment above, a governance proposal can be created to upgrade the Safety Module to the new implementation. The proposal must be executed by the long timelock, so the proposer must have 2% of the total DYDX supply (20M tokens) in their account and/or delegated to them as “proposition power.”
 
 ```bash
-npx hardhat --network mainnet deploy:safety-module-recovery-proposal \
+npx hardhat --network mainnet deploy:safety-module-fix-proposal \
   --proposal-ipfs-hash-hex              0x...                                      \
   --governor-address                    0x7E9B1672616FF6D6629Ef2879419aaE79A9018D2 \
   --long-timelock-address               0xEcaE9BF44A21d00E2350a42127A377Bf5856d84B \
   --safety-module-address               0x65f7BA4Ec257AF7c55fd5854E5f6356bBd0fb8EC \
   --safety-module-proxy-admin-address   0x6aaD0BCfbD91963Cf2c8FB042091fd411FB05b3C \
-  --safety-module-new-impl-address      0x...                                      \
+  --safety-module-new-impl-address      0x...
+```
+
+## Governance Proposal: Safety Module Compensation
+
+Following the deployment above, a governance proposal can be created to return funds to the early Safety Module stakers, with additional compensation. The proposal must be executed by the short timelock, so the proposer must have 0.5% of the total DYDX supply (5M tokens) in their account and/or delegated to them as “proposition power.”
+
+```bash
+npx hardhat --network mainnet deploy:safety-module-compensation-proposal \
+  --proposal-ipfs-hash-hex              0x...                                      \
+  --dydx-token-address                  0x92D6C1e31e14520e676a687F0a93788B716BEff5 \
+  --governor-address                    0x7E9B1672616FF6D6629Ef2879419aaE79A9018D2 \
+  --short-timelock-address              0x64c7d40c07EFAbec2AafdC243bF59eaF2195c6dc \
+  --rewards-treasury-address            0x639192D54431F8c816368D3FB4107Bc168d0E871 \
   --safety-module-recovery-address      0x...
 ```
 

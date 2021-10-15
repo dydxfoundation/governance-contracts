@@ -5,6 +5,7 @@ import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-r
 
 hardhatTask('deploy:safety-module-recovery', 'Deploy the Safety Module recovery contracts.')
   .addParam('startStep', 'Which step to start with', 1, types.int)
+  .addOptionalParam('onlyStep', 'Which step to run', undefined, types.int)
   .addParam('dydxTokenAddress', 'Previously deployed dYdX token address', undefined, types.string)
   .addParam('shortTimelockAddress', 'Previously deployed short timelock executor address', undefined, types.string)
   .addParam('rewardsTreasuryAddress', 'Previously deployed rewards treasury address', undefined, types.string)
@@ -13,12 +14,13 @@ hardhatTask('deploy:safety-module-recovery', 'Deploy the Safety Module recovery 
   .addOptionalParam('safetyModuleRecoveryProxyAdminAddress', 'Previously deployed SM2Recovery Proxy Admin contract', undefined, types.string)
   .setAction(async (args: {
     startStep: number,
+    onlyStep?: number,
     dydxTokenAddress: string,
     shortTimelockAddress: string,
     rewardsTreasuryAddress: string,
-    safetyModuleNewImplAddress: string,
-    safetyModuleRecoveryAddress: string,
-    safetyModuleRecoveryProxyAdminAddress: string,
+    safetyModuleNewImplAddress?: string,
+    safetyModuleRecoveryAddress?: string,
+    safetyModuleRecoveryProxyAdminAddress?: string,
   }) => {
     const {
       safetyModuleNewImpl,

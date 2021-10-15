@@ -1,6 +1,5 @@
 import BNJS from 'bignumber.js';
-import { BigNumber } from 'ethers';
-import { Interface } from 'ethers/lib/utils';
+import { BigNumberish } from 'ethers';
 
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
@@ -8,36 +7,29 @@ import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address'
 import { log } from '../../src/lib/logging';
 import { waitForTx } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
-import { createSafetyModuleRecoveryProposal } from '../../src/migrations/safety-module-recovery-proposal';
+import { createSafetyModuleCompensationProposal } from '../../src/migrations/safety-module-compensation-proposal';
 import {
   DydxGovernor__factory,
   DydxToken__factory,
-  ProxyAdmin__factory,
-  SafetyModuleV2__factory,
+  Treasury__factory,
 } from '../../types';
 import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
-
-const MAINNET_PROPOSAL_ID = 0;
 
 const MOCK_PROPOSAL_IPFS_HASH = (
   '0x0000000000000000000000000000000000000000000000000000000000000000'
 );
 
-export async function executeSafetyModuleUpgradeViaProposal({
+export async function fundSafetyModuleRecoveryViaProposal({
   dydxTokenAddress,
   governorAddress,
-  longTimelockAddress,
-  safetyModuleAddress,
-  safetyModuleProxyAdminAddress,
-  safetyModuleNewImplAddress,
+  shortTimelockAddress,
+  rewardsTreasuryAddress,
   safetyModuleRecoveryAddress,
 }: {
   dydxTokenAddress: string,
   governorAddress: string,
-  longTimelockAddress: string,
-  safetyModuleAddress: string,
-  safetyModuleProxyAdminAddress: string,
-  safetyModuleNewImplAddress: string,
+  shortTimelockAddress: string,
+  rewardsTreasuryAddress: string,
   safetyModuleRecoveryAddress: string,
 }): Promise<void> {
   const deployConfig = getDeployConfig();
@@ -47,30 +39,28 @@ export async function executeSafetyModuleUpgradeViaProposal({
 
   // Pick a voter with enough tokens to meet the quorum requirement.
   const voterAddress = deployConfig.TOKEN_ALLOCATIONS.DYDX_TRADING.ADDRESS;
-  let voter = await impersonateAndFundAccount(voterAddress);
+  const voter = await impersonateAndFundAccount(voterAddress);
   const voterBalance = await dydxToken.balanceOf(voterAddress);
 
-  if (voterBalance.lt(new BNJS('1e26').toFixed())) {
+  if (voterBalance.lt(new BNJS('2e25').toFixed())) {
     throw new Error('Not enough votes to pass the proposal.');
   }
 
-  // On mainnet fork, use the proposal ID from the actual mainnet proposal.
-  let proposalId = BigNumber.from(MAINNET_PROPOSAL_ID);
+  // Vote on an existing proposal (can be used with mainnet forking).
+  let proposalId: BigNumberish;
 
-  if (!config.FORK_MAINNET) {
-    // Transfer voter tokens to the deployer to create the prposal.
-    await dydxToken.connect(voter).transfer(deployer.address, voterBalance);
-    voter = deployer;
-
+  if (config.SM_COMPENSATION_PROPOSAL_ID !== null) {
+    proposalId = config.SM_COMPENSATION_PROPOSAL_ID;
+  } else {
     log('Creating proposal');
-    ({ proposalId } = await createSafetyModuleRecoveryProposal({
+    ({ proposalId } = await createSafetyModuleCompensationProposal({
       proposalIpfsHashHex: MOCK_PROPOSAL_IPFS_HASH,
+      dydxTokenAddress,
       governorAddress,
-      longTimelockAddress,
-      safetyModuleAddress,
-      safetyModuleProxyAdminAddress,
-      safetyModuleNewImplAddress,
+      shortTimelockAddress,
+      rewardsTreasuryAddress,
       safetyModuleRecoveryAddress,
+      signer: voter,
     }));
 
     log('Waiting for voting to begin');
@@ -110,52 +100,39 @@ export async function executeSafetyModuleUpgradeViaProposal({
 
   log('Queueing the proposal');
   await waitForTx(await governor.queue(proposalId));
-  const delaySeconds = deployConfig.LONG_TIMELOCK_CONFIG.DELAY;
+  const delaySeconds = deployConfig.SHORT_TIMELOCK_CONFIG.DELAY;
   await increaseTimeAndMine(delaySeconds);
 
   log('Executing the proposal');
   await waitForTx(await governor.execute(proposalId));
   log('Proposal executed');
 
-  log('\n=== SAFETY MODULE RECOVERY COMPLETE ===\n');
+  log('\n=== SAFETY MODULE COMPENSATION COMPLETE ===\n');
 }
 
-export async function executeSafetyModuleUpgradeNoProposal({
-  longTimelockAddress,
-  safetyModuleAddress,
-  safetyModuleProxyAdminAddress,
-  safetyModuleNewImplAddress,
+export async function fundSafetyModuleRecoveryNoProposal({
+  dydxTokenAddress,
+  shortTimelockAddress,
+  rewardsTreasuryAddress,
   safetyModuleRecoveryAddress,
 }: {
-  longTimelockAddress: string,
-  safetyModuleAddress: string,
-  safetyModuleProxyAdminAddress: string,
-  safetyModuleNewImplAddress: string,
+  dydxTokenAddress: string,
+  shortTimelockAddress: string,
+  rewardsTreasuryAddress: string,
   safetyModuleRecoveryAddress: string,
 }): Promise<void> {
   const deployConfig = getDeployConfig();
-
-  // NOTE: On mainnet, the upgrade and the call to the initializer are performed atomically
-  // via a governance proposal. It's important that these steps are atomic or else the
-  // initializer can be called to extract funds from the contract.
-  const mockLongTimelock = await impersonateAndFundAccount(longTimelockAddress);
-  const safetyModuleProxyAdmin = new ProxyAdmin__factory(mockLongTimelock).attach(
-    safetyModuleProxyAdminAddress,
-  );
-  const initializeCalldata = new Interface(SafetyModuleV2__factory.abi).encodeFunctionData(
-    'initialize',
-    [
-      safetyModuleRecoveryAddress,
-      deployConfig.SM_RECOVERY_COMPENSATION_AMOUNT,
-    ],
+  const mockShortTimelock = await impersonateAndFundAccount(shortTimelockAddress);
+  const rewardsTreasury = new Treasury__factory(mockShortTimelock).attach(
+    rewardsTreasuryAddress,
   );
   await waitForTx(
-    await safetyModuleProxyAdmin.upgradeAndCall(
-      safetyModuleAddress,
-      safetyModuleNewImplAddress,
-      initializeCalldata,
+    await rewardsTreasury.transfer(
+      dydxTokenAddress,
+      safetyModuleRecoveryAddress,
+      deployConfig.SM_RECOVERY_OWED_AMOUNT,
     ),
   );
 
-  log('\n=== SAFETY MODULE RECOVERY COMPLETE ===\n');
+  log('\n=== SAFETY MODULE COMPENSATION COMPLETE ===\n');
 }

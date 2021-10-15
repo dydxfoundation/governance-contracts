@@ -11,7 +11,7 @@ let safetyModuleBeforeEpochZero: SafetyModuleV1;
 
 async function init(ctx: TestContext) {
   [staker] = ctx.users;
-  const distributionStart_2 = await latestBlockTimestamp() + 500;
+  const distributionStart2 = await latestBlockTimestamp() + 500;
   [safetyModuleBeforeEpochZero] = await deployUpgradeable(
     SafetyModuleV11__factory,
     ctx.deployer,
@@ -19,12 +19,12 @@ async function init(ctx: TestContext) {
       ctx.dydxToken.address,
       ctx.dydxToken.address,
       ctx.rewardsTreasury.address,
-      distributionStart_2,
+      distributionStart2,
       ctx.config.SM_DISTRIBUTION_END,
     ],
     [
       ctx.config.EPOCH_LENGTH,
-      distributionStart_2,
+      distributionStart2,
       ctx.config.BLACKOUT_WINDOW,
     ],
   );
