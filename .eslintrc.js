@@ -26,7 +26,6 @@ module.exports = {
     'dist/**/*.js',
     'dist/**/*.d.ts',
     'types/**/*.ts',
-    'wip/**',
   ],
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
