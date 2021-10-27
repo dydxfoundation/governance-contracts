@@ -11,11 +11,13 @@ import { deployPhase1 } from '../../src/migrations/phase-1';
 import { deployPhase2 } from '../../src/migrations/phase-2';
 import { deployPhase3 } from '../../src/migrations/phase-3';
 import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-recovery';
+import { deployStarkProxyRecovery } from '../../src/migrations/stark-proxy-recovery';
 import { DeployedContracts } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
+import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -31,6 +33,7 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
     dydxTokenAddress: phase1Contracts.dydxToken.address,
     governorAddress: phase1Contracts.governor.address,
     shortTimelockAddress: phase1Contracts.shortTimelock.address,
+    merklePauserTimelockAddress: phase1Contracts.merklePauserTimelock.address,
     longTimelockAddress: phase1Contracts.longTimelock.address,
   });
 
@@ -51,6 +54,10 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
     communityTreasuryProxyAdminAddress: phase2Contracts.communityTreasuryProxyAdmin.address,
     rewardsTreasuryVesterAddress: phase2Contracts.rewardsTreasuryVester.address,
     communityTreasuryVesterAddress: phase2Contracts.communityTreasuryVester.address,
+    liquidityStakingAddress: phase2Contracts.liquidityStaking.address,
+    liquidityStakingProxyAdminAddress: phase2Contracts.liquidityStakingProxyAdmin.address,
+    merkleDistributorAddress: phase2Contracts.merkleDistributor.address,
+    merkleDistributorProxyAdminAddress: phase2Contracts.merkleDistributorProxyAdmin.address,
   });
 
   // Simulate mainnet staking activity with the broken Safety Module.
@@ -68,10 +75,17 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
     rewardsTreasuryAddress: phase2Contracts.rewardsTreasury.address,
   });
 
+  // Deploy contracts for Stark Proxy recovery.
+  const starkProxyRecoveryContracts = await deployStarkProxyRecovery({
+    liquidityStakingAddress: phase2Contracts.liquidityStaking.address,
+    merkleDistributorAddress: phase2Contracts.merkleDistributor.address,
+  });
+
   return {
     ...phase1Contracts,
     ...phase2Contracts,
     ...smRecoveryContracts,
+    ...starkProxyRecoveryContracts,
   };
 }
 
@@ -112,8 +126,33 @@ export async function executeSafetyModuleRecoveryProposalsForTest(
   }
 }
 
+export async function executeStarkProxyProposalsForTest(
+  deployedContracts: DeployedContracts,
+) {
+  // Perform the safety module upgrade to recover funds and restore operation.
+  if (config.TEST_SM_RECOVERY_WITH_PROPOSAL) {
+    await executeStarkProxyUpgradeViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      starkProxyAddress: '0x0b2B08AC98a1568A34208121c26F4F41a9e0FbB6',
+      starkProxyProxyAdminAddress: '0xE16718eace44e0CB06b9cd164490A69A6425D1e3',
+      starkProxyNewImplAddress: deployedContracts.starkProxyNewImpl.address,
+    });
+  } else {
+    // Simulate the execution of the proposals without actually using the governance process.
+    await executeStarkProxyUpgradeNoProposal({
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      starkProxyAddress: '0x0b2B08AC98a1568A34208121c26F4F41a9e0FbB6',
+      starkProxyProxyAdminAddress: '0xE16718eace44e0CB06b9cd164490A69A6425D1e3',
+      starkProxyNewImplAddress: deployedContracts.starkProxyNewImpl.address,
+    });
+  }
+}
+
+
 /**
- * After the deploy scripts have run, this functon configures the contracts for testing.
+ * After the deploy scripts have run, this function configures the contracts for testing.
  */
 export async function configureForTest(
   deployedContracts: DeployedContracts,

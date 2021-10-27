@@ -12,7 +12,7 @@ import {
   ONE_DAY_SECONDS,
 } from '../lib/constants';
 import { toWad } from '../lib/util';
-import { TimelockConfig } from './types';
+import { TimelockConfig, MerkleDistributorConfig } from './types';
 
 // Schedule parameters.
 const EPOCH_LENGTH = 28 * ONE_DAY_SECONDS;
@@ -75,6 +75,14 @@ const MERKLE_PAUSER_TIMELOCK_CONFIG: TimelockConfig = {
   MINIMUM_QUORUM: 100,
 };
 
+const MERKLE_DISTRIBUTOR_CONFIG: MerkleDistributorConfig = {
+  IPNS_NAME: 'rewards-data.dydx.foundation',
+  IPFS_UPDATE_PERIOD: 60 * 3,  // 3 minutes
+  MARKET_MAKER_REWARDS_AMOUNT: 1_150_685,
+  TRADER_REWARDS_AMOUNT: 3_835_616,
+  TRADER_SCORE_ALPHA: 0.7,
+};
+
 const config = {
   // Common schedule parameters.
   EPOCH_LENGTH,
@@ -99,6 +107,7 @@ const config = {
   MERKLE_PAUSER_TIMELOCK_CONFIG,
 
   // Merkle Distributor.
+  MERKLE_DISTRIBUTOR_CONFIG,
   MERKLE_DISTRIBUTOR_WAITING_PERIOD,
 
   // Safety Module.

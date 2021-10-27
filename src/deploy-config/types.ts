@@ -20,6 +20,14 @@ export interface TreasuryVesterConfig {
   VESTING_END: number;
 }
 
+export interface MerkleDistributorConfig {
+  IPNS_NAME: string;
+  IPFS_UPDATE_PERIOD: number;
+  MARKET_MAKER_REWARDS_AMOUNT: number;
+  TRADER_REWARDS_AMOUNT: number;
+  TRADER_SCORE_ALPHA: number;
+}
+
 export interface DeployConfig extends BaseConfig {
   EPOCH_ZERO_START: number;
   TRANSFERS_RESTRICTED_BEFORE: number;
@@ -31,4 +39,7 @@ export interface DeployConfig extends BaseConfig {
   SM_DISTRIBUTION_END: number;
   REWARDS_TREASURY_VESTER_CONFIG: TreasuryVesterConfig;
   COMMUNITY_TREASURY_VESTER_CONFIG: TreasuryVesterConfig;
+  MERKLE_DISTRIBUTOR_CONFIG: MerkleDistributorConfig;
+  DYDX_COLLATERAL_TOKEN_ADDRESS: string;
+  STARK_PERPETUAL_ADDRESS: string;
 }

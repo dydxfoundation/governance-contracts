@@ -5,10 +5,12 @@ import {
   DydxGovernor__factory,
   DydxToken__factory,
   Executor__factory,
+  LiquidityStakingV1__factory,
   ProxyAdmin__factory,
   SafetyModuleV11__factory,
   Treasury__factory,
 } from '../../types';
+import { MerkleDistributorV1__factory } from '../../types/factories/MerkleDistributorV1__factory';
 import { getDeployConfig } from '../deploy-config';
 import { getDeployerSigner } from '../deploy-config/get-deployer-address';
 import { log } from '../lib/logging';
@@ -36,6 +38,10 @@ export async function deployPhase3({
   communityTreasuryProxyAdminAddress,
   rewardsTreasuryVesterAddress,
   communityTreasuryVesterAddress,
+  liquidityStakingAddress,
+  liquidityStakingProxyAdminAddress,
+  merkleDistributorAddress,
+  merkleDistributorProxyAdminAddress,
 }: {
   startStep?: number,
 
@@ -54,6 +60,10 @@ export async function deployPhase3({
   communityTreasuryProxyAdminAddress: string,
   rewardsTreasuryVesterAddress: string,
   communityTreasuryVesterAddress: string,
+  liquidityStakingAddress: string,
+  liquidityStakingProxyAdminAddress: string,
+  merkleDistributorAddress: string,
+  merkleDistributorProxyAdminAddress: string,
 }) {
   log('Beginning phase 3 deployment\n');
   const deployConfig = getDeployConfig();
@@ -74,6 +84,10 @@ export async function deployPhase3({
   const safetyModuleProxyAdmin = new ProxyAdmin__factory(deployer).attach(safetyModuleProxyAdminAddress);
   const communityTreasury = new Treasury__factory(deployer).attach(communityTreasuryAddress);
   const communityTreasuryProxyAdmin = new ProxyAdmin__factory(deployer).attach(communityTreasuryProxyAdminAddress);
+  const liquidityStaking = new LiquidityStakingV1__factory(deployer).attach(liquidityStakingAddress);
+  const liquidityStakingProxyAdmin = new ProxyAdmin__factory(deployer).attach(liquidityStakingProxyAdminAddress);
+  const merkleDistributor = new MerkleDistributorV1__factory(deployer).attach(merkleDistributorAddress);
+  const merkleDistributorProxyAdmin = new ProxyAdmin__factory(deployer).attach(merkleDistributorProxyAdminAddress);
 
   const deployerBalance = await dydxToken.balanceOf(deployerAddress);
   if (deployerBalance.lt(toWad(500_000_00))) {
@@ -125,7 +139,15 @@ export async function deployPhase3({
     await waitForTx(await communityTreasuryProxyAdmin.transferOwnership(shortTimelock.address));
   }
 
-  // TODO: Add steps 11-12.
+  if (startStep <= 11) {
+    log('Step 11: Transfer merkle distributor proxy admin ownership to short timelock');
+    await waitForTx(await merkleDistributorProxyAdmin.transferOwnership(shortTimelock.address));
+  }
+
+  if (startStep <= 12) {
+    log('Step 12: Transfer liquidity staking proxy admin ownership to short timelock');
+    await waitForTx(await liquidityStakingProxyAdmin.transferOwnership(shortTimelock.address));
+  }
 
   if (startStep <= 13) {
     log('Step 13: Transfer safety module proxy admin ownership to long timelock');
@@ -139,7 +161,7 @@ export async function deployPhase3({
 
   if (startStep <= 15) {
     log('Step 15. Revoke all roles from EOAs on StarkProxy and incentives contracts');
-    // TODO: Handle StarkProxy and other incentives contracts.
+    // TODO: Handle StarkProxy contracts.
 
     const txs = [
       // Revoke roles from the Safety Module.
@@ -147,6 +169,18 @@ export async function deployPhase3({
       await safetyModule.revokeRole(getRole(Role.EPOCH_PARAMETERS_ROLE), deployerAddress),
       await safetyModule.revokeRole(getRole(Role.REWARDS_RATE_ROLE), deployerAddress),
       await safetyModule.revokeRole(getRole(Role.OWNER_ROLE), deployerAddress),
+
+      // Revoke roles from the Liquidity Staking Module.
+      await liquidityStaking.revokeRole(getRole(Role.EPOCH_PARAMETERS_ROLE), deployerAddress),
+      await liquidityStaking.revokeRole(getRole(Role.REWARDS_RATE_ROLE), deployerAddress),
+      await liquidityStaking.revokeRole(getRole(Role.BORROWER_ADMIN_ROLE), deployerAddress),
+      await liquidityStaking.revokeRole(getRole(Role.OWNER_ROLE), deployerAddress),
+
+      // Revoke roles from the Merkle Distributor Module.
+      await merkleDistributor.revokeRole(getRole(Role.PAUSER_ROLE), deployerAddress),
+      await merkleDistributor.revokeRole(getRole(Role.UNPAUSER_ROLE), deployerAddress),
+      await merkleDistributor.revokeRole(getRole(Role.CLAIM_OPERATOR_ROLE), deployerAddress),
+      await merkleDistributor.revokeRole(getRole(Role.OWNER_ROLE), deployerAddress),
     ];
 
     await Promise.all(txs.map((tx) => waitForTx(tx)));

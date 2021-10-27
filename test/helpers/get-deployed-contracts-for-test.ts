@@ -1,11 +1,11 @@
 import config from '../../src/config';
 import { getDeployedContracts } from '../../src/migrations/helpers/get-deployed-contracts';
-import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-recovery';
 import { DeployedContracts } from '../../src/types';
 import {
   configureForTest,
   deployContractsForTest,
   executeSafetyModuleRecoveryProposalsForTest,
+  executeStarkProxyProposalsForTest,
 } from '../migrations/deploy-contracts-for-test';
 
 let globalDeployedContracts: DeployedContracts;
@@ -43,6 +43,7 @@ async function getDeployedContractsForTest(): Promise<DeployedContracts> {
   }
 
   await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
+  await executeStarkProxyProposalsForTest(deployedContracts);
   await configureForTest(deployedContracts);
   return deployedContracts;
 }

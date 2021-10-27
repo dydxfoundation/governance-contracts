@@ -8,6 +8,8 @@ import {
   Executor__factory,
   GovernanceStrategy,
   GovernanceStrategy__factory,
+  LiquidityStakingV1__factory,
+  MerkleDistributorV1__factory,
   ProxyAdmin,
   ProxyAdmin__factory,
   SafetyModuleV1,
@@ -17,6 +19,8 @@ import {
   TreasuryVester__factory,
   Treasury__factory,
 } from '../../types';
+import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
+import { MerkleDistributorV1 } from '../../types/MerkleDistributorV1';
 import { getDeployConfig } from '../deploy-config';
 import { getDeployerSigner } from '../deploy-config/get-deployer-address';
 import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../lib/constants';
@@ -34,6 +38,7 @@ export async function deployPhase2({
   governorAddress,
   shortTimelockAddress,
   longTimelockAddress,
+  merklePauserTimelockAddress: merkleTimelockAddress,
 
   // Phase 2 deployed contracts.
   rewardsTreasuryAddress,
@@ -46,6 +51,10 @@ export async function deployPhase2({
   rewardsTreasuryVesterAddress,
   communityTreasuryVesterAddress,
   claimsProxyAddress,
+  liquidityStakingAddress,
+  liquidityStakingProxyAdminAddress,
+  merkleDistributorAddress,
+  merkleDistributorProxyAdminAddress,
 }: {
   startStep?: number,
 
@@ -54,6 +63,7 @@ export async function deployPhase2({
   governorAddress: string,
   longTimelockAddress: string,
   shortTimelockAddress: string,
+  merklePauserTimelockAddress: string,
 
   // Phase 2 deployed contracts.
   rewardsTreasuryAddress?: string,
@@ -66,6 +76,10 @@ export async function deployPhase2({
   rewardsTreasuryVesterAddress?: string,
   communityTreasuryVesterAddress?: string,
   claimsProxyAddress?: string,
+  liquidityStakingAddress?: string,
+  liquidityStakingProxyAdminAddress?: string,
+  merkleDistributorAddress?: string,
+  merkleDistributorProxyAdminAddress?: string,
 }) {
   log('Beginning phase 2 deployment\n');
   const deployConfig = getDeployConfig();
@@ -90,6 +104,10 @@ export async function deployPhase2({
   let rewardsTreasuryVester: TreasuryVester;
   let communityTreasuryVester: TreasuryVester;
   let claimsProxy: ClaimsProxy;
+  let liquidityStaking: LiquidityStakingV1;
+  let liquidityStakingProxyAdmin: ProxyAdmin;
+  let merkleDistributor: MerkleDistributorV1;
+  let merkleDistributorProxyAdmin: ProxyAdmin;
 
   const deployerBalance = await dydxToken.balanceOf(deployerAddress);
   if (deployerBalance.lt(toWad(500_000_00))) {
@@ -226,7 +244,74 @@ export async function deployPhase2({
     communityTreasuryVester = new TreasuryVester__factory(deployer).attach(communityTreasuryVesterAddress);
   }
 
-  // TODO: Add steps 8–11.
+  if (startStep <= 8) {
+    log('Step 8. Deploy merkle distributor proxy + merkle distributor proxy admin + merkle distributor');
+    [merkleDistributor, , merkleDistributorProxyAdmin] = await deployUpgradeable(
+      MerkleDistributorV1__factory,
+      deployer,
+      [
+        dydxTokenAddress,
+        rewardsTreasuryAddress,
+      ],
+      [
+        ZERO_ADDRESS,
+        deployConfig.MERKLE_DISTRIBUTOR_CONFIG.IPNS_NAME,
+        deployConfig.MERKLE_DISTRIBUTOR_CONFIG.IPFS_UPDATE_PERIOD,
+        toWad(deployConfig.MERKLE_DISTRIBUTOR_CONFIG.MARKET_MAKER_REWARDS_AMOUNT),
+        toWad(deployConfig.MERKLE_DISTRIBUTOR_CONFIG.TRADER_REWARDS_AMOUNT),
+        toWad(deployConfig.MERKLE_DISTRIBUTOR_CONFIG.TRADER_SCORE_ALPHA),
+        deployConfig.EPOCH_ZERO_START,
+        deployConfig.EPOCH_LENGTH,
+      ],
+    );
+    merkleDistributorAddress = merkleDistributor.address;
+    merkleDistributorProxyAdminAddress = merkleDistributorProxyAdmin.address;
+  } else {
+    if (!merkleDistributorAddress) {
+      throw new Error('Expected parameter merkleDistributorAddress to be specified.');
+    }
+    merkleDistributor = new MerkleDistributorV1__factory(deployer).attach(merkleDistributorAddress);
+
+    if (!merkleDistributorProxyAdminAddress) {
+      throw new Error('Expected parameter merkleDistributorProxyAdminAddress to be specified.');
+    }
+    merkleDistributorProxyAdmin = new ProxyAdmin__factory(deployer).attach(merkleDistributorProxyAdminAddress);
+  }
+
+
+  // TODO: Add steps 8–10.
+
+  if (startStep <= 11) {
+    log('Step 11. Deploy liquidity staking proxy + liquidity staking proxy admin + liquidity staking');
+    [liquidityStaking, , liquidityStakingProxyAdmin] = await deployUpgradeable(
+      LiquidityStakingV1__factory,
+      deployer,
+      [
+        deployConfig.DYDX_COLLATERAL_TOKEN_ADDRESS,
+        dydxTokenAddress,
+        rewardsTreasuryAddress,
+        deployConfig.LS_DISTRIBUTION_START,
+        deployConfig.LS_DISTRIBUTION_END,
+      ],
+      [
+        deployConfig.EPOCH_LENGTH,
+        deployConfig.EPOCH_ZERO_START,
+        deployConfig.BLACKOUT_WINDOW,
+      ],
+    );
+    liquidityStakingAddress = liquidityStaking.address;
+    liquidityStakingProxyAdminAddress = liquidityStakingProxyAdmin.address;
+  } else {
+    if (!liquidityStakingAddress) {
+      throw new Error('Expected parameter liquidityStakingAddress to be specified.');
+    }
+    liquidityStaking = new LiquidityStakingV1__factory(deployer).attach(liquidityStakingAddress);
+
+    if (!liquidityStakingProxyAdminAddress) {
+      throw new Error('Expected parameter liquidityStakingProxyAdminAddress to be specified.');
+    }
+    liquidityStakingProxyAdmin = new ProxyAdmin__factory(deployer).attach(liquidityStakingProxyAdminAddress);
+  }
 
   if (startStep <= 12) {
     log('Step 12. Add treasury contracts token transfer allowlist');
@@ -243,17 +328,20 @@ export async function deployPhase2({
     await waitForTx(
       await rewardsTreasury.approve(dydxTokenAddress, safetyModuleAddress, MAX_UINT_AMOUNT),
     );
-    // TODO
-    // await waitForTx(await rewardsTreasury.approve(dydxTokenAddress, merkleDistributorAddress, MAX_UINT_AMOUNT));
-    // await waitForTx(await rewardsTreasury.approve(dydxTokenAddress, liquidityStakingAddress, MAX_UINT_AMOUNT));
+    await waitForTx(
+      await rewardsTreasury.approve(dydxTokenAddress, liquidityStakingAddress, MAX_UINT_AMOUNT),
+    );
+    await waitForTx(
+      await rewardsTreasury.approve(dydxTokenAddress, merkleDistributorAddress, MAX_UINT_AMOUNT),
+    );
   }
 
   if (startStep <= 14) {
     log('Step 14. Deploy claims proxy contract');
     claimsProxy = await new ClaimsProxy__factory(deployer).deploy(
       safetyModuleAddress,
-      ZERO_ADDRESS, // TODO: liquidityStakingAddress
-      ZERO_ADDRESS, // TODO: merkleDistributorAddress
+      liquidityStakingAddress,
+      merkleDistributorAddress,
       rewardsTreasuryVesterAddress,
     );
     claimsProxyAddress = claimsProxy.address;
@@ -266,23 +354,27 @@ export async function deployPhase2({
 
   if (startStep <= 15) {
     log('Step 15. Grant CLAIM_OPERATOR_ROLE to claims proxy for incentives contracts');
-    // TODO: Do the same for the Merkle distributor and liquidity staking contracts.
     await waitForTx(
       await safetyModule.grantRole(getRole(Role.CLAIM_OPERATOR_ROLE), claimsProxyAddress),
+    );
+    await waitForTx(
+      await liquidityStaking.grantRole(getRole(Role.CLAIM_OPERATOR_ROLE), claimsProxyAddress),
+    );
+    await waitForTx(
+      await merkleDistributor.grantRole(getRole(Role.CLAIM_OPERATOR_ROLE), claimsProxyAddress),
     );
   }
 
   if (startStep <= 16) {
     log('Step 16. Set rewards rates for staking contracts');
-    // TODO: Do the same for the liquidity staking contracts.
     await waitForTx(await safetyModule.setRewardsPerSecond(deployConfig.SM_REWARDS_PER_SECOND));
+    await waitForTx(await liquidityStaking.setRewardsPerSecond(deployConfig.LS_REWARDS_PER_SECOND));
   }
 
   // TODO: Add steps 17-22.
 
   if (startStep <= 23) {
     log('Step 23. Grant contract ownership and roles to timelocks');
-    // TODO: Transfer roles for the Merkle distributor and liquidity staking contracts.
 
     const txs = [
       // Assign roles for the Safety Module.
@@ -290,6 +382,18 @@ export async function deployPhase2({
       await safetyModule.grantRole(getRole(Role.SLASHER_ROLE), shortTimelockAddress),
       await safetyModule.grantRole(getRole(Role.EPOCH_PARAMETERS_ROLE), shortTimelockAddress),
       await safetyModule.grantRole(getRole(Role.REWARDS_RATE_ROLE), shortTimelockAddress),
+
+      // Assign roles for the Liquidity Staking Module.
+      await liquidityStaking.grantRole(getRole(Role.OWNER_ROLE), shortTimelockAddress),
+      await liquidityStaking.grantRole(getRole(Role.EPOCH_PARAMETERS_ROLE), shortTimelockAddress),
+      await liquidityStaking.grantRole(getRole(Role.REWARDS_RATE_ROLE), shortTimelockAddress),
+      await liquidityStaking.grantRole(getRole(Role.BORROWER_ADMIN_ROLE), shortTimelockAddress),
+
+      // Assign roles for the Merkle Distributor Module.
+      await merkleDistributor.grantRole(getRole(Role.PAUSER_ROLE), merkleTimelockAddress),
+      await merkleDistributor.grantRole(getRole(Role.OWNER_ROLE), shortTimelockAddress),
+      await merkleDistributor.grantRole(getRole(Role.CONFIG_UPDATER_ROLE), shortTimelockAddress),
+      await merkleDistributor.grantRole(getRole(Role.UNPAUSER_ROLE), shortTimelockAddress),
 
       // Assign roles for the Governor.
       await governor.grantRole(getRole(Role.OWNER_ROLE), longTimelock.address),
@@ -321,5 +425,9 @@ export async function deployPhase2({
     rewardsTreasuryVester,
     communityTreasuryVester,
     claimsProxy,
+    liquidityStaking,
+    liquidityStakingProxyAdmin,
+    merkleDistributor,
+    merkleDistributorProxyAdmin,
   };
 }

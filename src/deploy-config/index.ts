@@ -24,6 +24,8 @@ export function getDeployConfig({
   // Copy the base config.
   const deployConfig: BaseConfig & {
     EPOCH_ZERO_START?: DeployConfig['EPOCH_ZERO_START'],
+    DYDX_COLLATERAL_TOKEN_ADDRESS?: DeployConfig['DYDX_COLLATERAL_TOKEN_ADDRESS'],
+    STARK_PERPETUAL_ADDRESS?: DeployConfig['STARK_PERPETUAL_ADDRESS'],
   } = {
     ...baseConfig,
   };
@@ -52,6 +54,14 @@ export function getDeployConfig({
 
   if (!deployConfig.EPOCH_ZERO_START) {
     throw new Error('EPOCH_ZERO_START was not set');
+  }
+
+  if (!deployConfig.DYDX_COLLATERAL_TOKEN_ADDRESS) {
+    throw new Error('DYDX_COLLATERAL_TOKEN_ADDRESS was not set');
+  }
+
+  if (!deployConfig.STARK_PERPETUAL_ADDRESS) {
+    throw new Error('STARK_PERPETUAL_ADDRESS was not set');
   }
 
   // Below: Derive all parameters which depend on the epoch zero start time.
@@ -95,6 +105,10 @@ export function getDeployConfig({
     // Treasury parameters.
     REWARDS_TREASURY_VESTER_CONFIG,
     COMMUNITY_TREASURY_VESTER_CONFIG,
+
+    // Liquidity staking + stark proxy parameters
+    DYDX_COLLATERAL_TOKEN_ADDRESS: deployConfig.DYDX_COLLATERAL_TOKEN_ADDRESS,
+    STARK_PERPETUAL_ADDRESS: deployConfig.STARK_PERPETUAL_ADDRESS,
   };
 }
 
