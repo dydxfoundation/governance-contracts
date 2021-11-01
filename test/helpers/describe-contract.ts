@@ -21,6 +21,17 @@ export interface TestContext extends DeployedContracts {
 chai.use(dirtyChai);
 chai.use(solidity);
 
+export function mainnetForkTest(
+  name: string,
+  test: () => Promise<void>,
+) {
+  if (config.FORK_MAINNET) {
+    it(`Running mainnet fork test: ${name}`, test);
+  } else {
+    it.skip(`Skipping mainnet fork test: ${name}`, test);
+  }
+}
+
 export function describeContract(
   name: string,
   init: (ctx: TestContext) => void | Promise<void>,

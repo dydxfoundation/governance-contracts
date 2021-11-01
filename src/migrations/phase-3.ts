@@ -135,7 +135,30 @@ export async function deployPhase3({
     await waitForTx(await dydxToken.updateTransfersRestrictedBefore(deployConfig.TRANSFERS_RESTRICTED_BEFORE));
   }
 
-  // TODO: Add steps 4–8.
+  if (startStep <= 4) {
+    log('Step 4: Transfer stark proxy admin 0 ownership to short timelock');
+    await waitForTx(await starkProxyProxyAdmins[0].transferOwnership(shortTimelock.address));
+  }
+
+  if (startStep <= 5) {
+    log('Step 5: Transfer stark proxy admin 1 ownership to short timelock');
+    await waitForTx(await starkProxyProxyAdmins[1].transferOwnership(shortTimelock.address));
+  }
+
+  if (startStep <= 6) {
+    log('Step 6: Transfer stark proxy admin 2 ownership to short timelock');
+    await waitForTx(await starkProxyProxyAdmins[2].transferOwnership(shortTimelock.address));
+  }
+
+  if (startStep <= 7) {
+    log('Step 6: Transfer stark proxy admin 3 ownership to short timelock');
+    await waitForTx(await starkProxyProxyAdmins[3].transferOwnership(shortTimelock.address));
+  }
+
+  if (startStep <= 8) {
+    log('Step 8: Transfer stark proxy admin 4 ownership to short timelock');
+    await waitForTx(await starkProxyProxyAdmins[4].transferOwnership(shortTimelock.address));
+  }
 
   if (startStep <= 9) {
     log('Step 9: Transfer rewards treasury proxy admin ownership to short timelock');

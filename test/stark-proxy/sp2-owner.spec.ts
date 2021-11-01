@@ -3,20 +3,24 @@ import { Signer } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils';
 
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
-import { IStarkPerpetual__factory } from '../../types/factories/IStarkPerpetual__factory';
+import { Role } from '../../src/types';
 import { StarkProxyV2__factory } from '../../types/factories/StarkProxyV2__factory';
-import { TestContext, describeContract } from '../helpers/describe-contract';
+import { StarkProxyV1 } from '../../types/StarkProxyV1';
+import { StarkProxyV2 } from '../../types/StarkProxyV2';
+import { TestContext, describeContract, mainnetForkTest } from '../helpers/describe-contract';
 import { increaseTimeAndMine } from '../helpers/evm';
+import { findAddressesWithRole } from '../helpers/get-address-with-role';
 
-function init() {}
+function init(): void { }
 
-describeContract('SP1Owner', init, (ctx: TestContext) => {
+describeContract('SP2Owner', init, (ctx: TestContext) => {
 
-  it('Can cancel current deposit and reclaim funds', async () => {
-    const mockWintermute: Signer = await impersonateAndFundAccount('0x4f3a120E72C76c22ae802D129F599BFDbc31cb81');
+  mainnetForkTest('OWNER_ROLE can cancel faulty deposit and reclaim funds', async () => {
+    const wintermuteStarkProxy: StarkProxyV1 = ctx.starkProxies[0];
+    const ownerAddress: string = await findAddressesWithRole(wintermuteStarkProxy, Role.OWNER_ROLE);
+    const owner: Signer = await impersonateAndFundAccount(ownerAddress);
 
-    const starkProxy = new StarkProxyV2__factory(mockWintermute).attach('0x0b2B08AC98a1568A34208121c26F4F41a9e0FbB6');
-    const starkPerpetualAddress = await starkProxy.STARK_PERPETUAL();
+    const starkProxy: StarkProxyV2 = new StarkProxyV2__factory(owner).attach(wintermuteStarkProxy.address);
     const starkProxyBalanceBefore = await starkProxy.getTokenBalance();
 
     const depositEvents = await starkProxy.queryFilter(
@@ -40,7 +44,6 @@ describeContract('SP1Owner', init, (ctx: TestContext) => {
 
     const starkProxyBalanceAfter = await starkProxy.getTokenBalance();
 
-    console.log('Before:', starkProxyBalanceBefore.toString(), 'after:', starkProxyBalanceAfter.toString());
     const diff = starkProxyBalanceAfter.sub(starkProxyBalanceBefore).toString();
     expect(diff).to.equal(parseUnits('50000000', 6));
   });

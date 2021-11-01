@@ -5,7 +5,9 @@
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
+import hardhatConfig from '../../src/deploy-config/hardhat-config';
 import { SM_ROLE_HASHES } from '../../src/lib/constants';
+import { deployMocks } from '../../src/migrations/helpers/deploy-mocks';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { deployPhase1 } from '../../src/migrations/phase-1';
 import { deployPhase2 } from '../../src/migrations/phase-2';
@@ -27,6 +29,12 @@ import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal
 export async function deployContractsForTest(): Promise<DeployedContracts>{
   // Phase 1: Deploy core governance contracts.
   const phase1Contracts = await deployPhase1();
+
+  const mockContracts = await deployMocks();
+
+  // TODO (lucas-dydx): Less hacky way to set these?
+  hardhatConfig.DYDX_COLLATERAL_TOKEN_ADDRESS = mockContracts.mockDydxCollateralToken.address;
+  hardhatConfig.STARK_PERPETUAL_ADDRESS = mockContracts.mockStarkPerpetual.address;
 
   // Phase 2: Deploy and configure governance and incentive contracts.
   const phase2Contracts = await deployPhase2({
@@ -133,7 +141,7 @@ export async function executeStarkProxyProposalsForTest(
   deployedContracts: DeployedContracts,
 ) {
   // Perform the safety module upgrade to recover funds and restore operation.
-  if (config.TEST_SM_RECOVERY_WITH_PROPOSAL) {
+  if (config.TEST_SP_RECOVERY_WITH_PROPOSAL) {
     await executeStarkProxyUpgradeViaProposal({
       dydxTokenAddress: deployedContracts.dydxToken.address,
       governorAddress: deployedContracts.governor.address,
