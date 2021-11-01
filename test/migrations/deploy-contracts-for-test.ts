@@ -58,6 +58,8 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
     liquidityStakingProxyAdminAddress: phase2Contracts.liquidityStakingProxyAdmin.address,
     merkleDistributorAddress: phase2Contracts.merkleDistributor.address,
     merkleDistributorProxyAdminAddress: phase2Contracts.merkleDistributorProxyAdmin.address,
+    starkProxyAddresses: phase2Contracts.starkProxies.map((sp) => sp.address),
+    starkProxyProxyAdminAddresses: phase2Contracts.starkProxyProxyAdmins.map((spa) => spa.address),
   });
 
   // Simulate mainnet staking activity with the broken Safety Module.
@@ -79,6 +81,7 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
   const starkProxyRecoveryContracts = await deployStarkProxyRecovery({
     liquidityStakingAddress: phase2Contracts.liquidityStaking.address,
     merkleDistributorAddress: phase2Contracts.merkleDistributor.address,
+    numStarkProxiesToDeploy: phase2Contracts.starkProxies.length,
   });
 
   return {
@@ -135,17 +138,17 @@ export async function executeStarkProxyProposalsForTest(
       dydxTokenAddress: deployedContracts.dydxToken.address,
       governorAddress: deployedContracts.governor.address,
       shortTimelockAddress: deployedContracts.shortTimelock.address,
-      starkProxyAddress: '0x0b2B08AC98a1568A34208121c26F4F41a9e0FbB6',
-      starkProxyProxyAdminAddress: '0xE16718eace44e0CB06b9cd164490A69A6425D1e3',
-      starkProxyNewImplAddress: deployedContracts.starkProxyNewImpl.address,
+      starkProxyAddresses: deployedContracts.starkProxies.map((sp) => sp.address),
+      starkProxyProxyAdminAddresses: deployedContracts.starkProxyProxyAdmins.map((sp) => sp.address),
+      starkProxyNewImplAddresses: deployedContracts.starkProxyNewImpls.map((sp) => sp.address),
     });
   } else {
     // Simulate the execution of the proposals without actually using the governance process.
     await executeStarkProxyUpgradeNoProposal({
       shortTimelockAddress: deployedContracts.shortTimelock.address,
-      starkProxyAddress: '0x0b2B08AC98a1568A34208121c26F4F41a9e0FbB6',
-      starkProxyProxyAdminAddress: '0xE16718eace44e0CB06b9cd164490A69A6425D1e3',
-      starkProxyNewImplAddress: deployedContracts.starkProxyNewImpl.address,
+      starkProxyAddresses: deployedContracts.starkProxies.map((sp) => sp.address),
+      starkProxyProxyAdminAddresses: deployedContracts.starkProxyProxyAdmins.map((sp) => sp.address),
+      starkProxyNewImplAddresses: deployedContracts.starkProxyNewImpls.map((sp) => sp.address),
     });
   }
 }

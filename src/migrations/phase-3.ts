@@ -1,5 +1,6 @@
 import { BigNumber } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
+import _ from 'lodash';
 
 import {
   DydxGovernor__factory,
@@ -11,6 +12,7 @@ import {
   Treasury__factory,
 } from '../../types';
 import { MerkleDistributorV1__factory } from '../../types/factories/MerkleDistributorV1__factory';
+import { StarkProxyV1__factory } from '../../types/factories/StarkProxyV1__factory';
 import { getDeployConfig } from '../deploy-config';
 import { getDeployerSigner } from '../deploy-config/get-deployer-address';
 import { log } from '../lib/logging';
@@ -42,6 +44,8 @@ export async function deployPhase3({
   liquidityStakingProxyAdminAddress,
   merkleDistributorAddress,
   merkleDistributorProxyAdminAddress,
+  starkProxyAddresses,
+  starkProxyProxyAdminAddresses,
 }: {
   startStep?: number,
 
@@ -64,6 +68,8 @@ export async function deployPhase3({
   liquidityStakingProxyAdminAddress: string,
   merkleDistributorAddress: string,
   merkleDistributorProxyAdminAddress: string,
+  starkProxyAddresses: string[],
+  starkProxyProxyAdminAddresses: string[],
 }) {
   log('Beginning phase 3 deployment\n');
   const deployConfig = getDeployConfig();
@@ -88,6 +94,8 @@ export async function deployPhase3({
   const liquidityStakingProxyAdmin = new ProxyAdmin__factory(deployer).attach(liquidityStakingProxyAdminAddress);
   const merkleDistributor = new MerkleDistributorV1__factory(deployer).attach(merkleDistributorAddress);
   const merkleDistributorProxyAdmin = new ProxyAdmin__factory(deployer).attach(merkleDistributorProxyAdminAddress);
+  const starkProxies = starkProxyAddresses.map((s) => new StarkProxyV1__factory(deployer).attach(s));
+  const starkProxyProxyAdmins = starkProxyProxyAdminAddresses.map((s) => new ProxyAdmin__factory(deployer).attach(s));
 
   const deployerBalance = await dydxToken.balanceOf(deployerAddress);
   if (deployerBalance.lt(toWad(500_000_00))) {
@@ -161,7 +169,18 @@ export async function deployPhase3({
 
   if (startStep <= 15) {
     log('Step 15. Revoke all roles from EOAs on StarkProxy and incentives contracts');
-    // TODO: Handle StarkProxy contracts.
+    // Revoke roles from each Stark Proxy.
+    const starkProxyTxs = _.flatten(
+      await Promise.all(
+        starkProxies.map(async (sp) => {
+          return [
+            await sp.revokeRole(getRole(Role.DELEGATION_ADMIN_ROLE), deployerAddress),
+            await sp.revokeRole(getRole(Role.OWNER_ROLE), deployerAddress),
+            await sp.revokeRole(getRole(Role.GUARDIAN_ROLE), deployerAddress),
+          ];
+        }),
+      ),
+    );
 
     const txs = [
       // Revoke roles from the Safety Module.
@@ -181,6 +200,8 @@ export async function deployPhase3({
       await merkleDistributor.revokeRole(getRole(Role.UNPAUSER_ROLE), deployerAddress),
       await merkleDistributor.revokeRole(getRole(Role.CLAIM_OPERATOR_ROLE), deployerAddress),
       await merkleDistributor.revokeRole(getRole(Role.OWNER_ROLE), deployerAddress),
+
+      ...starkProxyTxs,
     ];
 
     await Promise.all(txs.map((tx) => waitForTx(tx)));

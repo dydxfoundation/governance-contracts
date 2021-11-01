@@ -19,8 +19,10 @@ import {
   TreasuryVester__factory,
   Treasury__factory,
 } from '../../types';
+import { StarkProxyV1__factory } from '../../types/factories/StarkProxyV1__factory';
 import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
 import { MerkleDistributorV1 } from '../../types/MerkleDistributorV1';
+import { StarkProxyV1 } from '../../types/StarkProxyV1';
 import { getDeployConfig } from '../deploy-config';
 import { getDeployerSigner } from '../deploy-config/get-deployer-address';
 import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../lib/constants';
@@ -55,6 +57,8 @@ export async function deployPhase2({
   liquidityStakingProxyAdminAddress,
   merkleDistributorAddress,
   merkleDistributorProxyAdminAddress,
+  starkProxyAddresses,
+  starkProxyProxyAdminAddresses,
 }: {
   startStep?: number,
 
@@ -80,6 +84,8 @@ export async function deployPhase2({
   liquidityStakingProxyAdminAddress?: string,
   merkleDistributorAddress?: string,
   merkleDistributorProxyAdminAddress?: string,
+  starkProxyAddresses?: string[],
+  starkProxyProxyAdminAddresses?: string[],
 }) {
   log('Beginning phase 2 deployment\n');
   const deployConfig = getDeployConfig();
@@ -108,6 +114,8 @@ export async function deployPhase2({
   let liquidityStakingProxyAdmin: ProxyAdmin;
   let merkleDistributor: MerkleDistributorV1;
   let merkleDistributorProxyAdmin: ProxyAdmin;
+  let starkProxies: StarkProxyV1[];
+  let starkProxyProxyAdmins: ProxyAdmin[];
 
   const deployerBalance = await dydxToken.balanceOf(deployerAddress);
   if (deployerBalance.lt(toWad(500_000_00))) {
@@ -371,7 +379,59 @@ export async function deployPhase2({
     await waitForTx(await liquidityStaking.setRewardsPerSecond(deployConfig.LS_REWARDS_PER_SECOND));
   }
 
-  // TODO: Add steps 17-22.
+  // TODO: Add steps 17-20.
+
+  if (startStep <= 21) {
+    // start with allocation to `ZERO_ADDRESS` set to 0 (since `ZERO_ADDRESS` initially has 100% of allocation)
+    log('Step 21: Deploy StarkProxies for borrowers and set borrower allocations');
+    const deployedStarkProxies: StarkProxyV1[] = [];
+    const deployedStarkProxyProxyAdmins: ProxyAdmin[] = [];
+    const borrowers: string[] = [ZERO_ADDRESS];
+    const borrowerAllocations: number[] = [0];
+
+    for (let i = 0; i < deployConfig.STARK_PROXY_CONFIG.BORROWER_CONFIGS.length; i++) {
+      const [starkProxy, , starkProxyProxyAdmin] = await deployUpgradeable(
+        StarkProxyV1__factory,
+        deployer,
+        [
+          liquidityStakingAddress,
+          deployConfig.STARK_PERPETUAL_ADDRESS,
+          deployConfig.DYDX_COLLATERAL_TOKEN_ADDRESS,
+          merkleDistributorAddress,
+        ],
+        [deployerAddress],
+      );
+      const allocation: number = deployConfig.STARK_PROXY_CONFIG.BORROWER_CONFIGS[i].BORROWER_ALLOCATION;
+
+      deployedStarkProxies.push(starkProxy);
+      deployedStarkProxyProxyAdmins.push(starkProxyProxyAdmin);
+      borrowers.push(starkProxy.address);
+      borrowerAllocations.push(allocation);
+    }
+
+    // TODO (lucas-dydx): Do not set allocations if on hardhat network
+    // only set borrower allocations if not on hardhat network
+    await waitForTx(await liquidityStaking.setBorrowerAllocations(borrowers, borrowerAllocations));
+
+    starkProxies = deployedStarkProxies;
+    starkProxyProxyAdmins = deployedStarkProxyProxyAdmins;
+
+    starkProxyAddresses = deployedStarkProxies.map((s) => s.address);
+    starkProxyProxyAdminAddresses = deployedStarkProxyProxyAdmins.map((s) => s.address);
+  } else {
+    const numBorrowers: number = deployConfig.STARK_PROXY_CONFIG.BORROWER_CONFIGS.length;
+    if (!starkProxyAddresses || starkProxyAddresses.length !== numBorrowers) {
+      throw new Error(`Expected parameter starkProxyAddresses to be specified and have length ${numBorrowers}.`);
+    }
+    starkProxies = starkProxyAddresses.map((s) => new StarkProxyV1__factory(deployer).attach(s));
+
+    if (!starkProxyProxyAdminAddresses || starkProxyProxyAdminAddresses.length !== numBorrowers) {
+      throw new Error(`Expected parameter starkProxyProxyAdminAddresses to be specified and have length ${numBorrowers}.`);
+    }
+    starkProxyProxyAdmins = starkProxyProxyAdminAddresses.map((s) => new ProxyAdmin__factory(deployer).attach(s));
+  }
+
+  // TODO: Add step 22.
 
   if (startStep <= 23) {
     log('Step 23. Grant contract ownership and roles to timelocks');
@@ -429,5 +489,7 @@ export async function deployPhase2({
     liquidityStakingProxyAdmin,
     merkleDistributor,
     merkleDistributorProxyAdmin,
+    starkProxies,
+    starkProxyProxyAdmins,
   };
 }

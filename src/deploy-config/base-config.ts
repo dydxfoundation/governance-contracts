@@ -12,7 +12,7 @@ import {
   ONE_DAY_SECONDS,
 } from '../lib/constants';
 import { toWad } from '../lib/util';
-import { TimelockConfig, MerkleDistributorConfig } from './types';
+import { TimelockConfig, MerkleDistributorConfig, StarkProxyConfig } from './types';
 
 // Schedule parameters.
 const EPOCH_LENGTH = 28 * ONE_DAY_SECONDS;
@@ -83,6 +83,36 @@ const MERKLE_DISTRIBUTOR_CONFIG: MerkleDistributorConfig = {
   TRADER_SCORE_ALPHA: 0.7,
 };
 
+const STARK_PROXY_CONFIG: StarkProxyConfig = {
+  BORROWER_CONFIGS: [
+    {
+      // Wintermute
+      BORROWER_ADDRESS: '0x4f3a120E72C76c22ae802D129F599BFDbc31cb81',
+      BORROWER_ALLOCATION: 2500,
+    },
+    {
+      // Amber
+      BORROWER_ADDRESS: '0x39ad99e33ab7ee85818741dd6076112188bc2611',
+      BORROWER_ALLOCATION: 2500,
+    },
+    {
+      // Sixtant
+      BORROWER_ADDRESS: '0x89ded350b2be3dc2014c71f1e49cdfad17ccaf7c',
+      BORROWER_ALLOCATION: 2000,
+    },
+    {
+      // Kronos
+      BORROWER_ADDRESS: '0x38d981c3c42b2ec8e9572f560552407d0f1279fb',
+      BORROWER_ALLOCATION: 2000,
+    },
+    {
+      // DAT Trading
+      BORROWER_ADDRESS: '0x940ab7307c7971f9284ba9c19b3313600d79c48a',
+      BORROWER_ALLOCATION: 1000,
+    },
+  ],
+};
+
 const config = {
   // Common schedule parameters.
   EPOCH_LENGTH,
@@ -123,6 +153,9 @@ const config = {
   getLiquidityStakingMaxBlackoutLength() {
     return this.LS_MAX_EPOCH_LENGTH / 2;
   },
+
+  // Stark Proxies.
+  STARK_PROXY_CONFIG,
 
   // Treasuries.
   REWARDS_TREASURY_FRONTLOADED_FUNDS,

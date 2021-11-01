@@ -14,17 +14,17 @@ export async function createStarkProxyFixProposal({
   proposalIpfsHashHex,
   governorAddress,
   shortTimelockAddress,
-  starkProxyAddress,
-  starkProxyProxyAdminAddress,
-  starkProxyNewImplAddress,
+  starkProxyAddresses,
+  starkProxyProxyAdminAddresses,
+  starkProxyNewImplAddresses,
   signer,
 }: {
   proposalIpfsHashHex: string,
   governorAddress: string,
   shortTimelockAddress: string,
-  starkProxyAddress: string,
-  starkProxyProxyAdminAddress: string,
-  starkProxyNewImplAddress: string,
+  starkProxyAddresses: string[],
+  starkProxyProxyAdminAddresses: string[],
+  starkProxyNewImplAddresses: string[],
   signer?: SignerWithAddress,
 }) {
   const hre = getHre();
@@ -34,16 +34,24 @@ export async function createStarkProxyFixProposal({
 
   const governor: DydxGovernor = new DydxGovernor__factory(deployer).attach(governorAddress);
   const proposalId = await governor.getProposalsCount();
+
+  const values: string[] = new Array(starkProxyProxyAdminAddresses.length).fill('0');
+  const functionSignatures: string[] = new Array(starkProxyProxyAdminAddresses.length).fill('upgrade(address,address)');
+  const calldatas: string[] = starkProxyAddresses.map((sp: string, i: number) =>
+    hre.ethers.utils.defaultAbiCoder.encode(
+      ['address', 'address'],
+      [sp, starkProxyNewImplAddresses[i]],
+    ),
+  );
+  const delegateCalls: boolean[] = new Array(starkProxyProxyAdminAddresses.length).fill(false);
+
   const proposal: Proposal = [
     shortTimelockAddress,
-    [starkProxyProxyAdminAddress],
-    ['0'],
-    ['upgrade(address,address)'],
-    [hre.ethers.utils.defaultAbiCoder.encode(
-      ['address', 'address'],
-      [starkProxyAddress, starkProxyNewImplAddress],
-    )],
-    [false],
+    starkProxyProxyAdminAddresses,
+    values,
+    functionSignatures,
+    calldatas,
+    delegateCalls,
     proposalIpfsHashHex,
   ];
 

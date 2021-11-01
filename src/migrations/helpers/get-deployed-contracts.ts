@@ -14,6 +14,7 @@ import {
 } from '../../../types';
 import { LiquidityStakingV1__factory } from '../../../types/factories/LiquidityStakingV1__factory';
 import { MerkleDistributorV1__factory } from '../../../types/factories/MerkleDistributorV1__factory';
+import { StarkProxyV1__factory } from '../../../types/factories/StarkProxyV1__factory';
 import config from '../../config';
 import { getDeployerSigner } from '../../deploy-config/get-deployer-address';
 import mainnetAddresses from '../../deployed-addresses/mainnet.json';
@@ -21,7 +22,8 @@ import { getNetworkName } from '../../hre';
 import { DeployedContracts } from '../../types';
 import { deployStarkProxyRecovery } from '../stark-proxy-recovery';
 
-type DeployedAddresses = { [k in keyof DeployedContracts]: string };
+// TODO (lucas-dydx): Fix type annotation
+type DeployedAddresses = typeof mainnetAddresses & { starkProxyNewImplAddresses: string[] };
 
 export async function getDeployedContracts(): Promise<DeployedContracts> {
   const deployer = await getDeployerSigner();
@@ -33,14 +35,15 @@ export async function getDeployedContracts(): Promise<DeployedContracts> {
   ) {
 
     // Deploy contracts for Stark Proxy recovery.
-    const starkProxyRecoveryContracts = await deployStarkProxyRecovery({
+    const { starkProxyNewImpls } = await deployStarkProxyRecovery({
       liquidityStakingAddress: mainnetAddresses.liquidityStaking,
       merkleDistributorAddress: mainnetAddresses.merkleDistributor,
+      numStarkProxiesToDeploy: mainnetAddresses.starkProxies.length,
     });
 
     deployedAddresses = {
       ...mainnetAddresses,
-      starkProxyNewImpl: starkProxyRecoveryContracts.starkProxyNewImpl.address,
+      starkProxyNewImplAddresses: starkProxyNewImpls.map((sp) => sp.address),
     };
   } else {
     throw new Error(`Deployed addresses not found for network ${getNetworkName()}`);
@@ -69,6 +72,8 @@ export async function getDeployedContracts(): Promise<DeployedContracts> {
     liquidityStakingProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.liquidityStakingProxyAdmin),
     merkleDistributor: new MerkleDistributorV1__factory(deployer).attach(deployedAddresses.merkleDistributor),
     merkleDistributorProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.merkleDistributorProxyAdmin),
-    starkProxyNewImpl: new StarkProxyV2__factory(deployer).attach(deployedAddresses.starkProxyNewImpl),
+    starkProxies: deployedAddresses.starkProxies.map((s) => new StarkProxyV1__factory(deployer).attach(s)),
+    starkProxyProxyAdmins: deployedAddresses.starkProxyProxyAdmins.map((s) => new ProxyAdmin__factory(deployer).attach(s)),
+    starkProxyNewImpls: deployedAddresses.starkProxyNewImplAddresses.map((sp) => new StarkProxyV2__factory(deployer).attach(sp)),
   };
 }

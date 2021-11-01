@@ -11,15 +11,17 @@ export async function deployStarkProxyRecovery({
   startStep = 0,
   liquidityStakingAddress,
   merkleDistributorAddress,
+  numStarkProxiesToDeploy,
 
-  starkProxyNewImplAddress,
+  starkProxyNewImplAddresses,
 }: {
   startStep?: number,
 
   liquidityStakingAddress: string,
   merkleDistributorAddress: string,
+  numStarkProxiesToDeploy: number,
 
-  starkProxyNewImplAddress?: string,
+  starkProxyNewImplAddresses?: string[],
 }) {
   log('Beginning stark proxy implementation deployment\n');
   const deployConfig = getDeployConfig();
@@ -27,28 +29,31 @@ export async function deployStarkProxyRecovery({
   const deployerAddress = deployer.address;
   log(`Beginning deployment with deployer ${deployerAddress}\n`);
 
-  let starkProxyNewImpl: StarkProxyV2;
+  let starkProxyNewImpls: StarkProxyV2[] = [];
 
   if (startStep <= 1) {
-    log('Step 1. Deploy new stark proxy implementation contract.');
-    starkProxyNewImpl = await new StarkProxyV2__factory(deployer).deploy(
-      liquidityStakingAddress,
-      deployConfig.STARK_PERPETUAL_ADDRESS,
-      deployConfig.DYDX_COLLATERAL_TOKEN_ADDRESS,
-      merkleDistributorAddress,
-    );
-    await waitForTx(starkProxyNewImpl.deployTransaction);
-    starkProxyNewImplAddress = starkProxyNewImpl.address;
-  } else {
-    if (!starkProxyNewImplAddress) {
-      throw new Error('Expected parameter starkProxyNewImplAddress to be specified.');
+    log('Step 1. Deploy new stark proxy implementation contracts.');
+    for (let i = 0; i < numStarkProxiesToDeploy; i++) {
+      const starkProxyNewImpl = await new StarkProxyV2__factory(deployer).deploy(
+        liquidityStakingAddress,
+        deployConfig.STARK_PERPETUAL_ADDRESS,
+        deployConfig.DYDX_COLLATERAL_TOKEN_ADDRESS,
+        merkleDistributorAddress,
+      );
+      await waitForTx(starkProxyNewImpl.deployTransaction);
+      starkProxyNewImpls.push(starkProxyNewImpl);
     }
-    starkProxyNewImpl = new StarkProxyV2__factory(deployer).attach(starkProxyNewImplAddress);
+    starkProxyNewImplAddresses = starkProxyNewImpls.map((sp) => sp.address);
+  } else {
+    if (!starkProxyNewImplAddresses || starkProxyNewImplAddresses.length !== numStarkProxiesToDeploy) {
+      throw new Error(`Expected parameter starkProxyNewImplAddresses to be specified and have length ${numStarkProxiesToDeploy}.`);
+    }
+    starkProxyNewImpls = starkProxyNewImplAddresses.map((sp) => new StarkProxyV2__factory(deployer).attach(sp));
   }
 
-  log('\n=== NEW STARK PROXY IMPLEMENTATION DEPLOYMENT COMPLETE ===\n');
+  log('\n=== NEW STARK PROXY IMPLEMENTATIONS DEPLOYMENT COMPLETE ===\n');
 
   return {
-    starkProxyNewImpl,
+    starkProxyNewImpls,
   };
 }

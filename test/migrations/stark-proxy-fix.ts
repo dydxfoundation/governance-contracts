@@ -13,6 +13,7 @@ import {
   DydxToken__factory,
   ProxyAdmin__factory,
 } from '../../types';
+import { StarkProxyV2 } from '../../types/StarkProxyV2';
 import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
 
 const MOCK_PROPOSAL_IPFS_HASH = (
@@ -23,17 +24,24 @@ export async function executeStarkProxyUpgradeViaProposal({
   dydxTokenAddress,
   governorAddress,
   shortTimelockAddress,
-  starkProxyAddress,
-  starkProxyProxyAdminAddress,
-  starkProxyNewImplAddress,
+  starkProxyAddresses,
+  starkProxyProxyAdminAddresses,
+  starkProxyNewImplAddresses,
 }: {
   dydxTokenAddress: string,
   governorAddress: string,
   shortTimelockAddress: string,
-  starkProxyAddress: string,
-  starkProxyProxyAdminAddress: string,
-  starkProxyNewImplAddress: string,
+  starkProxyAddresses: string[],
+  starkProxyProxyAdminAddresses: string[],
+  starkProxyNewImplAddresses: string[],
 }): Promise<void> {
+  if (
+    starkProxyAddresses.length !== starkProxyProxyAdminAddresses.length ||
+    starkProxyProxyAdminAddresses.length !== starkProxyNewImplAddresses.length
+  ) {
+    throw new Error('Expected starkProxyAddresses, starkProxyProxyAdminAddresses and starkProxyNewImplAddresses to have same length');
+  }
+
   const deployConfig = getDeployConfig();
   const deployer = await getDeployerSigner();
   const dydxToken = new DydxToken__factory(deployer).attach(dydxTokenAddress);
@@ -59,9 +67,9 @@ export async function executeStarkProxyUpgradeViaProposal({
       proposalIpfsHashHex: MOCK_PROPOSAL_IPFS_HASH,
       governorAddress,
       shortTimelockAddress,
-      starkProxyAddress,
-      starkProxyProxyAdminAddress,
-      starkProxyNewImplAddress,
+      starkProxyAddresses,
+      starkProxyProxyAdminAddresses,
+      starkProxyNewImplAddresses,
       signer: voter,
     }));
 
@@ -114,25 +122,40 @@ export async function executeStarkProxyUpgradeViaProposal({
 
 export async function executeStarkProxyUpgradeNoProposal({
   shortTimelockAddress,
-  starkProxyAddress,
-  starkProxyProxyAdminAddress,
-  starkProxyNewImplAddress,
+  starkProxyAddresses,
+  starkProxyProxyAdminAddresses,
+  starkProxyNewImplAddresses,
 }: {
-  starkProxyAddress: string,
   shortTimelockAddress: string,
-  starkProxyProxyAdminAddress: string,
-  starkProxyNewImplAddress: string,
+  starkProxyAddresses: string[],
+  starkProxyProxyAdminAddresses: string[],
+  starkProxyNewImplAddresses: string[],
 }): Promise<void> {
+  if (
+    starkProxyAddresses.length !== starkProxyProxyAdminAddresses.length ||
+    starkProxyProxyAdminAddresses.length !== starkProxyNewImplAddresses.length
+  ) {
+    throw new Error('Expected starkProxyAddresses, starkProxyProxyAdminAddresses and starkProxyNewImplAddresses to have same length');
+  }
+
   const mockShortTimelock = await impersonateAndFundAccount(shortTimelockAddress);
-  const starkProxyProxyAdmin = new ProxyAdmin__factory(mockShortTimelock).attach(
-    starkProxyProxyAdminAddress,
-  );
-  await waitForTx(
-    await starkProxyProxyAdmin.upgrade(
-      starkProxyAddress,
-      starkProxyNewImplAddress,
-    ),
-  );
+
+  for (let i = 0; i < starkProxyNewImplAddresses.length; i++) {
+    const starkProxyAddress: string = starkProxyAddresses[i];
+    const proxyAdminAddress: string = starkProxyProxyAdminAddresses[i];
+    const newImplAddress: string = starkProxyNewImplAddresses[i];
+
+    const starkProxyProxyAdmin = new ProxyAdmin__factory(mockShortTimelock).attach(
+      proxyAdminAddress,
+    );
+
+    await waitForTx(
+      await starkProxyProxyAdmin.upgrade(
+        starkProxyAddress,
+        newImplAddress,
+      ),
+    );
+  }
 
   log('\n=== STARK PROXY FIX COMPLETE ===\n');
 }
