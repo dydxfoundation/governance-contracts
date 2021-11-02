@@ -17,7 +17,6 @@ export async function deployMocks() {
   const deployerAddress = deployer.address;
   log(`Beginning deployment of mock contracts with deployer ${deployerAddress}\n`);
 
-  
   const mockDydxCollateralToken: MintableERC20 = await new MintableERC20__factory(deployer)
     .deploy(
       'Mock DYDX Collateral Token',

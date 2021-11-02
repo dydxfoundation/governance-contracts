@@ -7,7 +7,7 @@ import { SafeMath } from '../../../dependencies/open-zeppelin/SafeMath.sol';
 import { IERC20 } from '../../../interfaces/IERC20.sol';
 import { IStarkPerpetual } from '../../../interfaces/IStarkPerpetual.sol';
 import { SP1Borrowing } from '../../v1/impl/SP1Borrowing.sol';
-import { SP1Exchange } from '../../v1/impl/SP1Exchange.sol';
+import { SP2Exchange } from './SP2Exchange.sol';
 
 /**
  * @title SP2Owner
@@ -18,7 +18,7 @@ import { SP1Exchange } from '../../v1/impl/SP1Exchange.sol';
  */
 abstract contract SP2Owner is
   SP1Borrowing,
-  SP1Exchange
+  SP2Exchange
 {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
@@ -70,9 +70,9 @@ abstract contract SP2Owner is
     address ethKey = STARK_PERPETUAL.getEthKey(starkKey);
 
     // Require the STARK key to be registered to this contract before we allow it to be used.
-    require(ethKey == address(this), 'SP1Owner: STARK key not registered to this contract');
+    require(ethKey == address(this), 'SP2Owner: STARK key not registered to this contract');
 
-    require(!_ALLOWED_STARK_KEYS_[starkKey], 'SP1Owner: STARK key already allowed');
+    require(!_ALLOWED_STARK_KEYS_[starkKey], 'SP2Owner: STARK key already allowed');
     _ALLOWED_STARK_KEYS_[starkKey] = true;
     emit UpdatedStarkKey(starkKey, true);
   }
@@ -89,7 +89,7 @@ abstract contract SP2Owner is
     nonReentrant
     onlyRole(OWNER_ROLE)
   {
-    require(_ALLOWED_STARK_KEYS_[starkKey], 'SP1Owner: STARK key already disallowed');
+    require(_ALLOWED_STARK_KEYS_[starkKey], 'SP2Owner: STARK key already disallowed');
     _ALLOWED_STARK_KEYS_[starkKey] = false;
     emit UpdatedStarkKey(starkKey, false);
   }
@@ -106,7 +106,7 @@ abstract contract SP2Owner is
     nonReentrant
     onlyRole(OWNER_ROLE)
   {
-    require(!_ALLOWED_RECIPIENTS_[recipient], 'SP1Owner: Recipient already allowed');
+    require(!_ALLOWED_RECIPIENTS_[recipient], 'SP2Owner: Recipient already allowed');
     _ALLOWED_RECIPIENTS_[recipient] = true;
     emit UpdatedExternalRecipient(recipient, true);
   }
@@ -123,7 +123,7 @@ abstract contract SP2Owner is
     nonReentrant
     onlyRole(OWNER_ROLE)
   {
-    require(_ALLOWED_RECIPIENTS_[recipient], 'SP1Owner: Recipient already disallowed');
+    require(_ALLOWED_RECIPIENTS_[recipient], 'SP2Owner: Recipient already disallowed');
     _ALLOWED_RECIPIENTS_[recipient] = false;
     emit UpdatedExternalRecipient(recipient, false);
   }
@@ -224,16 +224,16 @@ abstract contract SP2Owner is
     uint256 timestamp = _QUEUED_FORCED_TRADE_TIMESTAMPS_[argsHash];
     require(
       timestamp != 0,
-      'SP1Owner: Forced trade not queued or was vetoed'
+      'SP2Owner: Forced trade not queued or was vetoed'
     );
     uint256 elapsed = block.timestamp.sub(timestamp);
     require(
       elapsed >= FORCED_TRADE_WAITING_PERIOD,
-      'SP1Owner: Waiting period has not elapsed for forced trade'
+      'SP2Owner: Waiting period has not elapsed for forced trade'
     );
     require(
       elapsed <= FORCED_TRADE_WAITING_PERIOD.add(FORCED_TRADE_GRACE_PERIOD),
-      'SP1Owner: Grace period has elapsed for forced trade'
+      'SP2Owner: Grace period has elapsed for forced trade'
     );
     _QUEUED_FORCED_TRADE_TIMESTAMPS_[argsHash] = 0;
     _forcedTradeRequest(args, signature, false);
@@ -256,7 +256,7 @@ abstract contract SP2Owner is
     onlyRole(OWNER_ROLE)
     onlyAllowedKey(starkKey)
   {
-    STARK_PERPETUAL.depositCancel(starkKey, assetType, vaultId);
+    _depositCancel(starkKey, assetType, vaultId, false);
   }
 
   /**
@@ -277,6 +277,6 @@ abstract contract SP2Owner is
     onlyRole(OWNER_ROLE)
     onlyAllowedKey(starkKey)
   {
-    STARK_PERPETUAL.depositReclaim(starkKey, assetType, vaultId);
+    _depositReclaim(starkKey, assetType, vaultId, false);
   }
 }

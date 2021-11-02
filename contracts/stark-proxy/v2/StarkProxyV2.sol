@@ -7,9 +7,9 @@ import { ILiquidityStakingV1 } from '../../interfaces/ILiquidityStakingV1.sol';
 import { IMerkleDistributorV1 } from '../../interfaces/IMerkleDistributorV1.sol';
 import { IStarkPerpetual } from '../../interfaces/IStarkPerpetual.sol';
 import { SafeERC20 } from '../../dependencies/open-zeppelin/SafeERC20.sol';
-import { SP1Withdrawals } from '../v1/impl/SP1Withdrawals.sol';
+import { SP2Withdrawals } from './impl/SP2Withdrawals.sol';
 import { SP1Getters } from '../v1/impl/SP1Getters.sol';
-import { SP1Guardian } from '../v1/impl/SP1Guardian.sol';
+import { SP2Guardian } from './impl/SP2Guardian.sol';
 import { SP2Owner } from './impl/SP2Owner.sol';
 
 /**
@@ -25,9 +25,9 @@ import { SP2Owner } from './impl/SP2Owner.sol';
  *  available to guardian roles, to be nominated by dYdX governance.
  */
 contract StarkProxyV2 is
+  SP2Guardian,
   SP2Owner,
-  SP1Guardian,
-  SP1Withdrawals,
+  SP2Withdrawals,
   SP1Getters
 {
   using SafeERC20 for IERC20;
@@ -40,8 +40,8 @@ contract StarkProxyV2 is
     IERC20 token,
     IMerkleDistributorV1 merkleDistributor
   )
-    SP1Guardian(liquidityStaking, starkPerpetual, token)
-    SP1Withdrawals(merkleDistributor)
+    SP2Guardian(liquidityStaking, starkPerpetual, token)
+    SP2Withdrawals(merkleDistributor)
   {}
 
   // ============ Internal Functions ============

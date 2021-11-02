@@ -13,14 +13,14 @@ import { findAddressesWithRole } from '../helpers/get-address-with-role';
 
 function init(): void { }
 
-describeContract('SP2Owner', init, (ctx: TestContext) => {
+describeContract('SP2Guardian', init, (ctx: TestContext) => {
 
-  mainnetForkTest('OWNER_ROLE can cancel faulty deposit and reclaim funds', async () => {
+  mainnetForkTest('GUARDIAN_ROLE can cancel faulty deposit and reclaim funds', async () => {
     const wintermuteStarkProxy: StarkProxyV1 = ctx.starkProxies[0];
-    const ownerAddress: string = await findAddressesWithRole(wintermuteStarkProxy, Role.OWNER_ROLE);
-    const owner: Signer = await impersonateAndFundAccount(ownerAddress);
+    const guardianAddress: string = await findAddressesWithRole(wintermuteStarkProxy, Role.GUARDIAN_ROLE);
+    const guardian: Signer = await impersonateAndFundAccount(guardianAddress);
 
-    const starkProxy: StarkProxyV2 = new StarkProxyV2__factory(owner).attach(wintermuteStarkProxy.address);
+    const starkProxy: StarkProxyV2 = new StarkProxyV2__factory(guardian).attach(wintermuteStarkProxy.address);
     const starkProxyBalanceBefore = await starkProxy.getTokenBalance();
 
     const depositEvents = await starkProxy.queryFilter(
@@ -35,16 +35,16 @@ describeContract('SP2Owner', init, (ctx: TestContext) => {
     const starkKey = faultyDeposits[0].args.starkKey;
     const assetType = faultyDeposits[0].args.starkAssetType;
 
-    await expect(starkProxy.depositCancel(starkKey, assetType, badVaultId))
+    await expect(starkProxy.guardianDepositCancel(starkKey, assetType, badVaultId))
       .to.emit(starkProxy, 'DepositCanceled')
-      .withArgs(starkKey, badVaultId, false);
+      .withArgs(starkKey, badVaultId, true);
 
     const twoDaysSeconds = 2 * 24 * 60 * 60;
     await increaseTimeAndMine(twoDaysSeconds);
 
-    await expect(starkProxy.depositReclaim(starkKey, assetType, badVaultId))
+    await expect(starkProxy.guardianDepositReclaim(starkKey, assetType, badVaultId))
       .to.emit(starkProxy, 'DepositReclaimed')
-      .withArgs(starkKey, badVaultId, false);
+      .withArgs(starkKey, badVaultId, true);
 
     const starkProxyBalanceAfter = await starkProxy.getTokenBalance();
 
