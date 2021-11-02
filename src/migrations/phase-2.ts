@@ -337,10 +337,10 @@ export async function deployPhase2({
       await rewardsTreasury.approve(dydxTokenAddress, safetyModuleAddress, MAX_UINT_AMOUNT),
     );
     await waitForTx(
-      await rewardsTreasury.approve(dydxTokenAddress, liquidityStakingAddress, MAX_UINT_AMOUNT),
+      await rewardsTreasury.approve(dydxTokenAddress, merkleDistributorAddress, MAX_UINT_AMOUNT),
     );
     await waitForTx(
-      await rewardsTreasury.approve(dydxTokenAddress, merkleDistributorAddress, MAX_UINT_AMOUNT),
+      await rewardsTreasury.approve(dydxTokenAddress, liquidityStakingAddress, MAX_UINT_AMOUNT),
     );
   }
 
@@ -375,8 +375,8 @@ export async function deployPhase2({
 
   if (startStep <= 16) {
     log('Step 16. Set rewards rates for staking contracts');
-    await waitForTx(await safetyModule.setRewardsPerSecond(deployConfig.SM_REWARDS_PER_SECOND));
     await waitForTx(await liquidityStaking.setRewardsPerSecond(deployConfig.LS_REWARDS_PER_SECOND));
+    await waitForTx(await safetyModule.setRewardsPerSecond(deployConfig.SM_REWARDS_PER_SECOND));
   }
 
   // TODO: Add steps 17-20.
@@ -437,11 +437,11 @@ export async function deployPhase2({
     log('Step 23. Grant contract ownership and roles to timelocks');
 
     const txs = [
-      // Assign roles for the Safety Module.
-      await safetyModule.grantRole(getRole(Role.OWNER_ROLE), shortTimelockAddress),
-      await safetyModule.grantRole(getRole(Role.SLASHER_ROLE), shortTimelockAddress),
-      await safetyModule.grantRole(getRole(Role.EPOCH_PARAMETERS_ROLE), shortTimelockAddress),
-      await safetyModule.grantRole(getRole(Role.REWARDS_RATE_ROLE), shortTimelockAddress),
+      // Assign roles for the Merkle Distributor Module.
+      await merkleDistributor.grantRole(getRole(Role.PAUSER_ROLE), merkleTimelockAddress),
+      await merkleDistributor.grantRole(getRole(Role.CONFIG_UPDATER_ROLE), shortTimelockAddress),
+      await merkleDistributor.grantRole(getRole(Role.OWNER_ROLE), shortTimelockAddress),
+      await merkleDistributor.grantRole(getRole(Role.UNPAUSER_ROLE), shortTimelockAddress),
 
       // Assign roles for the Liquidity Staking Module.
       await liquidityStaking.grantRole(getRole(Role.OWNER_ROLE), shortTimelockAddress),
@@ -449,11 +449,11 @@ export async function deployPhase2({
       await liquidityStaking.grantRole(getRole(Role.REWARDS_RATE_ROLE), shortTimelockAddress),
       await liquidityStaking.grantRole(getRole(Role.BORROWER_ADMIN_ROLE), shortTimelockAddress),
 
-      // Assign roles for the Merkle Distributor Module.
-      await merkleDistributor.grantRole(getRole(Role.PAUSER_ROLE), merkleTimelockAddress),
-      await merkleDistributor.grantRole(getRole(Role.OWNER_ROLE), shortTimelockAddress),
-      await merkleDistributor.grantRole(getRole(Role.CONFIG_UPDATER_ROLE), shortTimelockAddress),
-      await merkleDistributor.grantRole(getRole(Role.UNPAUSER_ROLE), shortTimelockAddress),
+      // Assign roles for the Safety Module.
+      await safetyModule.grantRole(getRole(Role.OWNER_ROLE), shortTimelockAddress),
+      await safetyModule.grantRole(getRole(Role.SLASHER_ROLE), shortTimelockAddress),
+      await safetyModule.grantRole(getRole(Role.EPOCH_PARAMETERS_ROLE), shortTimelockAddress),
+      await safetyModule.grantRole(getRole(Role.REWARDS_RATE_ROLE), shortTimelockAddress),
 
       // Assign roles for the Governor.
       await governor.grantRole(getRole(Role.OWNER_ROLE), longTimelock.address),

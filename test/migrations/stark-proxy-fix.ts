@@ -1,5 +1,6 @@
 import BNJS from 'bignumber.js';
 import { BigNumberish } from 'ethers';
+import { Interface } from 'ethers/lib/utils';
 
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
@@ -12,6 +13,7 @@ import {
   DydxGovernor__factory,
   DydxToken__factory,
   ProxyAdmin__factory,
+  StarkProxyV2__factory,
 } from '../../types';
 import { StarkProxyV2 } from '../../types/StarkProxyV2';
 import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
@@ -149,10 +151,16 @@ export async function executeStarkProxyUpgradeNoProposal({
       proxyAdminAddress,
     );
 
+    const initializeCalldata = new Interface(StarkProxyV2__factory.abi).encodeFunctionData(
+      'initialize',
+      [],
+    );
+
     await waitForTx(
-      await starkProxyProxyAdmin.upgrade(
+      await starkProxyProxyAdmin.upgradeAndCall(
         starkProxyAddress,
         newImplAddress,
+        initializeCalldata,
       ),
     );
   }

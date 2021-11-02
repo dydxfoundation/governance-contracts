@@ -1,9 +1,11 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { Interface } from 'ethers/lib/utils';
 
 import {
   DydxGovernor__factory,
 } from '../../types';
 import { DydxGovernor } from '../../types/DydxGovernor';
+import { StarkProxyV2__factory } from '../../types/factories/StarkProxyV2__factory';
 import { getDeployerSigner } from '../deploy-config/get-deployer-address';
 import { getHre } from '../hre';
 import { log } from '../lib/logging';
@@ -36,11 +38,16 @@ export async function createStarkProxyFixProposal({
   const proposalId = await governor.getProposalsCount();
 
   const values: string[] = new Array(starkProxyProxyAdminAddresses.length).fill('0');
-  const functionSignatures: string[] = new Array(starkProxyProxyAdminAddresses.length).fill('upgrade(address,address)');
+  const functionSignatures: string[] = new Array(starkProxyProxyAdminAddresses.length).fill('upgradeAndCall(address,address,bytes)');
+
+  const initializeCalldata = new Interface(StarkProxyV2__factory.abi).encodeFunctionData(
+    'initialize',
+    [],
+  );
   const calldatas: string[] = starkProxyAddresses.map((sp: string, i: number) =>
     hre.ethers.utils.defaultAbiCoder.encode(
-      ['address', 'address'],
-      [sp, starkProxyNewImplAddresses[i]],
+      ['address', 'address', 'bytes'],
+      [sp, starkProxyNewImplAddresses[i], initializeCalldata],
     ),
   );
   const delegateCalls: boolean[] = new Array(starkProxyProxyAdminAddresses.length).fill(false);

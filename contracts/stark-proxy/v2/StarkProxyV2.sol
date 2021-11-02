@@ -44,6 +44,13 @@ contract StarkProxyV2 is
     SP2Withdrawals(merkleDistributor)
   {}
 
+  // ============ External Functions ============
+
+  function initialize()
+    external
+    initializer
+  {}
+
   // ============ Internal Functions ============
 
   /**

@@ -206,17 +206,7 @@ export async function deployPhase3({
     );
 
     const txs = [
-      // Revoke roles from the Safety Module.
-      await safetyModule.revokeRole(getRole(Role.SLASHER_ROLE), deployerAddress),
-      await safetyModule.revokeRole(getRole(Role.EPOCH_PARAMETERS_ROLE), deployerAddress),
-      await safetyModule.revokeRole(getRole(Role.REWARDS_RATE_ROLE), deployerAddress),
-      await safetyModule.revokeRole(getRole(Role.OWNER_ROLE), deployerAddress),
-
-      // Revoke roles from the Liquidity Staking Module.
-      await liquidityStaking.revokeRole(getRole(Role.EPOCH_PARAMETERS_ROLE), deployerAddress),
-      await liquidityStaking.revokeRole(getRole(Role.REWARDS_RATE_ROLE), deployerAddress),
-      await liquidityStaking.revokeRole(getRole(Role.BORROWER_ADMIN_ROLE), deployerAddress),
-      await liquidityStaking.revokeRole(getRole(Role.OWNER_ROLE), deployerAddress),
+      ...starkProxyTxs,
 
       // Revoke roles from the Merkle Distributor Module.
       await merkleDistributor.revokeRole(getRole(Role.PAUSER_ROLE), deployerAddress),
@@ -224,7 +214,17 @@ export async function deployPhase3({
       await merkleDistributor.revokeRole(getRole(Role.CLAIM_OPERATOR_ROLE), deployerAddress),
       await merkleDistributor.revokeRole(getRole(Role.OWNER_ROLE), deployerAddress),
 
-      ...starkProxyTxs,
+      // Revoke roles from the Liquidity Staking Module.
+      await liquidityStaking.revokeRole(getRole(Role.EPOCH_PARAMETERS_ROLE), deployerAddress),
+      await liquidityStaking.revokeRole(getRole(Role.REWARDS_RATE_ROLE), deployerAddress),
+      await liquidityStaking.revokeRole(getRole(Role.BORROWER_ADMIN_ROLE), deployerAddress),
+      await liquidityStaking.revokeRole(getRole(Role.OWNER_ROLE), deployerAddress),
+
+      // Revoke roles from the Safety Module.
+      await safetyModule.revokeRole(getRole(Role.SLASHER_ROLE), deployerAddress),
+      await safetyModule.revokeRole(getRole(Role.EPOCH_PARAMETERS_ROLE), deployerAddress),
+      await safetyModule.revokeRole(getRole(Role.REWARDS_RATE_ROLE), deployerAddress),
+      await safetyModule.revokeRole(getRole(Role.OWNER_ROLE), deployerAddress),
     ];
 
     await Promise.all(txs.map((tx) => waitForTx(tx)));

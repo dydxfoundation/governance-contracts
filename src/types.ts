@@ -7,7 +7,7 @@ import {
 import { deployPhase1 } from './migrations/phase-1';
 import { deployPhase2 } from './migrations/phase-2';
 import { deploySafetyModuleRecovery } from './migrations/safety-module-recovery';
-import { deployStarkProxyRecovery } from './migrations/stark-proxy-recovery';
+import { deployStarkProxyV2 } from './migrations/deploy-stark-proxy-v2';
 export * from './deploy-config/types';
 
 export type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
@@ -18,7 +18,7 @@ export type DeployedContracts = (
   UnwrapPromise<ReturnType<typeof deployPhase1>> &
   UnwrapPromise<ReturnType<typeof deployPhase2>> &
   UnwrapPromise<ReturnType<typeof deploySafetyModuleRecovery>> &
-  UnwrapPromise<ReturnType<typeof deployStarkProxyRecovery>>
+  UnwrapPromise<ReturnType<typeof deployStarkProxyV2>>
 );
 
 export type Proposal = [

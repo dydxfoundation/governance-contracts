@@ -20,7 +20,7 @@ import { getDeployerSigner } from '../../deploy-config/get-deployer-address';
 import mainnetAddresses from '../../deployed-addresses/mainnet.json';
 import { getNetworkName } from '../../hre';
 import { DeployedContracts } from '../../types';
-import { deployStarkProxyRecovery } from '../stark-proxy-recovery';
+import { deployStarkProxyV2 } from '../deploy-stark-proxy-v2';
 
 // TODO (lucas-dydx): Fix type annotation
 type DeployedAddresses = typeof mainnetAddresses & { starkProxyNewImplAddresses: string[] };
@@ -35,7 +35,7 @@ export async function getDeployedContracts(): Promise<DeployedContracts> {
   ) {
 
     // Deploy contracts for Stark Proxy recovery.
-    const { starkProxyNewImpls } = await deployStarkProxyRecovery({
+    const { starkProxyNewImpls } = await deployStarkProxyV2({
       liquidityStakingAddress: mainnetAddresses.liquidityStaking,
       merkleDistributorAddress: mainnetAddresses.merkleDistributor,
       numStarkProxiesToDeploy: mainnetAddresses.starkProxies.length,

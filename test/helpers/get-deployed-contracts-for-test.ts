@@ -5,7 +5,7 @@ import {
   configureForTest,
   deployContractsForTest,
   executeSafetyModuleRecoveryProposalsForTest,
-  executeStarkProxyProposalsForTest,
+  executeStarkProxyProposalForTest,
 } from '../migrations/deploy-contracts-for-test';
 
 let globalDeployedContracts: DeployedContracts;
@@ -43,7 +43,7 @@ async function getDeployedContractsForTest(): Promise<DeployedContracts> {
   }
 
   await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
-  await executeStarkProxyProposalsForTest(deployedContracts);
+  await executeStarkProxyProposalForTest(deployedContracts);
   await configureForTest(deployedContracts);
   return deployedContracts;
 }

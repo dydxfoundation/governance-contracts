@@ -13,7 +13,7 @@ import { deployPhase1 } from '../../src/migrations/phase-1';
 import { deployPhase2 } from '../../src/migrations/phase-2';
 import { deployPhase3 } from '../../src/migrations/phase-3';
 import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-recovery';
-import { deployStarkProxyRecovery } from '../../src/migrations/stark-proxy-recovery';
+import { deployStarkProxyV2 } from '../../src/migrations/deploy-stark-proxy-v2';
 import { DeployedContracts } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
@@ -86,7 +86,7 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
   });
 
   // Deploy contracts for Stark Proxy recovery.
-  const starkProxyRecoveryContracts = await deployStarkProxyRecovery({
+  const starkProxyRecoveryContracts = await deployStarkProxyV2({
     liquidityStakingAddress: phase2Contracts.liquidityStaking.address,
     merkleDistributorAddress: phase2Contracts.merkleDistributor.address,
     numStarkProxiesToDeploy: phase2Contracts.starkProxies.length,
@@ -137,7 +137,7 @@ export async function executeSafetyModuleRecoveryProposalsForTest(
   }
 }
 
-export async function executeStarkProxyProposalsForTest(
+export async function executeStarkProxyProposalForTest(
   deployedContracts: DeployedContracts,
 ) {
   // Perform the safety module upgrade to recover funds and restore operation.

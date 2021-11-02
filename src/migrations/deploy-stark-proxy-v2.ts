@@ -7,7 +7,7 @@ import { getDeployerSigner } from '../deploy-config/get-deployer-address';
 import { log } from '../lib/logging';
 import { waitForTx } from '../lib/util';
 
-export async function deployStarkProxyRecovery({
+export async function deployStarkProxyV2({
   startStep = 0,
   liquidityStakingAddress,
   merkleDistributorAddress,
