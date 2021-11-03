@@ -14,6 +14,8 @@ import {
 } from '../../../types';
 import { LiquidityStakingV1__factory } from '../../../types/factories/LiquidityStakingV1__factory';
 import { MerkleDistributorV1__factory } from '../../../types/factories/MerkleDistributorV1__factory';
+import { MintableERC20__factory } from '../../../types/factories/MintableERC20__factory';
+import { MockStarkPerpetual__factory } from '../../../types/factories/MockStarkPerpetual__factory';
 import { StarkProxyV1__factory } from '../../../types/factories/StarkProxyV1__factory';
 import config from '../../config';
 import { getDeployerSigner } from '../../deploy-config/get-deployer-address';
@@ -38,6 +40,8 @@ export async function getDeployedContracts(): Promise<DeployedContracts> {
     const { starkProxyNewImpls } = await deployStarkProxyV2({
       liquidityStakingAddress: mainnetAddresses.liquidityStaking,
       merkleDistributorAddress: mainnetAddresses.merkleDistributor,
+      starkPerpetualAddress: mainnetAddresses.starkPerpetual,
+      dydxCollateralTokenAddress: mainnetAddresses.dydxCollateralToken,
       numStarkProxiesToDeploy: mainnetAddresses.starkProxies.length,
     });
 
@@ -74,6 +78,8 @@ export async function getDeployedContracts(): Promise<DeployedContracts> {
     merkleDistributorProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.merkleDistributorProxyAdmin),
     starkProxies: deployedAddresses.starkProxies.map((s) => new StarkProxyV1__factory(deployer).attach(s)),
     starkProxyProxyAdmins: deployedAddresses.starkProxyProxyAdmins.map((s) => new ProxyAdmin__factory(deployer).attach(s)),
+    dydxCollateralToken: new MintableERC20__factory(deployer).attach(deployedAddresses.dydxCollateralToken),
+    starkPerpetual: new MockStarkPerpetual__factory(deployer).attach(deployedAddresses.starkPerpetual),
     starkProxyNewImpls: deployedAddresses.starkProxyNewImplAddresses.map((sp) => new StarkProxyV2__factory(deployer).attach(sp)),
   };
 }

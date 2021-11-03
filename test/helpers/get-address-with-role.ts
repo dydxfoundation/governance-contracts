@@ -4,7 +4,7 @@ import { getRole } from '../../src/lib/util';
 import { Role } from '../../src/types';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
 
-export async function findAddressesWithRole(
+export async function findAddressWithRole(
   starkProxy: StarkProxyV1,
   role: Role,
 ): Promise<string> {

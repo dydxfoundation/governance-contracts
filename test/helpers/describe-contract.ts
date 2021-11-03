@@ -32,6 +32,50 @@ export function mainnetForkTest(
   }
 }
 
+export function describeContractHardhat(
+  name: string,
+  init: (ctx: TestContext) => void | Promise<void>,
+  tests: (ctx: TestContext) => void,
+): void {
+  if (!config.isHardhat() || config.FORK_MAINNET) {
+    // These tests only run on Hardhat (not including mainnet forks)
+    describe.skip(name, () => {});
+  } else {
+    // Note that the function passed into describe() should not be async.
+    describe(name, () => {
+      const ctx: TestContext = {
+        config: getDeployConfig(),
+      } as TestContext;
+
+      let preInitSnapshotId: string;
+
+      // Runs before any before() calls made within the describeContract() call.
+      before(async () => {
+        const accounts = await hre.ethers.getSigners();
+        ctx.deployer = await getDeployerSigner();
+        ctx.users = accounts.slice(1);
+
+        // Deploy contracts before taking the pre-init snapshot.
+        const deployedContracts = await getDeployedContractsOnceForTest();
+        Object.assign(
+          ctx,
+          deployedContracts,
+        );
+
+        preInitSnapshotId = await evmSnapshot();
+        await init(ctx);
+      });
+
+      // Runs before any after() calls made within the describeContract() call.
+      after(async () => {
+        await evmReset(preInitSnapshotId);
+      });
+
+      tests(ctx);
+    });
+  }
+}
+
 export function describeContract(
   name: string,
   init: (ctx: TestContext) => void | Promise<void>,

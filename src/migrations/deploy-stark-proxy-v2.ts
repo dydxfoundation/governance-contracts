@@ -11,6 +11,8 @@ export async function deployStarkProxyV2({
   startStep = 0,
   liquidityStakingAddress,
   merkleDistributorAddress,
+  starkPerpetualAddress,
+  dydxCollateralTokenAddress,
   numStarkProxiesToDeploy,
 
   starkProxyNewImplAddresses,
@@ -19,6 +21,8 @@ export async function deployStarkProxyV2({
 
   liquidityStakingAddress: string,
   merkleDistributorAddress: string,
+  starkPerpetualAddress: string,
+  dydxCollateralTokenAddress: string,
   numStarkProxiesToDeploy: number,
 
   starkProxyNewImplAddresses?: string[],
@@ -36,8 +40,8 @@ export async function deployStarkProxyV2({
     for (let i = 0; i < numStarkProxiesToDeploy; i++) {
       const starkProxyNewImpl = await new StarkProxyV2__factory(deployer).deploy(
         liquidityStakingAddress,
-        deployConfig.STARK_PERPETUAL_ADDRESS,
-        deployConfig.DYDX_COLLATERAL_TOKEN_ADDRESS,
+        starkPerpetualAddress,
+        dydxCollateralTokenAddress,
         merkleDistributorAddress,
       );
       await waitForTx(starkProxyNewImpl.deployTransaction);

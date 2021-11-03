@@ -9,7 +9,7 @@ import { StarkProxyV1 } from '../../types/StarkProxyV1';
 import { StarkProxyV2 } from '../../types/StarkProxyV2';
 import { TestContext, describeContract, mainnetForkTest } from '../helpers/describe-contract';
 import { increaseTimeAndMine } from '../helpers/evm';
-import { findAddressesWithRole } from '../helpers/get-address-with-role';
+import { findAddressWithRole } from '../helpers/get-address-with-role';
 
 function init(): void { }
 
@@ -17,7 +17,7 @@ describeContract('SP2Guardian', init, (ctx: TestContext) => {
 
   mainnetForkTest('GUARDIAN_ROLE can cancel faulty deposit and reclaim funds', async () => {
     const wintermuteStarkProxy: StarkProxyV1 = ctx.starkProxies[0];
-    const guardianAddress: string = await findAddressesWithRole(wintermuteStarkProxy, Role.GUARDIAN_ROLE);
+    const guardianAddress: string = await findAddressWithRole(wintermuteStarkProxy, Role.GUARDIAN_ROLE);
     const guardian: Signer = await impersonateAndFundAccount(guardianAddress);
 
     const starkProxy: StarkProxyV2 = new StarkProxyV2__factory(guardian).attach(wintermuteStarkProxy.address);

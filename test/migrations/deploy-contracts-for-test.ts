@@ -7,13 +7,13 @@ import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
 import hardhatConfig from '../../src/deploy-config/hardhat-config';
 import { SM_ROLE_HASHES } from '../../src/lib/constants';
+import { deployStarkProxyV2 } from '../../src/migrations/deploy-stark-proxy-v2';
 import { deployMocks } from '../../src/migrations/helpers/deploy-mocks';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { deployPhase1 } from '../../src/migrations/phase-1';
 import { deployPhase2 } from '../../src/migrations/phase-2';
 import { deployPhase3 } from '../../src/migrations/phase-3';
 import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-recovery';
-import { deployStarkProxyV2 } from '../../src/migrations/deploy-stark-proxy-v2';
 import { DeployedContracts } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
@@ -32,12 +32,13 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
 
   const mockContracts = await deployMocks();
 
-  // TODO (lucas-dydx): Less hacky way to set these?
-  hardhatConfig.DYDX_COLLATERAL_TOKEN_ADDRESS = mockContracts.mockDydxCollateralToken.address;
-  hardhatConfig.STARK_PERPETUAL_ADDRESS = mockContracts.mockStarkPerpetual.address;
-
   // Phase 2: Deploy and configure governance and incentive contracts.
   const phase2Contracts = await deployPhase2({
+    // Mock contracts.
+    starkPerpetualAddress: mockContracts.starkPerpetual.address,
+    dydxCollateralTokenAddress: mockContracts.dydxCollateralToken.address,
+
+    // Phase 1 contracts.
     dydxTokenAddress: phase1Contracts.dydxToken.address,
     governorAddress: phase1Contracts.governor.address,
     shortTimelockAddress: phase1Contracts.shortTimelock.address,
@@ -89,6 +90,8 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
   const starkProxyRecoveryContracts = await deployStarkProxyV2({
     liquidityStakingAddress: phase2Contracts.liquidityStaking.address,
     merkleDistributorAddress: phase2Contracts.merkleDistributor.address,
+    starkPerpetualAddress: mockContracts.starkPerpetual.address,
+    dydxCollateralTokenAddress: mockContracts.dydxCollateralToken.address,
     numStarkProxiesToDeploy: phase2Contracts.starkProxies.length,
   });
 
@@ -97,6 +100,7 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
     ...phase2Contracts,
     ...smRecoveryContracts,
     ...starkProxyRecoveryContracts,
+    ...mockContracts,
   };
 }
 

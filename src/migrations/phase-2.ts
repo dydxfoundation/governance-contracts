@@ -1,4 +1,5 @@
 import { formatEther } from 'ethers/lib/utils';
+import _ from 'lodash';
 
 import {
   ClaimsProxy,
@@ -35,6 +36,10 @@ import { transferWithPrompt } from './helpers/transfer-tokens';
 export async function deployPhase2({
   startStep = 0,
 
+  // Mock contracts.
+  starkPerpetualAddress,
+  dydxCollateralTokenAddress,
+
   // Phase 1 deployed contracts.
   dydxTokenAddress,
   governorAddress,
@@ -61,6 +66,10 @@ export async function deployPhase2({
   starkProxyProxyAdminAddresses,
 }: {
   startStep?: number,
+
+  // Mock contracts.
+  starkPerpetualAddress: string,
+  dydxCollateralTokenAddress: string,
 
   // Phase 1 deployed contracts.
   dydxTokenAddress: string,
@@ -295,7 +304,7 @@ export async function deployPhase2({
       LiquidityStakingV1__factory,
       deployer,
       [
-        deployConfig.DYDX_COLLATERAL_TOKEN_ADDRESS,
+        dydxCollateralTokenAddress,
         dydxTokenAddress,
         rewardsTreasuryAddress,
         deployConfig.LS_DISTRIBUTION_START,
@@ -395,8 +404,8 @@ export async function deployPhase2({
         deployer,
         [
           liquidityStakingAddress,
-          deployConfig.STARK_PERPETUAL_ADDRESS,
-          deployConfig.DYDX_COLLATERAL_TOKEN_ADDRESS,
+          starkPerpetualAddress,
+          dydxCollateralTokenAddress,
           merkleDistributorAddress,
         ],
         [deployerAddress],
@@ -432,6 +441,30 @@ export async function deployPhase2({
   }
 
   // TODO: Add step 22.
+  if (startStep <= 22) {
+    log('Step 22. Grant GUARDIAN_ROLE to short timelock, VETO_GUARDIAN_ROLE to Merkle timelock, and all other roles to borrower, for each StarkProxy');
+    // Revoke roles from each Stark Proxy.
+    const starkProxyTxs = _.flatten(
+      await Promise.all(
+        starkProxies.map(async (sp: StarkProxyV1, i: number) => {
+          const borrowerAddress: string = deployConfig.STARK_PROXY_CONFIG.BORROWER_CONFIGS[i].BORROWER_ADDRESS;
+          return [
+            await sp.grantRole(getRole(Role.GUARDIAN_ROLE), shortTimelockAddress),
+
+            await sp.grantRole(getRole(Role.VETO_GUARDIAN_ROLE), merkleTimelockAddress),
+
+            await sp.grantRole(getRole(Role.OWNER_ROLE), borrowerAddress),
+            await sp.grantRole(getRole(Role.DELEGATION_ADMIN_ROLE), borrowerAddress),
+            await sp.grantRole(getRole(Role.WITHDRAWAL_OPERATOR_ROLE), borrowerAddress),
+            await sp.grantRole(getRole(Role.BORROWER_ROLE), borrowerAddress),
+            await sp.grantRole(getRole(Role.EXCHANGE_OPERATOR_ROLE), borrowerAddress),
+          ];
+        }),
+      ),
+    );
+
+    await Promise.all(starkProxyTxs.map((tx) => waitForTx(tx)));
+  }
 
   if (startStep <= 23) {
     log('Step 23. Grant contract ownership and roles to timelocks');

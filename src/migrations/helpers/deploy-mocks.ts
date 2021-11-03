@@ -30,7 +30,7 @@ export async function deployMocks() {
   log('\n=== MOCK CONTRACT DEPLOYMENT COMPLETE ===\n');
 
   return {
-    mockDydxCollateralToken,
-    mockStarkPerpetual,
+    dydxCollateralToken: mockDydxCollateralToken,
+    starkPerpetual: mockStarkPerpetual,
   };
 }

@@ -47,6 +47,4 @@ export interface DeployConfig extends BaseConfig {
   REWARDS_TREASURY_VESTER_CONFIG: TreasuryVesterConfig;
   COMMUNITY_TREASURY_VESTER_CONFIG: TreasuryVesterConfig;
   MERKLE_DISTRIBUTOR_CONFIG: MerkleDistributorConfig;
-  DYDX_COLLATERAL_TOKEN_ADDRESS: string;
-  STARK_PERPETUAL_ADDRESS: string;
 }
