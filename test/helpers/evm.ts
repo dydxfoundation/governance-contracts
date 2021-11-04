@@ -4,6 +4,7 @@ import {
 } from 'ethers';
 
 import hre from '../hre';
+import { StakingHelper } from './staking-helper';
 
 export async function evmSnapshot(): Promise<string> {
   return hre.ethers.provider.send('evm_snapshot', []);
@@ -13,6 +14,29 @@ export async function evmReset(
   id: string,
 ): Promise<void> {
   await hre.ethers.provider.send('evm_revert', [id]);
+}
+
+export async function saveSnapshot(
+  snapshots: Map<string, string>,
+  label: string,
+  contract?: StakingHelper,
+): Promise<void> {
+  snapshots.set(label, await evmSnapshot());
+  contract?.saveSnapshot(label);
+}
+
+export async function loadSnapshot(
+  snapshots: Map<string, string>,
+  label: string,
+  contract?: StakingHelper,
+): Promise<void> {
+  const snapshot = snapshots.get(label);
+  if (!snapshot) {
+    throw new Error(`Cannot load since snapshot has not been saved: ${label}`);
+  }
+  await evmReset(snapshot);
+  snapshots.set(label, await evmSnapshot());
+  contract?.loadSnapshot(label);
 }
 
 export async function latestBlockTimestamp() {

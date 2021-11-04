@@ -2,6 +2,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { Signer } from 'ethers';
 
+import { getRole } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { Role } from '../../src/types';
 import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
@@ -14,7 +15,6 @@ import { findAddressWithRole } from '../helpers/get-address-with-role';
 import { StakingHelper } from '../helpers/staking-helper';
 
 // Snapshots
-const snapshots = new Map<string, string>();
 const borrowerHasBorrowed = 'BorrowerHasBorrowed';
 const borrowerRestrictedSnapshot = 'BorrowerRestrictedSnapshot';
 
@@ -25,7 +25,7 @@ let deployer: Signer;
 let liquidityStaking: LiquidityStakingV1;
 let mockStakedToken: MintableERC20;
 let mockStarkPerpetual: MockStarkPerpetual;
-let guardianSigner: SignerWithAddress;
+let shortTimelockSigner: SignerWithAddress;
 
 // Users.
 let stakers: SignerWithAddress[];
@@ -53,16 +53,13 @@ async function init(ctx: TestContext) {
 
   // Grant roles.
   const deployerAddress: string = await deployer.getAddress();
-  const exchangeOperatorRole = await borrowerStarkProxies[0].EXCHANGE_OPERATOR_ROLE();
-  const borrowerRole = await borrowerStarkProxies[0].BORROWER_ROLE();
   await Promise.all(borrowerStarkProxies.map(async b => {
-    await b.grantRole(exchangeOperatorRole, deployerAddress);
-    await b.grantRole(borrowerRole, deployerAddress);
+    await b.grantRole(getRole(Role.EXCHANGE_OPERATOR_ROLE), deployerAddress);
+    await b.grantRole(getRole(Role.BORROWER_ROLE), deployerAddress);
   }));
 
-  guardianSigner = await impersonateAndFundAccount(ctx.shortTimelock.address);
+  shortTimelockSigner = await impersonateAndFundAccount(ctx.shortTimelock.address);
 
-  // TODO (lucas-dydx): Mint reasonable amount of mock tokens
   await ctx.dydxCollateralToken.mint(ctx.deployer.address, stakerInitialBalance * stakers.length);
 
   // Use helper class to automatically check contract invariants after every update.
@@ -72,7 +69,7 @@ async function init(ctx: TestContext) {
     mockStakedToken,
     ctx.rewardsTreasury.address,
     ctx.deployer,
-    guardianSigner,
+    shortTimelockSigner,
     stakers.concat(borrowers),
     false,
   );
@@ -172,7 +169,7 @@ describeContractHardhat('SP2Exchange', init, () => {
     before(async () => {
       // Restrict borrowing.
       await expect(
-        borrowerStarkProxies[0].connect(guardianSigner).guardianSetBorrowingRestriction(true),
+        borrowerStarkProxies[0].connect(shortTimelockSigner).guardianSetBorrowingRestriction(true),
       )
         .to.emit(borrowerStarkProxies[0], 'BorrowingRestrictionChanged')
         .withArgs(true);

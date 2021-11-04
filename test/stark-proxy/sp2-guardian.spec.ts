@@ -11,9 +11,7 @@ import { TestContext, describeContract, mainnetForkTest } from '../helpers/descr
 import { increaseTimeAndMine } from '../helpers/evm';
 import { findAddressWithRole } from '../helpers/get-address-with-role';
 
-function init(): void { }
-
-describeContract('SP2Guardian', init, (ctx: TestContext) => {
+describeContract('SP2Guardian', () => {}, (ctx: TestContext) => {
 
   mainnetForkTest('GUARDIAN_ROLE can cancel faulty deposit and reclaim funds', async () => {
     const wintermuteStarkProxy: StarkProxyV1 = ctx.starkProxies[0];
