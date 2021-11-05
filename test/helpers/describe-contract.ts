@@ -6,7 +6,8 @@ import { solidity } from 'ethereum-waffle';
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
-import { DeployConfig, DeployedContracts } from '../../src/types';
+import { getNetworkName } from '../../src/hre';
+import { DeployConfig, DeployedContracts, NetworkName } from '../../src/types';
 import hre from '../hre';
 import { evmSnapshot, evmReset } from './evm';
 import { getDeployedContractsOnceForTest } from './get-deployed-contracts-for-test';
@@ -21,14 +22,19 @@ export interface TestContext extends DeployedContracts {
 chai.use(dirtyChai);
 chai.use(solidity);
 
-export function mainnetForkTest(
+export function describeContractForNetwork(
   name: string,
-  test: () => Promise<void>,
+  ctx: TestContext,
+  networkForTest: NetworkName,
+  mainnetForkTest: boolean,
+  tests: (ctx: TestContext) => void,
 ) {
-  if (config.FORK_MAINNET) {
-    it(`Running mainnet fork test: ${name}`, test);
+  if (networkForTest === getNetworkName() && mainnetForkTest === config.FORK_MAINNET) {
+    describe(`Running test on ${networkForTest} ${mainnetForkTest ? 'fork' : ''}: ${name}`, () => {
+      tests(ctx);
+    });
   } else {
-    it.skip(`Skipping mainnet fork test: ${name}`, test);
+    describe.skip(`Skipping test on ${networkForTest} ${mainnetForkTest ? 'fork' : ''}: ${name}`, () => {});
   }
 }
 
