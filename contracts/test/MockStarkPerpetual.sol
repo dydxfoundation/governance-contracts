@@ -34,6 +34,18 @@ contract MockStarkPerpetual {
     uint256 amount
   );
 
+  event MockStarkDepositCanceled(
+    uint256 starkKey,
+    uint256 assetType,
+    uint256 vaultId
+  );
+
+  event MockStarkDepositReclaimed(
+    uint256 starkKey,
+    uint256 assetType,
+    uint256 vaultId
+  );
+
   mapping(uint256 => address) public _REGISTRATIONS_;
 
   mapping(address => uint256) public _DEPOSITS_;
@@ -114,6 +126,28 @@ contract MockStarkPerpetual {
       'USER_UNREGISTERED'
     );
     return ethKey;
+  }
+
+  function depositCancel(
+    uint256 starkKey,
+    uint256 assetType,
+    uint256 vaultId
+  ) external {
+    // Require registered.
+    getEthKey(starkKey);
+
+    emit MockStarkDepositCanceled(starkKey, assetType, vaultId);
+  }
+
+  function depositReclaim(
+    uint256 starkKey,
+    uint256 assetType,
+    uint256 vaultId
+  ) external {
+    // Require registered.
+    getEthKey(starkKey);
+
+    emit MockStarkDepositReclaimed(starkKey, assetType, vaultId);
   }
 
   // ============ Mock Governance Functionality ============

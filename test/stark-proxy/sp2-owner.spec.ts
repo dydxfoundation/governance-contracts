@@ -2,18 +2,72 @@ import { expect } from 'chai';
 import { Signer } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils';
 
+import { getRole } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { NetworkName, Role } from '../../src/types';
 import { StarkProxyV2__factory } from '../../types/factories/StarkProxyV2__factory';
+import { MockStarkPerpetual } from '../../types/MockStarkPerpetual';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
 import { StarkProxyV2 } from '../../types/StarkProxyV2';
 import { TestContext, describeContract, describeContractForNetwork } from '../helpers/describe-contract';
 import { increaseTimeAndMine } from '../helpers/evm';
 import { findAddressWithRole } from '../helpers/get-address-with-role';
 
-function init(): void { }
+let mockStarkPerpetual: MockStarkPerpetual;
+let borrowerStarkProxy: StarkProxyV2;
+
+async function init(ctx: TestContext): Promise<void> {
+  mockStarkPerpetual = ctx.starkPerpetual;
+
+  const ownerAddress = await findAddressWithRole(ctx.starkProxies[0], Role.OWNER_ROLE);
+  const borrower = await impersonateAndFundAccount(ownerAddress);
+
+  borrowerStarkProxy = new StarkProxyV2__factory(borrower).attach(ctx.starkProxies[0].address);
+}
 
 describeContract('SP2Owner', init, (ctx: TestContext) => {
+
+  describeContractForNetwork(
+    'SP2Owner Hardhat Tests',
+    ctx,
+    NetworkName.hardhat,
+    false,
+    () => {
+      it('OWNER_ROLE can cancel and reclaim a deposit', async () => {
+        // Register STARK key and add it to the allowlist.
+        const mockStarkKey = 0;
+        const mockAssetType = 1;
+        const mockVaultId = 2;
+        await mockStarkPerpetual.registerUser(borrowerStarkProxy.address, mockStarkKey, []);
+        await borrowerStarkProxy.allowStarkKey(mockStarkKey);
+
+        await expect(borrowerStarkProxy.depositCancel(mockStarkKey, mockAssetType, mockVaultId))
+          .to.emit(borrowerStarkProxy, 'DepositCanceled')
+          .withArgs(mockStarkKey, mockVaultId, false);
+
+        await expect(borrowerStarkProxy.depositReclaim(mockStarkKey, mockAssetType, mockVaultId))
+          .to.emit(borrowerStarkProxy, 'DepositReclaimed')
+          .withArgs(mockStarkKey, mockVaultId, false);
+      });
+
+      it('User without OWNER_ROLE cannot cancel or reclaim a deposit', async () => {
+        // Register STARK key and add it to the allowlist.
+        const mockStarkKey = 0;
+        const mockAssetType = 1;
+        const mockVaultId = 2;
+        await mockStarkPerpetual.registerUser(borrowerStarkProxy.address, mockStarkKey, []);
+        await borrowerStarkProxy.allowStarkKey(mockStarkKey);
+
+        const starkProxy = borrowerStarkProxy.connect(ctx.users[0]);
+        const userAddress: string = ctx.users[0].address.toLowerCase();
+        const accessControlError = `AccessControl: account ${userAddress} is missing role ${getRole(Role.OWNER_ROLE)}`;
+        await expect(starkProxy.depositCancel(mockStarkKey, mockAssetType, mockVaultId))
+          .to.be.revertedWith(accessControlError);
+
+        await expect(starkProxy.depositReclaim(mockStarkKey, mockAssetType, mockVaultId))
+          .to.be.revertedWith(accessControlError);
+      });
+    });
 
   describeContractForNetwork(
     'SP2Owner Hardhat Tests',

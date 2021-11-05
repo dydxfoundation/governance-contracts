@@ -5,7 +5,6 @@
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
-import hardhatConfig from '../../src/deploy-config/hardhat-config';
 import { SM_ROLE_HASHES } from '../../src/lib/constants';
 import { deployStarkProxyV2 } from '../../src/migrations/deploy-stark-proxy-v2';
 import { deployMocks } from '../../src/migrations/helpers/deploy-mocks';
