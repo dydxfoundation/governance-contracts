@@ -418,8 +418,6 @@ export async function deployPhase2({
       borrowerAllocations.push(allocation);
     }
 
-    // TODO (lucas-dydx): Do not set allocations if on hardhat network
-    // only set borrower allocations if not on hardhat network
     await waitForTx(await liquidityStaking.setBorrowerAllocations(borrowers, borrowerAllocations));
 
     starkProxies = deployedStarkProxies;

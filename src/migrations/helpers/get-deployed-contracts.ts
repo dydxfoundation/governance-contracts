@@ -24,7 +24,6 @@ import { getNetworkName } from '../../hre';
 import { DeployedContracts } from '../../types';
 import { deployStarkProxyV2 } from '../deploy-stark-proxy-v2';
 
-// TODO (lucas-dydx): Fix type annotation
 type DeployedAddresses = typeof mainnetAddresses & { starkProxyNewImplAddresses: string[] };
 
 export async function getDeployedContracts(): Promise<DeployedContracts> {
