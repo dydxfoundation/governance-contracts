@@ -2,15 +2,18 @@ import { expect } from 'chai';
 import { Signer } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils';
 
+import { ONE_DAY_SECONDS } from '../../src/lib/constants';
 import { getRole } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { NetworkName, Role } from '../../src/types';
+import { IFreezableStarkPerpetual__factory } from '../../types';
 import { StarkProxyV2__factory } from '../../types/factories/StarkProxyV2__factory';
+import { IFreezableStarkPerpetual } from '../../types/IFreezableStarkPerpetual';
 import { MockStarkPerpetual } from '../../types/MockStarkPerpetual';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
 import { StarkProxyV2 } from '../../types/StarkProxyV2';
 import { TestContext, describeContract, describeContractForNetwork } from '../helpers/describe-contract';
-import { increaseTimeAndMine } from '../helpers/evm';
+import { increaseTimeAndMine, incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { findAddressWithRole } from '../helpers/get-address-with-role';
 
 let mockStarkPerpetual: MockStarkPerpetual;
@@ -110,6 +113,41 @@ describeContract('SP2Owner', init, (ctx: TestContext) => {
 
         const diff = starkProxyBalanceAfter.sub(starkProxyBalanceBefore).toString();
         expect(diff).to.equal(parseUnits('50000000', 6));
+      });
+
+      it('OWNER_ROLE can force withdraw funds from the exchange', async () => {
+        const wintermuteStarkProxy: StarkProxyV1 = ctx.starkProxies[0];
+        const ownerAddress: string = await findAddressWithRole(wintermuteStarkProxy, Role.OWNER_ROLE);
+        const owner: Signer = await impersonateAndFundAccount(ownerAddress);
+
+        const starkProxy: StarkProxyV2 = new StarkProxyV2__factory(owner).attach(wintermuteStarkProxy.address);
+
+        const depositEvents = await starkProxy.queryFilter(
+          starkProxy.filters.DepositedToExchange(null, null, null, null),
+        );
+
+        const wintermuteVaultId = '50';
+        const deposits = depositEvents.filter((e) => e.args.starkVaultId.toString() === wintermuteVaultId);
+
+        expect(deposits.length).to.be.be.gte(1);
+
+        const starkKey = deposits[0].args.starkKey;
+        const quantizedAmount = '1';
+
+        await expect(starkProxy.forcedWithdrawalRequest(starkKey, wintermuteVaultId, quantizedAmount, false))
+          .to.emit(starkProxy, 'RequestedForcedWithdrawal')
+          .withArgs(starkKey, wintermuteVaultId, false);
+
+        const currentBlockTime: number = await latestBlockTimestamp();
+        await incrementTimeToTimestamp((ONE_DAY_SECONDS * 14) + currentBlockTime);
+        
+        const starkPerpetual: IFreezableStarkPerpetual = IFreezableStarkPerpetual__factory.connect(
+          ctx.starkPerpetual.address,
+          ctx.deployer,
+        );
+
+        await expect(starkPerpetual.freezeRequest(starkKey, wintermuteVaultId, quantizedAmount))
+          .to.emit(starkPerpetual, 'LogFrozen');
       });
     });
 });
