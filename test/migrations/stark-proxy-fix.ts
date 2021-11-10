@@ -15,7 +15,6 @@ import {
   ProxyAdmin__factory,
   StarkProxyV2__factory,
 } from '../../types';
-import { StarkProxyV2 } from '../../types/StarkProxyV2';
 import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
 
 const MOCK_PROPOSAL_IPFS_HASH = (

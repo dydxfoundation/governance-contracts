@@ -91,7 +91,7 @@ async function init(ctx: TestContext) {
   await saveSnapshot(snapshots, fundsStakedSnapshot, contract);
 }
 
-describeContractHardhat('SP1Borrowing', init, (ctx: TestContext) => {
+describeContractHardhat('SP1Borrowing', init, () => {
 
   describe('After stake is deposited and allocations are set', () => {
     before(async () => {
@@ -136,7 +136,7 @@ describeContractHardhat('SP1Borrowing', init, (ctx: TestContext) => {
       });
     });
 
-    describe('When borrower has an amount due', async () => {
+    describe('When borrower has an amount due', () => {
       before(async () => {
         await loadSnapshot(snapshots, borrowerAllocationsSettledSnapshot, contract);
 

@@ -12,10 +12,9 @@ import {
   TreasuryVester__factory,
   IStarkPerpetual__factory,
 } from '../../../types';
+import { IERC20__factory } from '../../../types/factories/IERC20__factory';
 import { LiquidityStakingV1__factory } from '../../../types/factories/LiquidityStakingV1__factory';
 import { MerkleDistributorV1__factory } from '../../../types/factories/MerkleDistributorV1__factory';
-import { MintableERC20__factory } from '../../../types/factories/MintableERC20__factory';
-import { MockStarkPerpetual__factory } from '../../../types/factories/MockStarkPerpetual__factory';
 import { StarkProxyV1__factory } from '../../../types/factories/StarkProxyV1__factory';
 import config from '../../config';
 import { getDeployerSigner } from '../../deploy-config/get-deployer-address';
@@ -63,7 +62,7 @@ export async function getMainnetDeployedContracts(): Promise<MainnetDeployedCont
     merkleDistributorProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.merkleDistributorProxyAdmin),
     starkProxies: deployedAddresses.starkProxies.map((s) => new StarkProxyV1__factory(deployer).attach(s)),
     starkProxyProxyAdmins: deployedAddresses.starkProxyProxyAdmins.map((s) => new ProxyAdmin__factory(deployer).attach(s)),
-    dydxCollateralToken: new MintableERC20__factory(deployer).attach(deployedAddresses.dydxCollateralToken),
+    dydxCollateralToken: IERC20__factory.connect(deployedAddresses.dydxCollateralToken, deployer),
     starkPerpetual: IStarkPerpetual__factory.connect(deployedAddresses.starkPerpetual, deployer),
   };
 }

@@ -12,7 +12,6 @@ import {
 import { getRole } from '../../src/lib/util';
 import { Role } from '../../src/types';
 import {
-  ERC20,
   LiquidityStakingV1,
   SafetyModuleV1,
   StarkProxyV1,

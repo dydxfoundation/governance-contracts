@@ -296,7 +296,7 @@ export async function deployPhase2({
   }
 
 
-  // TODO: Add steps 8–10.
+  // TODO: Add steps 9–10.
 
   if (startStep <= 11) {
     log('Step 11. Deploy liquidity staking proxy + liquidity staking proxy admin + liquidity staking');
@@ -438,7 +438,6 @@ export async function deployPhase2({
     starkProxyProxyAdmins = starkProxyProxyAdminAddresses.map((s) => new ProxyAdmin__factory(deployer).attach(s));
   }
 
-  // TODO: Add step 22.
   if (startStep <= 22) {
     log('Step 22. Grant GUARDIAN_ROLE to short timelock, VETO_GUARDIAN_ROLE to Merkle timelock, and all other roles to borrower, for each StarkProxy');
     // Revoke roles from each Stark Proxy.

@@ -1,5 +1,3 @@
-import { formatUnits } from 'ethers/lib/utils';
-
 import { MintableERC20__factory } from '../../../types/factories/MintableERC20__factory';
 import { MockStarkPerpetual__factory } from '../../../types/factories/MockStarkPerpetual__factory';
 import { IERC20 } from '../../../types/IERC20';
@@ -34,7 +32,7 @@ export async function deployMocks() {
 
   await waitForTx(await mockDydxCollateralToken.mint(deployerAddress, MAX_UINT_AMOUNT));
 
-  log(`Minting max USDC to ${deployerAddress}.\n`);
+  log(`Minting max DYDX collateral token to ${deployerAddress}.\n`);
 
   log('\n=== MOCK CONTRACT DEPLOYMENT COMPLETE ===\n');
 

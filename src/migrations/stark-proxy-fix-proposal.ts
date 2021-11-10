@@ -32,7 +32,7 @@ export async function createStarkProxyFixProposal({
   const hre = getHre();
   const deployer = signer || await getDeployerSigner();
   const deployerAddress = deployer.address;
-  log(`Creating stark proxy fix proposal with proposer ${deployerAddress}\n`);
+  log(`Creating stark proxy fix proposal with proposer ${deployerAddress}.\n`);
 
   const governor: DydxGovernor = new DydxGovernor__factory(deployer).attach(governorAddress);
   const proposalId = await governor.getProposalsCount();
