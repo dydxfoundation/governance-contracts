@@ -18,7 +18,7 @@ const configSchema = {
   STAKING_TESTS_CHECK_INVARIANTS: parseBoolean({ default: false }),
   STAKING_TESTS_LOG_BALANCE_UPDATES: parseBoolean({ default: false }),
   TEST_SM_RECOVERY_WITH_PROPOSAL: parseBoolean({ default: true }),
-  TEST_SP_RECOVERY_WITH_PROPOSAL: parseBoolean({ default: true }),
+  TEST_SP_FIX_WITH_PROPOSAL: parseBoolean({ default: true }),
 };
 
 const config = parseSchema(configSchema);

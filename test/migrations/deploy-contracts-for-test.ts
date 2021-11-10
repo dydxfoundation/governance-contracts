@@ -143,7 +143,7 @@ export async function executeStarkProxyProposalForTest(
   deployedContracts: AllDeployedContracts,
 ) {
   // Perform the safety module upgrade to recover funds and restore operation.
-  if (config.TEST_SP_RECOVERY_WITH_PROPOSAL) {
+  if (config.TEST_SP_FIX_WITH_PROPOSAL) {
     await executeStarkProxyUpgradeViaProposal({
       dydxTokenAddress: deployedContracts.dydxToken.address,
       governorAddress: deployedContracts.governor.address,
