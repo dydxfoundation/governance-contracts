@@ -5,10 +5,10 @@ This `README` describes how to upgrade the stark proxy contracts to support canc
 ## StarkProxyV2 Implementation Deployment
 
 First, the new `StarkProxyV2` implementation contract is deployed. It has the following changes:
-* `depositCancel()` for cancelling pending deposits to the dYdX L2 exchange.
-* `depositReclaim()` for reclaiming cancelled deposits to the dYdX L2 exchange.
-* `getRevision()` updated to return 2
-* A new empty initializer function
+* `depositCancel()` and `guardianDepositCancel()` for cancelling pending deposits to the dYdX L2 exchange.
+* `depositReclaim()` and `guardianDepositReclaim()` for reclaiming cancelled deposits to the dYdX L2 exchange.
+* `getRevision()` updated to return 2.
+* A new empty initializer function.
 
 This implementation contract is deployed as follows. Note that hardhat must be configured for mainnet via [hardhat.config.ts](/hardhat.config.ts). This can be accomplished by passing in the `ALCHEMY_KEY` and `MNEMONIC` environment variables. **IMPORTANT:** Using a `MNEMONIC` in this way is highly insecure. On mainnet, a temporary mnemonic or an entirely different method should be used.
 
