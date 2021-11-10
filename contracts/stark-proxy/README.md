@@ -31,7 +31,7 @@ export ALCHEMY_KEY=<...>
 export MNEMONIC=<...>
 npx hardhat --network mainnet deploy:stark-proxy-fix-proposal \
   --proposal-ipfs-hash-hex              0x...                                      \
-  --stark-proxy-new-impl-address        0x...                                      \
+  --stark-proxy-new-impl-address        0x...
 ```
 
 ## Stark Proxy Fix Tests
