@@ -46,11 +46,11 @@ describeContract('SP2Owner', init, (ctx: TestContext) => {
 
         await expect(borrowerStarkProxy.depositCancel(mockStarkKey, mockAssetType, mockVaultId))
           .to.emit(borrowerStarkProxy, 'DepositCanceled')
-          .withArgs(mockStarkKey, mockVaultId, false);
+          .withArgs(mockStarkKey, mockAssetType, mockVaultId, false);
 
         await expect(borrowerStarkProxy.depositReclaim(mockStarkKey, mockAssetType, mockVaultId))
           .to.emit(borrowerStarkProxy, 'DepositReclaimed')
-          .withArgs(mockStarkKey, mockVaultId, false);
+          .withArgs(mockStarkKey, mockAssetType, mockVaultId, false);
       });
 
       it('User without OWNER_ROLE cannot cancel or reclaim a deposit', async () => {
@@ -100,14 +100,14 @@ describeContract('SP2Owner', init, (ctx: TestContext) => {
 
         await expect(starkProxy.depositCancel(starkKey, assetType, badVaultId))
           .to.emit(starkProxy, 'DepositCanceled')
-          .withArgs(starkKey, badVaultId, false);
+          .withArgs(starkKey, assetType, badVaultId, false);
 
         const twoDaysSeconds = 2 * 24 * 60 * 60;
         await increaseTimeAndMine(twoDaysSeconds);
 
         await expect(starkProxy.depositReclaim(starkKey, assetType, badVaultId))
           .to.emit(starkProxy, 'DepositReclaimed')
-          .withArgs(starkKey, badVaultId, false);
+          .withArgs(starkKey, assetType, badVaultId, false);
 
         const starkProxyBalanceAfter = await starkProxy.getTokenBalance();
 

@@ -138,11 +138,11 @@ describeContract('SP2Guardian', init, (ctx: TestContext) => {
         const guardianStarkProxy = borrowerStarkProxy.connect(shortTimelockSigner);
         await expect(guardianStarkProxy.guardianDepositCancel(mockStarkKey, mockAssetType, mockVaultId))
           .to.emit(guardianStarkProxy, 'DepositCanceled')
-          .withArgs(mockStarkKey, mockVaultId, true);
+          .withArgs(mockStarkKey, mockAssetType, mockVaultId, true);
 
         await expect(guardianStarkProxy.guardianDepositReclaim(mockStarkKey, mockAssetType, mockVaultId))
           .to.emit(guardianStarkProxy, 'DepositReclaimed')
-          .withArgs(mockStarkKey, mockVaultId, true);
+          .withArgs(mockStarkKey, mockAssetType, mockVaultId, true);
       });
 
       it('User without GUARDIAN_ROLE cannot cancel or reclaim a deposit', async () => {
@@ -188,14 +188,14 @@ describeContract('SP2Guardian', init, (ctx: TestContext) => {
 
         await expect(wintermuteStarkProxy.guardianDepositCancel(starkKey, assetType, badVaultId))
           .to.emit(wintermuteStarkProxy, 'DepositCanceled')
-          .withArgs(starkKey, badVaultId, true);
+          .withArgs(starkKey, assetType, badVaultId, true);
 
         const twoDaysSeconds = 2 * 24 * 60 * 60;
         await increaseTimeAndMine(twoDaysSeconds);
 
         await expect(wintermuteStarkProxy.guardianDepositReclaim(starkKey, assetType, badVaultId))
           .to.emit(wintermuteStarkProxy, 'DepositReclaimed')
-          .withArgs(starkKey, badVaultId, true);
+          .withArgs(starkKey, assetType, badVaultId, true);
 
         const starkProxyBalanceAfter = await wintermuteStarkProxy.getTokenBalance();
 

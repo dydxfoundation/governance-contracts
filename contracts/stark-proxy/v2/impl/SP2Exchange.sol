@@ -61,6 +61,7 @@ abstract contract SP2Exchange is
   /// @dev Limited fields included. Details can be retrieved from Starkware logs if needed.
   event DepositCanceled(
     uint256 starkKey,
+    uint256 starkAssetType,
     uint256 vaultId,
     bool isGuardianAction
   );
@@ -68,6 +69,7 @@ abstract contract SP2Exchange is
   /// @dev Limited fields included. Details can be retrieved from Starkware logs if needed.
   event DepositReclaimed(
     uint256 starkKey,
+    uint256 starkAssetType,
     uint256 vaultId,
     bool isGuardianAction
   );
@@ -208,7 +210,7 @@ abstract contract SP2Exchange is
     internal 
   {
     STARK_PERPETUAL.depositCancel(starkKey, assetType, vaultId);
-    emit DepositCanceled(starkKey, vaultId, isGuardianAction);
+    emit DepositCanceled(starkKey, assetType, vaultId, isGuardianAction);
   }
 
   function _depositReclaim(
@@ -220,7 +222,7 @@ abstract contract SP2Exchange is
     internal 
   {
     STARK_PERPETUAL.depositReclaim(starkKey, assetType, vaultId);
-    emit DepositReclaimed(starkKey, vaultId, isGuardianAction);
+    emit DepositReclaimed(starkKey, assetType, vaultId, isGuardianAction);
   }
 
   // ============ Private Functions ============

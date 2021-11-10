@@ -242,9 +242,9 @@ abstract contract SP2Owner is
   /**
    * @notice Request to cancel a pending deposit to the exchange.
    *
-   * @param  starkKey         The STARK key of the account. Must be authorized by OWNER_ROLE.
-   * @param  assetType        The exchange asset ID for the asset to deposit.
-   * @param  vaultId          The exchange position ID for the account to deposit to.
+   * @param  starkKey   The STARK key of the account. Must be authorized by OWNER_ROLE.
+   * @param  assetType  The exchange asset ID for the asset to deposit.
+   * @param  vaultId    The exchange position ID for the deposit.
    */
   function depositCancel(
     uint256 starkKey,
@@ -263,9 +263,9 @@ abstract contract SP2Owner is
    * @notice Reclaim a canceled pending deposit to the exchange. Requires that `depositCancel`
    *  was previously called.
    *
-   * @param  starkKey         The STARK key of the account. Must be authorized by OWNER_ROLE.
-   * @param  assetType        The exchange asset ID for the asset to deposit.
-   * @param  vaultId          The exchange position ID for the account to deposit to.
+   * @param  starkKey   The STARK key of the account. Must be authorized by OWNER_ROLE.
+   * @param  assetType  The exchange asset ID for the asset to deposit.
+   * @param  vaultId    The exchange position ID for the deposit.
    */
   function depositReclaim(
     uint256 starkKey,
