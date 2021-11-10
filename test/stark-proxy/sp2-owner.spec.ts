@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Signer } from 'ethers';
+import { BigNumber, Signer } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils';
 
 import { ONE_DAY_SECONDS } from '../../src/lib/constants';
@@ -50,7 +50,7 @@ describeContract('SP2Owner', init, (ctx: TestContext) => {
 
         await expect(borrowerStarkProxy.depositReclaim(mockStarkKey, mockAssetType, mockVaultId))
           .to.emit(borrowerStarkProxy, 'DepositReclaimed')
-          .withArgs(mockStarkKey, mockAssetType, mockVaultId, false);
+          .withArgs(mockStarkKey, mockAssetType, mockVaultId, 0, false);
       });
 
       it('User without OWNER_ROLE cannot cancel or reclaim a deposit', async () => {
@@ -105,14 +105,15 @@ describeContract('SP2Owner', init, (ctx: TestContext) => {
         const twoDaysSeconds = 2 * 24 * 60 * 60;
         await increaseTimeAndMine(twoDaysSeconds);
 
+        const lockedFunds: BigNumber = parseUnits('50000000', 6);
         await expect(starkProxy.depositReclaim(starkKey, assetType, badVaultId))
           .to.emit(starkProxy, 'DepositReclaimed')
-          .withArgs(starkKey, assetType, badVaultId, false);
+          .withArgs(starkKey, assetType, badVaultId, lockedFunds, false);
 
         const starkProxyBalanceAfter = await starkProxy.getTokenBalance();
 
         const diff = starkProxyBalanceAfter.sub(starkProxyBalanceBefore).toString();
-        expect(diff).to.equal(parseUnits('50000000', 6));
+        expect(diff).to.equal(lockedFunds);
       });
 
       it('OWNER_ROLE can force withdraw funds from the exchange', async () => {

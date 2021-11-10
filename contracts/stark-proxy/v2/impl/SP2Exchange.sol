@@ -66,11 +66,11 @@ abstract contract SP2Exchange is
     bool isGuardianAction
   );
 
-  /// @dev Limited fields included. Details can be retrieved from Starkware logs if needed.
   event DepositReclaimed(
     uint256 starkKey,
     uint256 starkAssetType,
     uint256 vaultId,
+    uint256 fundsReclaimed,
     bool isGuardianAction
   );
 
@@ -221,8 +221,16 @@ abstract contract SP2Exchange is
   )
     internal 
   {
+    uint256 balanceBefore = TOKEN.balanceOf(address(this));
     STARK_PERPETUAL.depositReclaim(starkKey, assetType, vaultId);
-    emit DepositReclaimed(starkKey, assetType, vaultId, isGuardianAction);
+    uint256 balanceAfter = TOKEN.balanceOf(address(this));
+    emit DepositReclaimed(
+      starkKey,
+      assetType,
+      vaultId,
+      balanceAfter.sub(balanceBefore),
+      isGuardianAction
+    );
   }
 
   // ============ Private Functions ============
