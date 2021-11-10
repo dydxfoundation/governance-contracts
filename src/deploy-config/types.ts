@@ -20,6 +20,21 @@ export interface TreasuryVesterConfig {
   VESTING_END: number;
 }
 
+export interface MerkleDistributorConfig {
+  IPNS_NAME: string;
+  IPFS_UPDATE_PERIOD: number;
+  MARKET_MAKER_REWARDS_AMOUNT: number;
+  TRADER_REWARDS_AMOUNT: number;
+  TRADER_SCORE_ALPHA: number;
+}
+
+export interface StarkProxyConfig {
+  BORROWER_CONFIGS: {
+    BORROWER_ADDRESS: string,
+    BORROWER_ALLOCATION: number,
+  }[];
+}
+
 export interface DeployConfig extends BaseConfig {
   EPOCH_ZERO_START: number;
   TRANSFERS_RESTRICTED_BEFORE: number;

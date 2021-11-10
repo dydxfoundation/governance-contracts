@@ -12,11 +12,11 @@ import {
 import { getRole } from '../../src/lib/util';
 import { Role } from '../../src/types';
 import {
-  ERC20,
   LiquidityStakingV1,
   SafetyModuleV1,
   StarkProxyV1,
 } from '../../types';
+import { IERC20 } from '../../types/IERC20';
 import { TestContext } from './describe-contract';
 import { increaseTimeAndMine, latestBlockTimestamp } from './evm';
 import { StoredBalance } from './staking-helper-balance';
@@ -104,7 +104,7 @@ function asSM(
 export class StakingHelper {
   private ctx: TestContext;
   private contract: GenericStakingModule;
-  private token: ERC20;
+  private token: IERC20;
   private vaultAddress: string;
   private tokenSource: SignerWithAddress;
   private admin: GenericStakingModule;
@@ -119,7 +119,7 @@ export class StakingHelper {
   constructor(
     ctx: TestContext,
     contract: GenericStakingModule,
-    token: ERC20,
+    token: IERC20,
     vaultAddress: string,
     tokenSource: SignerWithAddress,
     admin: SignerWithAddress,
@@ -254,14 +254,16 @@ export class StakingHelper {
     }
 
     // Verify total current and next allocations.
-    const curZero = await asLS(this.contract).getAllocationFractionCurrentEpoch(ZERO_ADDRESS);
-    const curSum = curZero.add(
-      await this.sumByAddr((addr) => asLS(this.contract).getAllocationFractionCurrentEpoch(addr)),
+    const curSum = await this.sumByAddr(
+      (addr) => asLS(this.contract).getAllocationFractionCurrentEpoch(addr),
+      addresses,
     );
     expectEq(curSum, BORROWING_TOTAL_ALLOCATION, 'setBorrowerAllocations: curSum');
-    const nextZero = await asLS(this.contract).getAllocationFractionNextEpoch(ZERO_ADDRESS);
-    const nextSum = nextZero.add(
-      await this.sumByAddr((addr) => asLS(this.contract).getAllocationFractionNextEpoch(addr)),
+    const nextSum = await this.sumByAddr(
+      (addr) => {
+        return asLS(this.contract).getAllocationFractionNextEpoch(addr);
+      },
+      addresses,
     );
     expectEq(nextSum, BORROWING_TOTAL_ALLOCATION, 'setBorrowerAllocations: nextSum');
   }
@@ -1201,10 +1203,11 @@ export class StakingHelper {
   ): Promise<void> {
     expect(await asLS(this.contract).getBorrowableAmount(borrower.address)).to.equal(amount);
     await this.borrowViaProxy(borrower, amount, options);
+
     // Could be either of the following:
     // - LS1Staking: Borrow amount exceeds stake amount available in the contract
     // - LS1Borrowing: Amount > allocated
-    await expect(this.borrow(borrower.address, 1)).to.be.revertedWith('LS1');
+    await expect(this.borrowViaProxy(borrower, 1)).to.be.revertedWith('LS1');
   }
 
   /**
@@ -1635,8 +1638,11 @@ export class StakingHelper {
       .map((log) => this.contract.interface.parseLog(log));
   }
 
-  private sumByAddr(mapFn: (addr: string) => BigNumber | Promise<BigNumber>): Promise<BigNumber> {
-    return bnSumReduce(Object.keys(this.users), mapFn);
+  private sumByAddr(
+    mapFn: (addr: string) => BigNumber | Promise<BigNumber>,
+    addrs?: string[],
+  ): Promise<BigNumber> {
+    return bnSumReduce(addrs || Object.keys(this.users), mapFn);
   }
 }
 

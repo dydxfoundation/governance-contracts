@@ -10,16 +10,21 @@ import {
   SM2Recovery__factory,
   Treasury__factory,
   TreasuryVester__factory,
+  IStarkPerpetual__factory,
 } from '../../../types';
+import { IERC20__factory } from '../../../types/factories/IERC20__factory';
+import { LiquidityStakingV1__factory } from '../../../types/factories/LiquidityStakingV1__factory';
+import { MerkleDistributorV1__factory } from '../../../types/factories/MerkleDistributorV1__factory';
+import { StarkProxyV1__factory } from '../../../types/factories/StarkProxyV1__factory';
 import config from '../../config';
 import { getDeployerSigner } from '../../deploy-config/get-deployer-address';
 import mainnetAddresses from '../../deployed-addresses/mainnet.json';
 import { getNetworkName } from '../../hre';
-import { DeployedContracts } from '../../types';
+import { MainnetDeployedContracts } from '../../types';
 
-type DeployedAddresses = { [k in keyof DeployedContracts]: string };
+type DeployedAddresses = typeof mainnetAddresses;
 
-export async function getDeployedContracts(): Promise<DeployedContracts> {
+export async function getMainnetDeployedContracts(): Promise<MainnetDeployedContracts> {
   const deployer = await getDeployerSigner();
 
   let deployedAddresses: DeployedAddresses;
@@ -51,5 +56,13 @@ export async function getDeployedContracts(): Promise<DeployedContracts> {
     safetyModuleNewImpl: new SafetyModuleV2__factory(deployer).attach(deployedAddresses.safetyModuleNewImpl),
     safetyModuleRecovery: new SM2Recovery__factory(deployer).attach(deployedAddresses.safetyModuleRecovery),
     safetyModuleRecoveryProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.safetyModuleRecoveryProxyAdmin),
+    liquidityStaking: new LiquidityStakingV1__factory(deployer).attach(deployedAddresses.liquidityStaking),
+    liquidityStakingProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.liquidityStakingProxyAdmin),
+    merkleDistributor: new MerkleDistributorV1__factory(deployer).attach(deployedAddresses.merkleDistributor),
+    merkleDistributorProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.merkleDistributorProxyAdmin),
+    starkProxies: deployedAddresses.starkProxies.map((s) => new StarkProxyV1__factory(deployer).attach(s)),
+    starkProxyProxyAdmins: deployedAddresses.starkProxyProxyAdmins.map((s) => new ProxyAdmin__factory(deployer).attach(s)),
+    dydxCollateralToken: IERC20__factory.connect(deployedAddresses.dydxCollateralToken, deployer),
+    starkPerpetual: IStarkPerpetual__factory.connect(deployedAddresses.starkPerpetual, deployer),
   };
 }

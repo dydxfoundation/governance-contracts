@@ -1,6 +1,7 @@
 import { types } from 'hardhat/config';
 
 import { hardhatTask } from '../../src/hre';
+import { log } from '../../src/lib/logging';
 import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-recovery';
 
 hardhatTask('deploy:safety-module-recovery', 'Deploy the Safety Module recovery contracts.')
@@ -27,7 +28,7 @@ hardhatTask('deploy:safety-module-recovery', 'Deploy the Safety Module recovery 
       safetyModuleRecovery,
       safetyModuleRecoveryProxyAdmin,
     } = await deploySafetyModuleRecovery(args);
-    console.log(`New Safety Module implementation deployed to: ${safetyModuleNewImpl.address}`);
-    console.log(`Safety Module recovery contract deployed to: ${safetyModuleRecovery.address}`);
-    console.log(`Safety Module recovery proxy admin deployed to: ${safetyModuleRecoveryProxyAdmin.address}`);
+    log(`New Safety Module implementation deployed to: ${safetyModuleNewImpl.address}`);
+    log(`Safety Module recovery contract deployed to: ${safetyModuleRecovery.address}`);
+    log(`Safety Module recovery proxy admin deployed to: ${safetyModuleRecoveryProxyAdmin.address}`);
   });
