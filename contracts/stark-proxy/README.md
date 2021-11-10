@@ -46,9 +46,6 @@ npm run compile
 # Run the core test suite against a local hardhat deployment (1.5 minutes).
 npm run test
 
-# Run locally with additional invariant checks + test all affected addresses (2.5 minutes).
-npm run test:full
-
 # Run tests on a mainnet fork (faster version, mocks out the governance proposal).
 TEST_SP_FIX_WITH_PROPOSAL=false npm run test:fork
 
