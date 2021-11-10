@@ -10,17 +10,12 @@ hardhatTask('deploy:stark-proxy-v2', 'Deploy the StarkProxyV2 contracts.')
   .addParam('merkleDistributorAddress', 'Previously deployed merkle distributor address', mainnetAddresses.merkleDistributor, types.string)
   .addParam('starkPerpetualAddress', 'Address of DYDX stark perpetual', mainnetAddresses.starkPerpetual, types.string)
   .addParam('dydxCollateralTokenAddress', 'Address of collateral token for DYDX stark perpetual', mainnetAddresses.dydxCollateralToken, types.string)
-  .addParam('numStarkProxiesToDeploy', 'Number of StarkProxyV2 contracts to deploy', 5, types.int)
   .setAction(async (args: {
     liquidityStakingAddress: string,
     merkleDistributorAddress: string,
     starkPerpetualAddress: string,
     dydxCollateralTokenAddress: string,
-    numStarkProxiesToDeploy: number,
   }) => {
-    if (args.numStarkProxiesToDeploy <= 0) {
-      throw new Error('Deploying 0 or less stark proxy implementations is not supported.');
-    }
     const { starkProxyNewImpl } = await deployStarkProxyV2(args);
     log(`New StarkProxyV2 implementation deloyed to ${starkProxyNewImpl.address}.`);
   });
