@@ -9,14 +9,14 @@ import { NetworkName, Role } from '../../src/types';
 import { IFreezableStarkPerpetual__factory } from '../../types';
 import { StarkProxyV2__factory } from '../../types/factories/StarkProxyV2__factory';
 import { IFreezableStarkPerpetual } from '../../types/IFreezableStarkPerpetual';
-import { MockStarkPerpetual } from '../../types/MockStarkPerpetual';
+import { IStarkPerpetual } from '../../types/IStarkPerpetual';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
 import { StarkProxyV2 } from '../../types/StarkProxyV2';
 import { TestContext, describeContract, describeContractForNetwork } from '../helpers/describe-contract';
 import { increaseTimeAndMine, incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { findAddressWithRole } from '../helpers/get-address-with-role';
 
-let mockStarkPerpetual: MockStarkPerpetual;
+let mockStarkPerpetual: IStarkPerpetual;
 let borrowerStarkProxy: StarkProxyV2;
 
 async function init(ctx: TestContext): Promise<void> {

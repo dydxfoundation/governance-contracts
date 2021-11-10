@@ -8,8 +8,8 @@ import { getRole, waitForTx } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { NetworkName, Role } from '../../src/types';
 import { StarkProxyV2__factory } from '../../types/factories/StarkProxyV2__factory';
+import { IStarkPerpetual } from '../../types/IStarkPerpetual';
 import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
-import { MockStarkPerpetual } from '../../types/MockStarkPerpetual';
 import { StarkProxyV2 } from '../../types/StarkProxyV2';
 import { TestContext, describeContract, describeContractForNetwork } from '../helpers/describe-contract';
 import { increaseTimeAndMine, incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
@@ -37,7 +37,7 @@ let merkleTimelockSigner: SignerWithAddress;
 
 // Each borrower is represented by a stark proxy contract.
 let liquidityStaking: LiquidityStakingV1;
-let mockStarkPerpetual: MockStarkPerpetual;
+let mockStarkPerpetual: IStarkPerpetual;
 let borrowerStarkProxy: StarkProxyV2;
 
 let forcedTradeWaitingPeriod: BigNumber;

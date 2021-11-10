@@ -17,6 +17,7 @@ import {
   SafetyModuleV1,
   StarkProxyV1,
 } from '../../types';
+import { IERC20 } from '../../types/IERC20';
 import { TestContext } from './describe-contract';
 import { increaseTimeAndMine, latestBlockTimestamp } from './evm';
 import { StoredBalance } from './staking-helper-balance';
@@ -104,7 +105,7 @@ function asSM(
 export class StakingHelper {
   private ctx: TestContext;
   private contract: GenericStakingModule;
-  private token: ERC20;
+  private token: IERC20;
   private vaultAddress: string;
   private tokenSource: SignerWithAddress;
   private admin: GenericStakingModule;
@@ -119,7 +120,7 @@ export class StakingHelper {
   constructor(
     ctx: TestContext,
     contract: GenericStakingModule,
-    token: ERC20,
+    token: IERC20,
     vaultAddress: string,
     tokenSource: SignerWithAddress,
     admin: SignerWithAddress,

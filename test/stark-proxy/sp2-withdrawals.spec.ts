@@ -9,11 +9,11 @@ import { impersonateAndFundAccount } from '../../src/migrations/helpers/imperson
 import { Role } from '../../src/types';
 import { MockRewardsOracle__factory } from '../../types';
 import { DydxToken } from '../../types/DydxToken';
+import { IERC20 } from '../../types/IERC20';
+import { IStarkPerpetual } from '../../types/IStarkPerpetual';
 import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
 import { MerkleDistributorV1 } from '../../types/MerkleDistributorV1';
-import { MintableERC20 } from '../../types/MintableERC20';
 import { MockRewardsOracle } from '../../types/MockRewardsOracle';
-import { MockStarkPerpetual } from '../../types/MockStarkPerpetual';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
 import { describeContractHardhat, TestContext } from '../helpers/describe-contract';
 import { incrementTimeToTimestamp, latestBlockTimestamp, loadSnapshot, saveSnapshot } from '../helpers/evm';
@@ -30,8 +30,8 @@ const stakerInitialBalance: number = 1_000_000;
 // Contracts.
 let deployer: SignerWithAddress;
 let liquidityStaking: LiquidityStakingV1;
-let mockStakedToken: MintableERC20;
-let mockStarkPerpetual: MockStarkPerpetual;
+let mockStakedToken: IERC20;
+let mockStarkPerpetual: IStarkPerpetual;
 
 // Users.
 let staker: SignerWithAddress;
@@ -84,7 +84,6 @@ async function init(ctx: TestContext) {
   );
 
   // Mint staked tokens and set allowances.
-  await mockStakedToken.mint(ctx.deployer.address, stakerInitialBalance * 3);
   await contract.mintAndApprove(staker, stakerInitialBalance);
 
   // Initial stake of 1M.
@@ -129,7 +128,7 @@ describeContractHardhat('SP2Withdrawals', init, (ctx: TestContext) => {
 
       // Deposit own, un-borrowed funds to the exchange.
       const ownFundsAmount = 1_200_000;
-      await mockStakedToken.mint(borrower.address, ownFundsAmount);
+      await mockStakedToken.transfer(borrower.address, ownFundsAmount);
       await asExchangeOperator.depositToExchange(starkKey, assetType, vaultId, ownFundsAmount);
 
       // Expect contract to have no funds

@@ -5,9 +5,9 @@ import { Signer } from 'ethers';
 import { getRole } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { Role } from '../../src/types';
+import { IERC20 } from '../../types/IERC20';
+import { IStarkPerpetual } from '../../types/IStarkPerpetual';
 import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
-import { MintableERC20 } from '../../types/MintableErc20';
-import { MockStarkPerpetual } from '../../types/MockStarkPerpetual';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
 import { describeContractHardhat, TestContext } from '../helpers/describe-contract';
 import { evmReset, evmSnapshot } from '../helpers/evm';
@@ -23,8 +23,8 @@ const stakerInitialBalance: number = 1_000_000;
 // Contracts.
 let deployer: Signer;
 let liquidityStaking: LiquidityStakingV1;
-let mockStakedToken: MintableERC20;
-let mockStarkPerpetual: MockStarkPerpetual;
+let mockStakedToken: IERC20;
+let mockStarkPerpetual: IStarkPerpetual;
 let shortTimelockSigner: SignerWithAddress;
 
 // Users.
@@ -59,8 +59,6 @@ async function init(ctx: TestContext) {
   }));
 
   shortTimelockSigner = await impersonateAndFundAccount(ctx.shortTimelock.address);
-
-  await ctx.dydxCollateralToken.mint(ctx.deployer.address, stakerInitialBalance * stakers.length);
 
   // Use helper class to automatically check contract invariants after every update.
   contract = new StakingHelper(

@@ -5,9 +5,9 @@ import { BigNumberish, BigNumber } from 'ethers';
 import { getRole } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { Role } from '../../src/types';
+import { IERC20 } from '../../types/IERC20';
+import { IStarkPerpetual } from '../../types/IStarkPerpetual';
 import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
-import { MintableERC20 } from '../../types/MintableERC20';
-import { MockStarkPerpetual } from '../../types/MockStarkPerpetual';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
 import { describeContractHardhat, TestContext } from '../helpers/describe-contract';
 import { increaseTime, increaseTimeAndMine, loadSnapshot, saveSnapshot } from '../helpers/evm';
@@ -25,8 +25,8 @@ const stakerInitialBalance: number = 1_000_000;
 
 // Contracts.
 let liquidityStaking: LiquidityStakingV1;
-let mockStakedToken: MintableERC20;
-let mockStarkPerpetual: MockStarkPerpetual;
+let mockStakedToken: IERC20;
+let mockStarkPerpetual: IStarkPerpetual;
 let shortTimelockSigner: SignerWithAddress;
 
 // Users.
@@ -83,7 +83,6 @@ async function init(ctx: TestContext) {
   );
 
   // Mint staked tokens and set allowances.
-  await ctx.dydxCollateralToken.mint(ctx.deployer.address, stakerInitialBalance * stakers.length);
   await Promise.all(stakers.map((s) => contract.mintAndApprove(s, stakerInitialBalance)));
 
   // Initial stake of 1M.
@@ -165,7 +164,6 @@ describeContractHardhat('SP1Borrowing', init, (ctx: TestContext) => {
 
         // While still in the blackout period, staker stakes more, and borrower auto-borrows.
         // Stake another 1M.
-        await ctx.dydxCollateralToken.mint(ctx.deployer.address, stakerInitialBalance);
         await contract.mintAndApprove(stakers[0], stakerInitialBalance);
         await contract.stake(stakers[0], stakerInitialBalance);
         // Just a quick overview of the current state.
