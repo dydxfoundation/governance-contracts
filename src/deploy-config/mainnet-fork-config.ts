@@ -5,7 +5,6 @@
  * and production environemtns.
  */
 
-import mainnetConfig from './mainnet-config';
 import mainnetPhase2Config from './mainnet-phase-2-config';
 import { DeployConfig } from './types';
 

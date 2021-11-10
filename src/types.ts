@@ -15,13 +15,15 @@ export type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
 
 export type BigNumberable = BNJS | string | number;
 
-export type DeployedContracts = (
+export type AllDeployedContracts = (
   UnwrapPromise<ReturnType<typeof deployPhase1>> &
   UnwrapPromise<ReturnType<typeof deployPhase2>> &
   UnwrapPromise<ReturnType<typeof deploySafetyModuleRecovery>> &
   UnwrapPromise<ReturnType<typeof deployStarkProxyV2>> &
   UnwrapPromise<ReturnType<typeof deployMocks>>
 );
+
+export type MainnetDeployedContracts = Omit<AllDeployedContracts, 'starkProxyNewImpl'>;
 
 export type Proposal = [
   string,

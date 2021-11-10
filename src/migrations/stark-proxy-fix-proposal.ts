@@ -18,7 +18,7 @@ export async function createStarkProxyFixProposal({
   shortTimelockAddress,
   starkProxyAddresses,
   starkProxyProxyAdminAddresses,
-  starkProxyNewImplAddresses,
+  starkProxyNewImplAddress,
   signer,
 }: {
   proposalIpfsHashHex: string,
@@ -26,7 +26,7 @@ export async function createStarkProxyFixProposal({
   shortTimelockAddress: string,
   starkProxyAddresses: string[],
   starkProxyProxyAdminAddresses: string[],
-  starkProxyNewImplAddresses: string[],
+  starkProxyNewImplAddress: string,
   signer?: SignerWithAddress,
 }) {
   const hre = getHre();
@@ -44,10 +44,10 @@ export async function createStarkProxyFixProposal({
     'initialize',
     [],
   );
-  const calldatas: string[] = starkProxyAddresses.map((sp: string, i: number) =>
+  const calldatas: string[] = starkProxyAddresses.map((spAddress) =>
     hre.ethers.utils.defaultAbiCoder.encode(
       ['address', 'address', 'bytes'],
-      [sp, starkProxyNewImplAddresses[i], initializeCalldata],
+      [spAddress, starkProxyNewImplAddress, initializeCalldata],
     ),
   );
   const delegateCalls: boolean[] = new Array(starkProxyProxyAdminAddresses.length).fill(false);

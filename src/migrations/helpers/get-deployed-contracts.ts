@@ -10,7 +10,6 @@ import {
   SM2Recovery__factory,
   Treasury__factory,
   TreasuryVester__factory,
-  StarkProxyV2__factory,
 } from '../../../types';
 import { LiquidityStakingV1__factory } from '../../../types/factories/LiquidityStakingV1__factory';
 import { MerkleDistributorV1__factory } from '../../../types/factories/MerkleDistributorV1__factory';
@@ -21,12 +20,11 @@ import config from '../../config';
 import { getDeployerSigner } from '../../deploy-config/get-deployer-address';
 import mainnetAddresses from '../../deployed-addresses/mainnet.json';
 import { getNetworkName } from '../../hre';
-import { DeployedContracts } from '../../types';
-import { deployStarkProxyV2 } from '../deploy-stark-proxy-v2';
+import { MainnetDeployedContracts } from '../../types';
 
-type DeployedAddresses = typeof mainnetAddresses & { starkProxyNewImplAddresses: string[] };
+type DeployedAddresses = typeof mainnetAddresses;
 
-export async function getDeployedContracts(): Promise<DeployedContracts> {
+export async function getMainnetDeployedContracts(): Promise<MainnetDeployedContracts> {
   const deployer = await getDeployerSigner();
 
   let deployedAddresses: DeployedAddresses;
@@ -34,20 +32,7 @@ export async function getDeployedContracts(): Promise<DeployedContracts> {
     config.isMainnet() ||
     (config.isHardhat() && config.FORK_MAINNET)
   ) {
-
-    // Deploy contracts for Stark Proxy recovery.
-    const { starkProxyNewImpls } = await deployStarkProxyV2({
-      liquidityStakingAddress: mainnetAddresses.liquidityStaking,
-      merkleDistributorAddress: mainnetAddresses.merkleDistributor,
-      starkPerpetualAddress: mainnetAddresses.starkPerpetual,
-      dydxCollateralTokenAddress: mainnetAddresses.dydxCollateralToken,
-      numStarkProxiesToDeploy: mainnetAddresses.starkProxies.length,
-    });
-
-    deployedAddresses = {
-      ...mainnetAddresses,
-      starkProxyNewImplAddresses: starkProxyNewImpls.map((sp) => sp.address),
-    };
+    deployedAddresses = mainnetAddresses;
   } else {
     throw new Error(`Deployed addresses not found for network ${getNetworkName()}`);
   }
@@ -79,6 +64,5 @@ export async function getDeployedContracts(): Promise<DeployedContracts> {
     starkProxyProxyAdmins: deployedAddresses.starkProxyProxyAdmins.map((s) => new ProxyAdmin__factory(deployer).attach(s)),
     dydxCollateralToken: new MintableERC20__factory(deployer).attach(deployedAddresses.dydxCollateralToken),
     starkPerpetual: new MockStarkPerpetual__factory(deployer).attach(deployedAddresses.starkPerpetual),
-    starkProxyNewImpls: deployedAddresses.starkProxyNewImplAddresses.map((sp) => new StarkProxyV2__factory(deployer).attach(sp)),
   };
 }

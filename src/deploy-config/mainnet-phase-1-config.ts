@@ -1,7 +1,5 @@
 import { DateTime } from 'luxon';
 
-import mainnetConfig from './mainnet-config';
-
 /**
  * The epoch zero timestamp that was used for the phase 1 mainnet deployment.
  * This resulted in the following parameters being set on mainnet:

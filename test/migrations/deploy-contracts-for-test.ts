@@ -13,7 +13,7 @@ import { deployPhase1 } from '../../src/migrations/phase-1';
 import { deployPhase2 } from '../../src/migrations/phase-2';
 import { deployPhase3 } from '../../src/migrations/phase-3';
 import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-recovery';
-import { DeployedContracts } from '../../src/types';
+import { AllDeployedContracts } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
@@ -25,7 +25,7 @@ import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal
  *
  * We use the mainnet deployments scripts to mimic the mainnet environment as closely as possible.
  */
-export async function deployContractsForTest(): Promise<DeployedContracts>{
+export async function deployContractsForTest(): Promise<AllDeployedContracts>{
   // Phase 1: Deploy core governance contracts.
   const phase1Contracts = await deployPhase1();
 
@@ -91,7 +91,6 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
     merkleDistributorAddress: phase2Contracts.merkleDistributor.address,
     starkPerpetualAddress: mockContracts.starkPerpetual.address,
     dydxCollateralTokenAddress: mockContracts.dydxCollateralToken.address,
-    numStarkProxiesToDeploy: phase2Contracts.starkProxies.length,
   });
 
   return {
@@ -104,7 +103,7 @@ export async function deployContractsForTest(): Promise<DeployedContracts>{
 }
 
 export async function executeSafetyModuleRecoveryProposalsForTest(
-  deployedContracts: DeployedContracts,
+  deployedContracts: AllDeployedContracts,
 ) {
   // Perform the safety module upgrade to recover funds and restore operation.
   if (config.TEST_SM_RECOVERY_WITH_PROPOSAL) {
@@ -141,7 +140,7 @@ export async function executeSafetyModuleRecoveryProposalsForTest(
 }
 
 export async function executeStarkProxyProposalForTest(
-  deployedContracts: DeployedContracts,
+  deployedContracts: AllDeployedContracts,
 ) {
   // Perform the safety module upgrade to recover funds and restore operation.
   if (config.TEST_SP_RECOVERY_WITH_PROPOSAL) {
@@ -151,7 +150,7 @@ export async function executeStarkProxyProposalForTest(
       shortTimelockAddress: deployedContracts.shortTimelock.address,
       starkProxyAddresses: deployedContracts.starkProxies.map((sp) => sp.address),
       starkProxyProxyAdminAddresses: deployedContracts.starkProxyProxyAdmins.map((sp) => sp.address),
-      starkProxyNewImplAddresses: deployedContracts.starkProxyNewImpls.map((sp) => sp.address),
+      starkProxyNewImplAddress: deployedContracts.starkProxyNewImpl.address,
     });
   } else {
     // Simulate the execution of the proposals without actually using the governance process.
@@ -159,7 +158,7 @@ export async function executeStarkProxyProposalForTest(
       shortTimelockAddress: deployedContracts.shortTimelock.address,
       starkProxyAddresses: deployedContracts.starkProxies.map((sp) => sp.address),
       starkProxyProxyAdminAddresses: deployedContracts.starkProxyProxyAdmins.map((sp) => sp.address),
-      starkProxyNewImplAddresses: deployedContracts.starkProxyNewImpls.map((sp) => sp.address),
+      starkProxyNewImplAddress: deployedContracts.starkProxyNewImpl.address,
     });
   }
 }
@@ -169,7 +168,7 @@ export async function executeStarkProxyProposalForTest(
  * After the deploy scripts have run, this function configures the contracts for testing.
  */
 export async function configureForTest(
-  deployedContracts: DeployedContracts,
+  deployedContracts: AllDeployedContracts,
 ): Promise<void> {
   const {
     dydxToken,

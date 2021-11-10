@@ -21,6 +21,6 @@ hardhatTask('deploy:stark-proxy-v2', 'Deploy the StarkProxyV2 contracts.')
     if (args.numStarkProxiesToDeploy <= 0) {
       throw new Error('Deploying 0 or less stark proxy implementations is not supported.');
     }
-    const { starkProxyNewImpls } = await deployStarkProxyV2(args);
-    log(`New StarkProxyV2 implementations deloyed to '["${starkProxyNewImpls.map((sp) => sp.address).join('","')}"]'`);
+    const { starkProxyNewImpl } = await deployStarkProxyV2(args);
+    log(`New StarkProxyV2 implementation deloyed to ${starkProxyNewImpl.address}.`);
   });

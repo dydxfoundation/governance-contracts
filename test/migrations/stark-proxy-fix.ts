@@ -28,20 +28,17 @@ export async function executeStarkProxyUpgradeViaProposal({
   shortTimelockAddress,
   starkProxyAddresses,
   starkProxyProxyAdminAddresses,
-  starkProxyNewImplAddresses,
+  starkProxyNewImplAddress,
 }: {
   dydxTokenAddress: string,
   governorAddress: string,
   shortTimelockAddress: string,
   starkProxyAddresses: string[],
   starkProxyProxyAdminAddresses: string[],
-  starkProxyNewImplAddresses: string[],
+  starkProxyNewImplAddress: string,
 }): Promise<void> {
-  if (
-    starkProxyAddresses.length !== starkProxyProxyAdminAddresses.length ||
-    starkProxyProxyAdminAddresses.length !== starkProxyNewImplAddresses.length
-  ) {
-    throw new Error('Expected starkProxyAddresses, starkProxyProxyAdminAddresses and starkProxyNewImplAddresses to have same length');
+  if (starkProxyAddresses.length !== starkProxyProxyAdminAddresses.length) {
+    throw new Error('Expected starkProxyAddresses and starkProxyProxyAdminAddresses to have same length.');
   }
 
   const deployConfig = getDeployConfig();
@@ -71,7 +68,7 @@ export async function executeStarkProxyUpgradeViaProposal({
       shortTimelockAddress,
       starkProxyAddresses,
       starkProxyProxyAdminAddresses,
-      starkProxyNewImplAddresses,
+      starkProxyNewImplAddress,
       signer: voter,
     }));
 
@@ -126,26 +123,23 @@ export async function executeStarkProxyUpgradeNoProposal({
   shortTimelockAddress,
   starkProxyAddresses,
   starkProxyProxyAdminAddresses,
-  starkProxyNewImplAddresses,
+  starkProxyNewImplAddress,
 }: {
   shortTimelockAddress: string,
   starkProxyAddresses: string[],
   starkProxyProxyAdminAddresses: string[],
-  starkProxyNewImplAddresses: string[],
+  starkProxyNewImplAddress: string,
 }): Promise<void> {
-  if (
-    starkProxyAddresses.length !== starkProxyProxyAdminAddresses.length ||
-    starkProxyProxyAdminAddresses.length !== starkProxyNewImplAddresses.length
-  ) {
-    throw new Error('Expected starkProxyAddresses, starkProxyProxyAdminAddresses and starkProxyNewImplAddresses to have same length');
+  if ( starkProxyAddresses.length !== starkProxyProxyAdminAddresses.length) {
+    throw new Error('Expected starkProxyAddresses and starkProxyProxyAdminAddresses to have same length.');
   }
 
   const mockShortTimelock = await impersonateAndFundAccount(shortTimelockAddress);
 
-  for (let i = 0; i < starkProxyNewImplAddresses.length; i++) {
+  for (let i = 0; i < starkProxyNewImplAddress.length; i++) {
     const starkProxyAddress: string = starkProxyAddresses[i];
     const proxyAdminAddress: string = starkProxyProxyAdminAddresses[i];
-    const newImplAddress: string = starkProxyNewImplAddresses[i];
+    const newImplAddress: string = starkProxyNewImplAddress[i];
 
     const starkProxyProxyAdmin = new ProxyAdmin__factory(mockShortTimelock).attach(
       proxyAdminAddress,

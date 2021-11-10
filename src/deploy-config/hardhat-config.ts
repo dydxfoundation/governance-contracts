@@ -10,7 +10,6 @@ import baseConfig from './base-config';
 import { DeployConfig } from './types';
 
 const hardhatConfig: Partial<DeployConfig> = {
-  // TODO: Add dYdX exchange collateral and stark perpetual addresses
   EPOCH_ZERO_START: Math.floor(Date.now() / 1000) + ONE_DAY_SECONDS,
   VOTING_DELAY_BLOCKS: 50,
   LONG_TIMELOCK_CONFIG: {

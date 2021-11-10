@@ -1,6 +1,7 @@
 import config from '../../src/config';
-import { getDeployedContracts } from '../../src/migrations/helpers/get-deployed-contracts';
-import { DeployedContracts } from '../../src/types';
+import { deployStarkProxyV2 } from '../../src/migrations/deploy-stark-proxy-v2';
+import { getMainnetDeployedContracts } from '../../src/migrations/helpers/get-deployed-contracts';
+import { AllDeployedContracts, MainnetDeployedContracts } from '../../src/types';
 import {
   configureForTest,
   deployContractsForTest,
@@ -8,14 +9,14 @@ import {
   executeStarkProxyProposalForTest,
 } from '../migrations/deploy-contracts-for-test';
 
-let globalDeployedContracts: DeployedContracts;
+let globalDeployedContracts: AllDeployedContracts;
 let globalDeployError: Error | null = null;
 
 /**
  * Helper to get contracts depending on the network, and make sure contracts are only deployed once
  * when on the test network.
  */
-export async function getDeployedContractsOnceForTest(): Promise<DeployedContracts> {
+export async function getDeployedContractsOnceForTest(): Promise<AllDeployedContracts> {
   if (globalDeployError) {
     throw globalDeployError;
   }
@@ -30,14 +31,31 @@ export async function getDeployedContractsOnceForTest(): Promise<DeployedContrac
   return globalDeployedContracts;
 }
 
-async function getDeployedContractsForTest(): Promise<DeployedContracts> {
+async function getAllContracts(): Promise<AllDeployedContracts> {
+  const currentDeployedContracts: MainnetDeployedContracts = await getMainnetDeployedContracts();
+
+  // Deploy contract for Stark Proxy recovery.
+  const { starkProxyNewImpl } = await deployStarkProxyV2({
+    liquidityStakingAddress: currentDeployedContracts.liquidityStaking.address,
+    merkleDistributorAddress: currentDeployedContracts.merkleDistributor.address,
+    starkPerpetualAddress: currentDeployedContracts.starkPerpetual.address,
+    dydxCollateralTokenAddress: currentDeployedContracts.dydxCollateralToken.address,
+  });
+
+  return {
+    ...currentDeployedContracts,
+    starkProxyNewImpl,
+  };
+}
+
+async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
   if (!config.isHardhat()) {
-    return getDeployedContracts();
+    return getAllContracts();
   }
 
-  let deployedContracts: DeployedContracts;
+  let deployedContracts: AllDeployedContracts;
   if (config.FORK_MAINNET) {
-    deployedContracts = await getDeployedContracts();
+    deployedContracts = await getAllContracts();
   } else {
     deployedContracts = await deployContractsForTest();
   }

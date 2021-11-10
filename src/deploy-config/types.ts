@@ -46,5 +46,4 @@ export interface DeployConfig extends BaseConfig {
   SM_DISTRIBUTION_END: number;
   REWARDS_TREASURY_VESTER_CONFIG: TreasuryVesterConfig;
   COMMUNITY_TREASURY_VESTER_CONFIG: TreasuryVesterConfig;
-  MERKLE_DISTRIBUTOR_CONFIG: MerkleDistributorConfig;
 }

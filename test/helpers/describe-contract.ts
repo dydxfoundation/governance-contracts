@@ -7,12 +7,12 @@ import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
 import { getNetworkName } from '../../src/hre';
-import { DeployConfig, DeployedContracts, NetworkName } from '../../src/types';
+import { DeployConfig, NetworkName, AllDeployedContracts } from '../../src/types';
 import hre from '../hre';
 import { evmSnapshot, evmReset } from './evm';
 import { getDeployedContractsOnceForTest } from './get-deployed-contracts-for-test';
 
-export interface TestContext extends DeployedContracts {
+export interface TestContext extends AllDeployedContracts {
   config: DeployConfig;
   deployer: SignerWithAddress;
   users: SignerWithAddress[];
