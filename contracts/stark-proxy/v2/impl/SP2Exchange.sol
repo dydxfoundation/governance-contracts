@@ -58,7 +58,6 @@ abstract contract SP2Exchange is
     bool isGuardianAction
   );
 
-  /// @dev Limited fields included. Details can be retrieved from Starkware logs if needed.
   event DepositCanceled(
     uint256 starkKey,
     uint256 starkAssetType,
@@ -221,14 +220,15 @@ abstract contract SP2Exchange is
   )
     internal 
   {
-    uint256 balanceBefore = TOKEN.balanceOf(address(this));
+    uint256 startingBalance = getTokenBalance();
     STARK_PERPETUAL.depositReclaim(starkKey, assetType, vaultId);
-    uint256 balanceAfter = TOKEN.balanceOf(address(this));
+    uint256 endingBalance = getTokenBalance();
+    uint256 tokenAmount = endingBalance.sub(startingBalance);
     emit DepositReclaimed(
       starkKey,
       assetType,
       vaultId,
-      balanceAfter.sub(balanceBefore),
+      tokenAmount,
       isGuardianAction
     );
   }

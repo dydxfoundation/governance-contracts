@@ -295,7 +295,6 @@ export async function deployPhase2({
     merkleDistributorProxyAdmin = new ProxyAdmin__factory(deployer).attach(merkleDistributorProxyAdminAddress);
   }
 
-
   // TODO: Add steps 9–10.
 
   if (startStep <= 11) {

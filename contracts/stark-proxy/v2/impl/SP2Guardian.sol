@@ -227,7 +227,7 @@ abstract contract SP2Guardian is
    * @notice Guardian method to request to cancel a pending deposit to the exchange.
    *
    * @param  starkKey   The STARK key of the account.
-   * @param  assetType  The exchange asset ID for the asset to deposit.
+   * @param  assetType  The exchange asset ID for the deposit.
    * @param  vaultId    The exchange position ID for the deposit.
    *
    *  Note: This function is intentionally not protected by the onlyAllowedKey modifier.
@@ -249,7 +249,7 @@ abstract contract SP2Guardian is
    * that `depositCancel` was previously called.
    *
    * @param  starkKey   The STARK key of the account.
-   * @param  assetType  The exchange asset ID for the asset to deposit.
+   * @param  assetType  The exchange asset ID for the deposit.
    * @param  vaultId    The exchange position ID for the deposit.
    *
    *  Note: This function is intentionally not protected by the onlyAllowedKey modifier.
