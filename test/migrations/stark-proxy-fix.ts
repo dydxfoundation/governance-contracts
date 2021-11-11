@@ -135,10 +135,9 @@ export async function executeStarkProxyUpgradeNoProposal({
 
   const mockShortTimelock = await impersonateAndFundAccount(shortTimelockAddress);
 
-  for (let i = 0; i < starkProxyNewImplAddress.length; i++) {
+  for (let i = 0; i < starkProxyAddresses.length; i++) {
     const starkProxyAddress: string = starkProxyAddresses[i];
     const proxyAdminAddress: string = starkProxyProxyAdminAddresses[i];
-    const newImplAddress: string = starkProxyNewImplAddress[i];
 
     const starkProxyProxyAdmin = new ProxyAdmin__factory(mockShortTimelock).attach(
       proxyAdminAddress,
@@ -152,7 +151,7 @@ export async function executeStarkProxyUpgradeNoProposal({
     await waitForTx(
       await starkProxyProxyAdmin.upgradeAndCall(
         starkProxyAddress,
-        newImplAddress,
+        starkProxyNewImplAddress,
         initializeCalldata,
       ),
     );

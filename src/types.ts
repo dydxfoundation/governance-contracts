@@ -23,7 +23,7 @@ export type AllDeployedContracts = (
   UnwrapPromise<ReturnType<typeof deployMocks>>
 );
 
-export type MainnetDeployedContracts = Omit<AllDeployedContracts, 'starkProxyNewImpl'>;
+export type MainnetDeployedContracts = AllDeployedContracts;
 
 export type Proposal = [
   string,
