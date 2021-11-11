@@ -16,6 +16,7 @@ import { IERC20__factory } from '../../../types/factories/IERC20__factory';
 import { LiquidityStakingV1__factory } from '../../../types/factories/LiquidityStakingV1__factory';
 import { MerkleDistributorV1__factory } from '../../../types/factories/MerkleDistributorV1__factory';
 import { StarkProxyV1__factory } from '../../../types/factories/StarkProxyV1__factory';
+import { StarkProxyV2__factory } from '../../../types/factories/StarkProxyV2__factory';
 import config from '../../config';
 import { getDeployerSigner } from '../../deploy-config/get-deployer-address';
 import mainnetAddresses from '../../deployed-addresses/mainnet.json';
@@ -64,5 +65,6 @@ export async function getMainnetDeployedContracts(): Promise<MainnetDeployedCont
     starkProxyProxyAdmins: deployedAddresses.starkProxyProxyAdmins.map((s) => new ProxyAdmin__factory(deployer).attach(s)),
     dydxCollateralToken: IERC20__factory.connect(deployedAddresses.dydxCollateralToken, deployer),
     starkPerpetual: IStarkPerpetual__factory.connect(deployedAddresses.starkPerpetual, deployer),
+    starkProxyNewImpl: new StarkProxyV2__factory(deployer).attach(deployedAddresses.starkProxyNewImpl),
   };
 }

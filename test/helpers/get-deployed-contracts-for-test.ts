@@ -1,7 +1,6 @@
 import config from '../../src/config';
-import { deployStarkProxyV2 } from '../../src/migrations/deploy-stark-proxy-v2';
 import { getMainnetDeployedContracts } from '../../src/migrations/helpers/get-deployed-contracts';
-import { AllDeployedContracts, MainnetDeployedContracts } from '../../src/types';
+import { AllDeployedContracts } from '../../src/types';
 import {
   configureForTest,
   deployContractsForTest,
@@ -32,20 +31,7 @@ export async function getDeployedContractsOnceForTest(): Promise<AllDeployedCont
 }
 
 async function getAllContracts(): Promise<AllDeployedContracts> {
-  const currentDeployedContracts: MainnetDeployedContracts = await getMainnetDeployedContracts();
-
-  // Deploy contract for Stark Proxy recovery.
-  const { starkProxyNewImpl } = await deployStarkProxyV2({
-    liquidityStakingAddress: currentDeployedContracts.liquidityStaking.address,
-    merkleDistributorAddress: currentDeployedContracts.merkleDistributor.address,
-    starkPerpetualAddress: currentDeployedContracts.starkPerpetual.address,
-    dydxCollateralTokenAddress: currentDeployedContracts.dydxCollateralToken.address,
-  });
-
-  return {
-    ...currentDeployedContracts,
-    starkProxyNewImpl,
-  };
+  return getMainnetDeployedContracts();
 }
 
 async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {

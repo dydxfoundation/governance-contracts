@@ -6,7 +6,7 @@ import { createStarkProxyFixProposal } from '../../src/migrations/stark-proxy-fi
 
 hardhatTask('deploy:stark-proxy-fix-proposal', 'Create proposal to fix the Stark Proxy.')
   .addParam('proposalIpfsHashHex', 'IPFS hash for the uploaded DIP describing the proposal', undefined, types.string)
-  .addParam('starkProxyNewImplAddress', 'Addresses of the new deployed StarkProxyV2 implementation contract', undefined, types.string)
+  .addParam('starkProxyNewImplAddress', 'Addresses of the new deployed StarkProxyV2 implementation contract', mainnetAddresses.starkProxyNewImpl, types.string)
   .addParam('governorAddress', 'Address of the deployed DydxGovernor contract', mainnetAddresses.governor, types.string)
   .addParam('shortTimelockAddress', 'Address of the deployed short timelock Executor contract', mainnetAddresses.shortTimelock, types.string)
   .addParam('starkProxyAddresses', 'Addresses of the deployed Stark Proxy upgradeable contracts', mainnetAddresses.starkProxies, types.json)
