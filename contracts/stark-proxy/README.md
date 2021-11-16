@@ -30,8 +30,7 @@ This governance proposal is proposed as follows. Note that hardhat must be confi
 export ALCHEMY_KEY=<...>
 export MNEMONIC=<...>
 npx hardhat --network mainnet deploy:stark-proxy-fix-proposal \
-  --proposal-ipfs-hash-hex              0x...                                      \
-  --stark-proxy-new-impl-address        0x...
+  --proposal-ipfs-hash-hex              0x...
 ```
 
 ## Stark Proxy Fix Tests
