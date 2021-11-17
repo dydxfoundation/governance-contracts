@@ -46,8 +46,8 @@ async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
     deployedContracts = await deployContractsForTest();
   }
 
-  await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
   await executeStarkProxyProposalForTest(deployedContracts);
+  await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
   await configureForTest(deployedContracts);
   return deployedContracts;
 }

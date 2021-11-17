@@ -59,6 +59,13 @@ export async function executeStarkProxyUpgradeViaProposal({
 
   if (config.SP_FIX_PROPOSAL_ID !== null) {
     proposalId = config.SP_FIX_PROPOSAL_ID;
+    log('Waiting for stark proxy voting to begin');
+    for (let i = 0; i < deployConfig.VOTING_DELAY_BLOCKS + 1; i++) {
+      if (i > 0 && i % 2000 === 0) {
+        log('mining', i);
+      }
+      await advanceBlock();
+    }
   } else {
     log('Creating proposal for stark proxy fix');
     ({ proposalId } = await createStarkProxyFixProposal({
