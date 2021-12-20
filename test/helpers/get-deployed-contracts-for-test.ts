@@ -53,8 +53,14 @@ async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
     await executeStarkProxyProposalForTest(deployedContracts);
   }
 
+<<<<<<< HEAD
   // Execute the proposals which have not yet been executed on mainnet.
 
+=======
+  await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
+  await executeStarkProxyProposalForTest(deployedContracts);
+  await executeGrantsProgramProposalForTest(deployedContracts);
+>>>>>>> Update get-deployed-contracts-for-test.ts
   await configureForTest(deployedContracts);
   return deployedContracts;
 }
