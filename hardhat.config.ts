@@ -15,6 +15,7 @@ import '@typechain/hardhat';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
 import 'solidity-coverage';
+import 'hardhat-abi-exporter';
 
 dotenv.config();
 
@@ -105,6 +106,9 @@ const hardhatConfig: HardhatUserConfig = {
     ropsten: getRemoteNetworkConfig(NetworkName.ropsten, 3),
     mainnet: getRemoteNetworkConfig(NetworkName.mainnet, 1),
     hardhat: getHardhatConfig(),
+  },
+  abiExporter: {
+    clear: true,
   },
 };
 

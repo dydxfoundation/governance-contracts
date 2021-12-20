@@ -2,7 +2,6 @@ import { Client, createClient } from '@urql/core';
 import { providers } from 'ethers';
 
 import {
-  DYDX_TOKEN_DECIMALS,
   ROPSTEN_SUBGRAPH_URL,
   MAINNET_SUBGRAPH_URL,
 } from './config';
@@ -161,8 +160,9 @@ export default class TxBuilder extends BaseTxBuilder {
       this.safetyModuleService,
       this.liquidityModuleService,
       this.merkleDistributorService,
-      DYDX_TOKEN_DECIMALS,
       hardhatClaimsProxyAddresses,
+      hardhatTokenAddresses,
+      hardhatTreasuryAddresses,
     );
     this.dydxTokenService = new DydxTokenService(
       this.configuration,

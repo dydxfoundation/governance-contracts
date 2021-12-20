@@ -1,8 +1,8 @@
 import { BigNumber } from 'ethers';
 import { formatUnits } from 'ethers/lib/utils';
 
-import { Erc20 as IERC20Detailed } from '../../../types/Erc20';
-import { Erc20Factory as IERC20Detailed__factory } from '../../../types/Erc20Factory';
+import { ERC20__factory as IERC20Detailed__factory } from '../../../types';
+import { ERC20 as IERC20Detailed } from '../../../types/Erc20';
 import {
   Configuration,
   eEthereumTxType,

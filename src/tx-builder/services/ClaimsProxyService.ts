@@ -1,13 +1,20 @@
+import { BigNumber } from '@ethersproject/bignumber';
 import BNJS from 'bignumber.js';
-import { BytesLike, formatUnits } from 'ethers/lib/utils';
+import { formatEther } from 'ethers/lib/utils';
 
 import {
-  ClaimsProxyFactory,
+  ClaimsProxy__factory,
+  DydxToken__factory,
 } from '../../../types';
 import {
   ClaimsProxy,
 } from '../../../types/ClaimsProxy';
-import { claimsProxyAddresses } from '../config';
+import { DydxToken } from '../../../types/DydxToken';
+import {
+  claimsProxyAddresses,
+  dydxTokenAddresses,
+  dydxTreasuryAddresses,
+} from '../config';
 import {
   Configuration,
   eEthereumTxType,
@@ -16,9 +23,9 @@ import {
   tEthereumAddress,
   transactionType,
   tClaimsProxyAddresses,
-  tStringCurrencyUnits,
 } from '../types';
 import { MerkleProof } from '../types/GovernanceReturnTypes';
+import { tTokenAddresses, tTreasuryAddresses, tStringDecimalUnits } from '../types/index';
 import { StakingValidator } from '../validators/methodValidators';
 import BaseService from './BaseService';
 import LiquidityModule from './LiquidityModule';
@@ -28,7 +35,8 @@ import SafetyModule from './SafetyModule';
 export default class ClaimsProxyService extends BaseService<ClaimsProxy> {
 
   readonly claimsProxyAddress: string;
-  readonly rewardTokenDecimals: number;
+  readonly tokenAddress: tEthereumAddress;
+  readonly treasuryAddresses: tTreasuryAddresses;
   readonly safetyModule: SafetyModule;
   readonly liquidityModule: LiquidityModule;
   readonly merkleDistributor: MerkleDistributor;
@@ -38,11 +46,11 @@ export default class ClaimsProxyService extends BaseService<ClaimsProxy> {
     safetyModule: SafetyModule,
     liquidityModule: LiquidityModule,
     merkleDistributor: MerkleDistributor,
-    rewardTokenDecimals: number,
-    hardhatAddresses?: tClaimsProxyAddresses,
+    hardhatClaimsProxyAddresses?: tClaimsProxyAddresses,
+    hardhatTokenAddresses?: tTokenAddresses,
+    hardhatTreasuryAddresses?: tTreasuryAddresses,
   ) {
-    super(config, ClaimsProxyFactory);
-    this.rewardTokenDecimals = rewardTokenDecimals;
+    super(config, ClaimsProxy__factory);
     this.safetyModule = safetyModule;
     this.liquidityModule = liquidityModule;
     this.merkleDistributor = merkleDistributor;
@@ -50,11 +58,24 @@ export default class ClaimsProxyService extends BaseService<ClaimsProxy> {
     // Get the contract address.
     const { network } = this.config;
     const isHardhatNetwork: boolean = network === Network.hardhat;
-    if (isHardhatNetwork && !hardhatAddresses) {
-      throw new Error('Must specify claims proxy addresses when on hardhat network');
+    if (
+      isHardhatNetwork &&
+      (
+        !hardhatClaimsProxyAddresses ||
+        !hardhatTokenAddresses ||
+        !hardhatTreasuryAddresses
+      )
+    ) {
+      throw new Error('Must specify token and treasury addresses when on hardhat network');
     }
+
+    const tokenAddresses: tTokenAddresses = isHardhatNetwork ? hardhatTokenAddresses! : dydxTokenAddresses[network];
+    this.tokenAddress = tokenAddresses.TOKEN_ADDRESS;
+
+    this.treasuryAddresses = isHardhatNetwork ? hardhatTreasuryAddresses! : dydxTreasuryAddresses[network];
+
     const addresses: tClaimsProxyAddresses = isHardhatNetwork
-      ? hardhatAddresses!
+      ? hardhatClaimsProxyAddresses!
       : claimsProxyAddresses[network];
     this.claimsProxyAddress = addresses.CLAIMS_PROXY_ADDRESS;
   }
@@ -66,15 +87,39 @@ export default class ClaimsProxyService extends BaseService<ClaimsProxy> {
   @StakingValidator
   public async claimRewards(
     user: tEthereumAddress,
-    vestFromTreasuryVester?: boolean,
   ): Promise<EthereumTransactionTypeExtended[]> {
-    const hasSafetyModuleRewards = !new BNJS(
-      await this.safetyModule.getUserUnclaimedRewards(user),
-    ).isZero();
-    const hasLiquidityStakingRewards = !new BNJS(
-      await this.liquidityModule.getUserUnclaimedRewards(user),
-    ).isZero();
-    const merkleProof: MerkleProof = await this.merkleDistributor.getActiveRootMerkleProof(user);
+    const { provider }: Configuration = this.config;
+    const dydxToken: DydxToken = DydxToken__factory.connect(this.tokenAddress, provider) as DydxToken;
+
+    const [
+      safetyModuleRewards,
+      liquidityStakingRewards,
+      merkleProof,
+      rewardsTreasuryBalance,
+    ]: [
+      tStringDecimalUnits,
+      tStringDecimalUnits,
+      MerkleProof,
+      BigNumber,
+    ] = await Promise.all([
+      this.safetyModule.getUserUnclaimedRewards(user),
+      this.liquidityModule.getUserUnclaimedRewards(user),
+      this.merkleDistributor.getActiveRootMerkleProof(user),
+      dydxToken.balanceOf(this.treasuryAddresses.REWARDS_TREASURY_ADDRESS),
+    ]);
+
+    const hasSafetyModuleRewards = !new BNJS(safetyModuleRewards).isZero();
+    const hasLiquidityStakingRewards = !new BNJS(liquidityStakingRewards).isZero();
+
+    const userUnclaimedRewards: BigNumber = await this.contract.callStatic.claimRewards(
+      true,
+      true,
+      merkleProof.cumulativeAmount,
+      merkleProof.merkleProof,
+      true,
+      { from: user },
+    );
+    const vestFromTreasuryVester: boolean = rewardsTreasuryBalance.lt(userUnclaimedRewards);
 
     const txCallback: () => Promise<transactionType> = this.generateTxCallback({
       rawTxMethod: () =>
@@ -83,10 +128,10 @@ export default class ClaimsProxyService extends BaseService<ClaimsProxy> {
           hasLiquidityStakingRewards,
           merkleProof.cumulativeAmount,
           merkleProof.merkleProof,
-          vestFromTreasuryVester || false,
+          vestFromTreasuryVester,
         ),
       from: user,
-      gasLimit: 450_000,
+      gasLimit: 600_000,
     });
 
     return [
@@ -98,9 +143,10 @@ export default class ClaimsProxyService extends BaseService<ClaimsProxy> {
     ];
   }
 
-  public async getUserUnclaimedRewards(user: tEthereumAddress): Promise<tStringCurrencyUnits> {
+  public async getUserUnclaimedRewards(user: tEthereumAddress): Promise<tStringDecimalUnits> {
     const merkleProof: MerkleProof = await this.merkleDistributor.getActiveRootMerkleProof(user);
-    const userUnclaimedRewards = await this.contract.callStatic.claimRewards(
+
+    const userUnclaimedRewards: BigNumber = await this.contract.callStatic.claimRewards(
       true,
       true,
       merkleProof.cumulativeAmount,
@@ -108,6 +154,7 @@ export default class ClaimsProxyService extends BaseService<ClaimsProxy> {
       true,
       { from: user },
     );
-    return formatUnits(userUnclaimedRewards, this.rewardTokenDecimals);
+    
+    return formatEther(userUnclaimedRewards);
   }
 }

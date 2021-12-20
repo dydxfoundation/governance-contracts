@@ -7,6 +7,7 @@
     "clean": "rm -rf artifacts cache dist types",
     "compile": "SKIP_LOAD=true TS_NODE_TRANSPILE_ONLY=1 npx hardhat compile",
     "coverage": "SKIP_LOAD=true TS_NODE_TRANSPILE_ONLY=1 npx hardhat coverage",
+    "abi": "SKIP_LOAD=true TS_NODE_TRANSPILE_ONLY=1 npx hardhat export-abi",
     "fix": "npm run lint -- --fix",
     "lint": "eslint --ext .ts,.js .",
     "test": "SKIP_LOAD=true TS_NODE_TRANSPILE_ONLY=1 npx hardhat test",
@@ -31,7 +32,12 @@
   ],
   "dependencies": {
     "@chainlink/contracts": "^0.2.1",
-    "dotenv": "^10.0.0"
+    "axios": "^0.24.0",
+    "dotenv": "^10.0.0",
+    "ethereum-multicall": "^2.9.0",
+    "graphql": "^16.2.0",
+    "hardhat-abi-exporter": "^2.4.0",
+    "urql": "^2.0.6"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
@@ -57,6 +63,7 @@
     "hardhat": "^2.6.4",
     "lodash": "^4.17.21",
     "luxon": "^2.0.2",
+    "reflect-metadata": "^0.1.13",
     "solidity-coverage": "^0.7.17",
     "ts-node": "^10.2.1",
     "typechain": "^5.1.2",

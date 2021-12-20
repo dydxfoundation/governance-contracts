@@ -4,9 +4,9 @@ import { formatEther } from 'ethers/lib/utils';
 import { flatten } from 'lodash';
 
 import {
-  DydxGovernorFactory,
-  ExecutorFactory,
-  GovernanceStrategyFactory,
+  DydxGovernor__factory,
+  Executor__factory,
+  GovernanceStrategy__factory,
 } from '../../../types';
 import { DydxGovernor } from '../../../types/DydxGovernor';
 import { Executor } from '../../../types/Executor';
@@ -92,7 +92,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     governanceTokens: GovernanceTokens,
     hardhatGovernanceAddresses?: tDistinctGovernanceAddresses,
   ) {
-    super(config, DydxGovernorFactory);
+    super(config, DydxGovernor__factory);
 
     this.erc20Service = erc20Service;
     this.governanceTokenDelegationService = governanceTokenDelegationService;
@@ -333,7 +333,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     strategy,
   }: GovGetVotingAtBlockType): Promise<string> {
     const { provider }: Configuration = this.config;
-    const proposalStrategy: GovernanceStrategy = GovernanceStrategyFactory.connect(
+    const proposalStrategy: GovernanceStrategy = GovernanceStrategy__factory.connect(
       strategy,
       provider,
     );
@@ -352,7 +352,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     strategy,
   }: GovGetVotingAtBlockType): Promise<string> {
     const { provider }: Configuration = this.config;
-    const proposalStrategy: GovernanceStrategy = GovernanceStrategyFactory.connect(
+    const proposalStrategy: GovernanceStrategy = GovernanceStrategy__factory.connect(
       strategy,
       provider,
     );
@@ -370,7 +370,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     strategy,
   }: GovGetVotingSupplyType): Promise<string> {
     const { provider }: Configuration = this.config;
-    const proposalStrategy: GovernanceStrategy = GovernanceStrategyFactory.connect(
+    const proposalStrategy: GovernanceStrategy = GovernanceStrategy__factory.connect(
       strategy,
       provider,
     );
@@ -387,7 +387,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     strategy,
   }: GovGetVotingSupplyType): Promise<string> {
     const { provider }: Configuration = this.config;
-    const proposalStrategy: GovernanceStrategy = GovernanceStrategyFactory.connect(
+    const proposalStrategy: GovernanceStrategy = GovernanceStrategy__factory.connect(
       strategy,
       provider,
     );
@@ -553,12 +553,12 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     const { provider }: Configuration = this.config;
     return Promise.all(proposalDataAndStates.map(
       async (pdas: ProposalDataAndState): Promise<Proposal> => {
-        const strategy: GovernanceStrategy = GovernanceStrategyFactory.connect(
+        const strategy: GovernanceStrategy = GovernanceStrategy__factory.connect(
           pdas.proposal.strategy,
           provider,
         );
 
-        const executor: Executor = ExecutorFactory.connect(
+        const executor: Executor = Executor__factory.connect(
           pdas.proposal.executor,
           provider,
         );
@@ -584,9 +584,12 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
           .mul(executorVotingData.voteDifferential)
           .div(executorVotingData.executorVotingPrecision);
 
+        const onchainProposalId = pdas.proposal.id.toNumber();
+
         return {
           ...ipfsProposalMetadata,
-          id: pdas.proposal.id.toNumber(),
+          dipId: ipfsProposalMetadata.dipId || onchainProposalId,
+          id: onchainProposalId,
           creator: pdas.proposal.creator,
           executor: pdas.proposal.executor,
           strategy: pdas.proposal.strategy,

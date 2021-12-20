@@ -2,7 +2,7 @@ import BNJS from 'bignumber.js';
 import { BigNumber, EventFilter, Event, utils } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
 
-import { DydxTokenFactory, MerkleDistributorV1Factory } from '../../../types';
+import { DydxToken__factory, MerkleDistributorV1__factory } from '../../../types';
 import { DydxToken } from '../../../types/DydxToken';
 import { MerkleDistributorV1 } from '../../../types/MerkleDistributorV1';
 import BalanceTree from '../../merkle-tree-helpers/balance-tree';
@@ -49,7 +49,7 @@ export default class MerkleDistributor extends BaseService<MerkleDistributorV1> 
     erc20Service: ERC20Service,
     hardhatMerkleDistributorAddresses?: tMerkleDistributorAddresses,
   ) {
-    super(config, MerkleDistributorV1Factory);
+    super(config, MerkleDistributorV1__factory);
     this.erc20Service = erc20Service;
     this._rewardToken = null;
     this._activeRootDataAndHistory = {
@@ -164,7 +164,7 @@ export default class MerkleDistributor extends BaseService<MerkleDistributorV1> 
       const rewardsTokenAddress: string = await this.getRewardToken();
 
       const { provider }: Configuration = this.config;
-      const dydxToken: DydxToken = DydxTokenFactory.connect(rewardsTokenAddress, provider);
+      const dydxToken: DydxToken = DydxToken__factory.connect(rewardsTokenAddress, provider);
 
       const transfersRestrictedBefore: BigNumber = await dydxToken._transfersRestrictedBefore();
       this._transfersRestrictedBefore = transfersRestrictedBefore.toNumber();

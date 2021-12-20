@@ -1,7 +1,7 @@
 import { splitSignature } from 'ethers/lib/utils';
 
+import { DydxToken__factory } from '../../../types';
 import { DydxToken } from '../../../types/DydxToken';
-import { DydxTokenFactory } from '../../../types/DydxTokenFactory';
 import {
   ChainId,
   Configuration,
@@ -37,7 +37,7 @@ import BaseService from './BaseService';
 
 export default class GovernanceDelegationTokenService extends BaseService<DydxToken> {
   constructor(config: Configuration) {
-    super(config, DydxTokenFactory);
+    super(config, DydxToken__factory);
   }
 
   @GovDelegationValidator

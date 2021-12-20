@@ -39,26 +39,29 @@ export async function getProposalMetadata(
     const { data } = await axios.get(getLink(ipfsHash), { timeout: ipfsTimeoutMs });
 
     if (!data?.title) {
-      throw Error('Missing title field at proposal metadata.');
+      throw Error('Missing `title` field at proposal metadata.');
     }
     if (!data?.description) {
-      throw Error('Missing description field at proposal metadata.');
+      throw Error('Missing `description` field at proposal metadata.');
     }
-    if (!data?.shortDescription) {
-      throw Error('Missing shortDescription field at proposal metadata.');
+
+    if (!data?.shortDescription && !data['short description']) {
+      throw Error('Missing `shortDescription` field at proposal metadata.');
     }
 
     MEMORIZE[ipfsHash] = {
       ipfsHash,
+      dipId: data.DIP ? parseInt(data.DIP) : undefined,
       title: data.title,
       description: data.description,
-      shortDescription: data.shortDescription,
+      shortDescription: data.shortDescription || data['short description'],
     };
     return MEMORIZE[ipfsHash];
   } catch (e) {
     console.error(`@dydxfoundation/governance-js: IPFS fetch Error: ${e.message}`);
     return {
       ipfsHash,
+      dipId: -1,
       title: `Proposal - ${ipfsHash}`,
       description: 'Proposal with invalid metadata format or IPFS gateway is down',
       shortDescription: 'Proposal with invalid metadata format or IPFS gateway is down',
