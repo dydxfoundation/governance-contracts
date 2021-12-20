@@ -163,9 +163,9 @@ async function maybeEvmReset(
  * @notice Used for running tests on the Hardhat network (excluding mainnet forks). The tests
  *  will be skipped if on a non-Hardhat network or mainnet fork.
  *
- *  IMPORTANT: This method is different than `describeContractHardhatRevertBefore` because it does _not_
- *  revert snapshots after each test (only after all tests have run). This is useful if you don't want the
- *  the contracts to persist state into nested `describe` blocks.
+ *  IMPORTANT: This method is different than `describeContractHardhatRevertBefore` because it _does_
+ *  revert snapshots after each test. This is useful if you don't want the contracts to persist state
+ *  into nested `describe` blocks.
  *
  * @param  name   The name of the test.
  * @param  init   The function to run before running the tests.
