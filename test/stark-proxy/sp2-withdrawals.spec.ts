@@ -15,7 +15,7 @@ import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
 import { MerkleDistributorV1 } from '../../types/MerkleDistributorV1';
 import { MockRewardsOracle } from '../../types/MockRewardsOracle';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
-import { describeContractHardhat, TestContext } from '../helpers/describe-contract';
+import { describeContractHardhatRevertBefore, TestContext } from '../helpers/describe-contract';
 import { incrementTimeToTimestamp, latestBlockTimestamp, loadSnapshot, saveSnapshot } from '../helpers/evm';
 import { findAddressWithRole } from '../helpers/get-address-with-role';
 import { StakingHelper } from '../helpers/staking-helper';
@@ -91,7 +91,7 @@ async function init(ctx: TestContext) {
   await saveSnapshot(snapshots, fundsStakedSnapshot, contract);
 }
 
-describeContractHardhat('SP2Withdrawals', init, (ctx: TestContext) => {
+describeContractHardhatRevertBefore('SP2Withdrawals', init, (ctx: TestContext) => {
   describe('Borrower, after borrowing funds', () => {
 
     before(async () => {

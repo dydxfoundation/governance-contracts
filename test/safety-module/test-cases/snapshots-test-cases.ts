@@ -7,7 +7,7 @@ import { BigNumber, BigNumberish } from 'ethers';
 
 import { DelegationType } from '../../../src/types';
 import { SafetyModuleV1 } from '../../../types';
-import { describeContract, TestContext } from '../../helpers/describe-contract';
+import { describeContractHardhatRevertBeforeEach, TestContext } from '../../helpers/describe-contract';
 import {
   advanceBlock,
   increaseTimeAndMine,
@@ -41,7 +41,7 @@ export function addSnapshotsTestCases(
     staker1InitialTokenBalance = await ctx.dydxToken.balanceOf(staker1.address);
   }
 
-  describeContract('Safety Module snapshots - getPowerAtBlock()', init, (ctx: TestContext) => {
+  describeContractHardhatRevertBeforeEach('Safety Module snapshots - getPowerAtBlock()', init, (ctx: TestContext) => {
 
     it('Governance power is initially zero', async () => {
       await expectPowerAtBlock(staker1, 0, 0);

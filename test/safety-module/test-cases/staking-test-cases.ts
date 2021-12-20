@@ -8,7 +8,7 @@ import { expect } from 'chai';
 import { ZERO_ADDRESS } from '../../../src/lib/constants';
 import { deployUpgradeable } from '../../../src/migrations/helpers/deploy-upgradeable';
 import { SafetyModuleV1, SafetyModuleV11__factory } from '../../../types';
-import { describeContract, TestContext } from '../../helpers/describe-contract';
+import { describeContractHardhatRevertBeforeEach, TestContext } from '../../helpers/describe-contract';
 import {
   incrementTimeToTimestamp,
   latestBlockTimestamp,
@@ -79,7 +79,7 @@ export function addStakingTestCases(
     await contract.setRewardsPerSecond(0);
   }
 
-  describeContract('SM1Staking', init, (ctx: TestContext) => {
+  describeContractHardhatRevertBeforeEach('SM1Staking', init, (ctx: TestContext) => {
 
     before(() => {
       contract.saveSnapshot('main');

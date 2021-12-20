@@ -8,7 +8,7 @@ import {
   MockSafetyModuleSubclass,
   MockSafetyModuleSubclass__factory,
 } from '../../types';
-import { describeContract, TestContext } from '../helpers/describe-contract';
+import { describeContractHardhatRevertBeforeEach, TestContext } from '../helpers/describe-contract';
 import { latestBlockTimestamp } from '../helpers/evm';
 import { StakingHelper } from '../helpers/staking-helper';
 
@@ -57,7 +57,7 @@ async function init(ctx: TestContext) {
   await contract.mintAndApprove(staker2, stakerInitialBalance2);
 }
 
-describeContract('SM1Erc20', init, (ctx: TestContext) => {
+describeContractHardhatRevertBeforeEach('SM1Erc20', init, (ctx: TestContext) => {
 
   before(() => {
     contract.saveSnapshot('main');

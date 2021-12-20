@@ -11,7 +11,7 @@ import {
   SafetyModuleV1,
   SafetyModuleV11__factory,
 } from '../../types';
-import { describeContract, TestContext } from '../helpers/describe-contract';
+import { describeContractHardhatRevertBeforeEach, TestContext } from '../helpers/describe-contract';
 import {
   advanceBlock,
   increaseTimeAndMine,
@@ -53,7 +53,7 @@ async function init(ctx: TestContext) {
   await contract.setRewardsPerSecond(0);
 }
 
-describeContract('SM1Slashing', init, (ctx: TestContext) => {
+describeContractHardhatRevertBeforeEach('SM1Slashing', init, (ctx: TestContext) => {
 
   before(() => {
     contract.saveSnapshot('main');

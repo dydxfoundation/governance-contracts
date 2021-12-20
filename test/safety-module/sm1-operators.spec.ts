@@ -3,7 +3,7 @@ import { expect } from 'chai';
 
 import { Role } from '../../src/types';
 import { SafetyModuleV1 } from '../../types';
-import { describeContract, TestContext } from '../helpers/describe-contract';
+import { describeContractHardhatRevertBeforeEach, TestContext } from '../helpers/describe-contract';
 import { StakingHelper } from '../helpers/staking-helper';
 
 const stakerInitialBalance: number = 1_000_000;
@@ -40,7 +40,7 @@ async function init(ctx: TestContext) {
   await Promise.all(stakers.map((s) => contract.mintAndApprove(s, stakerInitialBalance)));
 }
 
-describeContract('SM1Operator', init, (ctx: TestContext) => {
+describeContractHardhatRevertBeforeEach('SM1Operator', init, (ctx: TestContext) => {
 
   before(() => {
     contract.saveSnapshot('main');

@@ -9,7 +9,7 @@ import { IERC20 } from '../../types/IERC20';
 import { IStarkPerpetual } from '../../types/IStarkPerpetual';
 import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
-import { describeContractHardhat, TestContext } from '../helpers/describe-contract';
+import { describeContractHardhatRevertBefore, TestContext } from '../helpers/describe-contract';
 import { evmReset, evmSnapshot } from '../helpers/evm';
 import { findAddressWithRole } from '../helpers/get-address-with-role';
 import { StakingHelper } from '../helpers/staking-helper';
@@ -98,7 +98,7 @@ async function init(ctx: TestContext) {
   contract.saveSnapshot(borrowerHasBorrowed);
 }
 
-describeContractHardhat('SP2Exchange', init, () => {
+describeContractHardhatRevertBefore('SP2Exchange', init, () => {
   describe('interacting with the exchange', () => {
     const starkKey = 123;
     let postInitSnapshotId: string;

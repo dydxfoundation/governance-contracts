@@ -8,7 +8,7 @@ import { ZERO_ADDRESS } from '../../src/lib/constants';
 import { getRole } from '../../src/lib/util';
 import { DelegationType, Role } from '../../src/types';
 import { SafetyModuleV2 } from '../../types';
-import { TestContext, describeContract } from '../helpers/describe-contract';
+import { TestContext, describeContractHardhatRevertBeforeEach } from '../helpers/describe-contract';
 import { getAffectedStakersForTest } from '../helpers/get-affected-stakers-for-test';
 
 type EventName = keyof SafetyModuleV2['filters'];
@@ -19,7 +19,7 @@ function init() {
   testStakers = getAffectedStakersForTest();
 }
 
-describeContract('SafetyModuleV2 initial emitted events', init, (ctx: TestContext) => {
+describeContractHardhatRevertBeforeEach('SafetyModuleV2 initial emitted events', init, (ctx: TestContext) => {
 
   it('Events that were not emitted', async () => {
     const eventNames: EventName[] = [

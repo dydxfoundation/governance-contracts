@@ -44,10 +44,17 @@ async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
     deployedContracts = await getAllContracts();
   } else {
     deployedContracts = await deployContractsForTest();
+
+    // Execute the proposals which have already been executed on mainnet.
+    //
+    // The proposals will be executed when running on a local test network,
+    // but will not be executed when running on a mainnet fork.
+    await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
+    await executeStarkProxyProposalForTest(deployedContracts);
   }
 
-  await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
-  await executeStarkProxyProposalForTest(deployedContracts);
+  // Execute the proposals which have not yet been executed on mainnet.
+
   await configureForTest(deployedContracts);
   return deployedContracts;
 }
