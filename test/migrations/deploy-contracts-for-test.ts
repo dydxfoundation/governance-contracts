@@ -163,6 +163,26 @@ export async function executeStarkProxyProposalForTest(
   }
 }
 
+export async function executeGrantsProgramProposalForTest(
+    deployedContracts: AllDeployedContracts,
+  ) {
+    if (config.TEST_FUND_GRANTS_PROGRAM_WITH_PROPOSAL) {
+      await fundGrantsProgramViaProposal({
+        dydxTokenAddress: deployedContracts.dydxToken.address,
+        governorAddress: deployedContracts.governor.address,
+        shortTimelockAddress: deployedContracts.shortTimelock.address,
+        communityTreasuryAddress: deployedContracts.communityTreasury.address,
+        dgpMultisigAddress: deployedContracts.dgpMultisig.address,
+      });
+    } else {
+      await fundGrantsProgramNoProposal({
+        dydxTokenAddress: deployedContracts.dydxToken.address,
+        shortTimelockAddress: deployedContracts.shortTimelock.address,
+        communityTreasuryAddress: deployedContracts.communityTreasury.address,
+        dgpMultisigAddress: deployedContracts.dgpMultisig.address,
+      });
+    }
+  }
 
 /**
  * After the deploy scripts have run, this function configures the contracts for testing.
