@@ -6,6 +6,7 @@ import {
   deployContractsForTest,
   executeSafetyModuleRecoveryProposalsForTest,
   executeStarkProxyProposalForTest,
+  executeGrantsProgramProposalForTest
 } from '../migrations/deploy-contracts-for-test';
 
 let globalDeployedContracts: AllDeployedContracts;
