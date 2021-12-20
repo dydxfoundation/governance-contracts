@@ -20,6 +20,7 @@ const configSchema = {
   TEST_SM_RECOVERY_WITH_PROPOSAL: parseBoolean({ default: true }),
   TEST_SP_FIX_WITH_PROPOSAL: parseBoolean({ default: true }),
   FUND_GRANTS_PROGRAM_PROPOSAL_ID: parseInteger({ default: null }),
+  TEST_FUND_GRANTS_PROGRAM_WITH_PROPOSAL: parseBoolean({ default: true }),
 };
 
 const config = parseSchema(configSchema);
