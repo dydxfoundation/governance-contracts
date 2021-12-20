@@ -19,6 +19,8 @@ import { simulateAffectedStakers } from './affected-stakers';
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
+import { createGrantsProgramProposal } from '../../src/migrations/grants-program-proposal';
+import { fundGrantsProgramViaProposal, fundGrantsProgramNoProposal } from './grants-program-proposal';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -68,6 +70,7 @@ export async function deployContractsForTest(): Promise<AllDeployedContracts>{
     merkleDistributorProxyAdminAddress: phase2Contracts.merkleDistributorProxyAdmin.address,
     starkProxyAddresses: phase2Contracts.starkProxies.map((sp) => sp.address),
     starkProxyProxyAdminAddresses: phase2Contracts.starkProxyProxyAdmins.map((spa) => spa.address),
+    dgpMultisigAddress: phase2Contracts.dgpMultisig.address,
   });
 
   // Simulate mainnet staking activity with the broken Safety Module.
