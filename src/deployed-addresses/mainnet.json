@@ -37,5 +37,6 @@
   ],
   "dydxCollateralToken": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
   "starkPerpetual": "0xD54f502e184B6B739d7D27a6410a67dc462D69c8",
-  "starkProxyNewImpl": "0xc77F93fF1f743801FA668c9bea0346d0A29Ff2f6"
+  "starkProxyNewImpl": "0xc77F93fF1f743801FA668c9bea0346d0A29Ff2f6",
+  "dgpMultisig": "eth:0xFa3811E5C92358133330f9F787980ba1e8E0D99a"
 }
