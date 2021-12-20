@@ -2,7 +2,7 @@ import { BigNumber } from 'ethers';
 import { formatUnits } from 'ethers/lib/utils';
 
 import {
-  LiquidityStakingV1Factory,
+  LiquidityStakingV1__factory,
 } from '../../../types';
 import {
   LiquidityStakingV1,
@@ -48,7 +48,7 @@ export default class LiquidityModule extends BaseService<LiquidityStakingV1> {
     erc20Service: ERC20Service,
     hardhatLiquidityModuleAddresses?: tLiquidityModuleAddresses,
   ) {
-    super(config, LiquidityStakingV1Factory);
+    super(config, LiquidityStakingV1__factory);
     this.erc20Service = erc20Service;
     this._stakedToken = null;
     this._rewardToken = null;

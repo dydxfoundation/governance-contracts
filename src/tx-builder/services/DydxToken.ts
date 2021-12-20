@@ -11,7 +11,7 @@ import multicallAbi from '../../../abi/contracts/dependencies/makerdao/multicall
 import dydxTokenAbi from '../../../abi/contracts/governance/token/DydxToken.sol/DydxToken.json';
 import liquidityModuleAbi from '../../../abi/contracts/liquidity/v1/LiquidityStakingV1.sol/LiquidityStakingV1.json';
 import safetyModuleAbi from '../../../abi/contracts/safety/v1/SafetyModuleV1.sol/SafetyModuleV1.json';
-import { DydxTokenFactory } from '../../../types';
+import { DydxToken__factory } from '../../../types';
 import { DydxToken } from '../../../types/DydxToken';
 import {
   dydxTokenAddresses,
@@ -61,7 +61,7 @@ export default class DydxTokenService extends BaseService<DydxToken> {
     hardhatTreasuryAddresses?: tTreasuryAddresses,
     hardhatMulticallAddress?: tMulticallAddresses,
   ) {
-    super(config, DydxTokenFactory);
+    super(config, DydxToken__factory);
     this.erc20Service = erc20Service;
 
     const { network } = this.config;
@@ -74,7 +74,7 @@ export default class DydxTokenService extends BaseService<DydxToken> {
         !hardhatMulticallAddress
       )
     ) {
-      throw new Error('Must specify token and treasury addresses when on hardhat network');
+      throw new Error('Must specify token, treasury, and multicall addresses when on hardhat network');
     }
     const tokenAddresses: tTokenAddresses = isHardhatNetwork ? hardhatTokenAddresses! : dydxTokenAddresses[network];
     this.tokenAddress = tokenAddresses.TOKEN_ADDRESS;

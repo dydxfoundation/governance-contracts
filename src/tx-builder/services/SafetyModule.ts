@@ -1,7 +1,7 @@
 import { BigNumber } from 'ethers';
 import { formatUnits } from 'ethers/lib/utils';
 
-import { SafetyModuleV1Factory } from '../../../types';
+import { SafetyModuleV1__factory } from '../../../types';
 import { SafetyModuleV1 } from '../../../types/SafetyModuleV1';
 import {
   DEFAULT_APPROVE_AMOUNT,
@@ -43,7 +43,7 @@ export default class SafetyModule extends BaseService<SafetyModuleV1> {
     erc20Service: ERC20Service,
     hardhatSafetyModuleAddresses?: tSafetyModuleAddresses,
   ) {
-    super(config, SafetyModuleV1Factory);
+    super(config, SafetyModuleV1__factory);
     this.erc20Service = erc20Service;
     this._stakedToken = null;
     this._rewardToken = null;

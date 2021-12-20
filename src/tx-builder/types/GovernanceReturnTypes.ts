@@ -18,7 +18,10 @@ export enum ProposalState {
 }
 
 export type Proposal = {
+  // on-chain proposal ID
   id: number;
+  // Github proposal ID
+  dipId: number;
   title: string;
   description: string;
   shortDescription: string;
@@ -104,6 +107,7 @@ export type IPFSProposalData = {
   description: string;
   shortDescription: string;
   ipfsHash: string;
+  dipId?: number;
 };
 
 export type RootUpdatedMetadata = {
