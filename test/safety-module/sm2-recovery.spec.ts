@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { AFFECTED_STAKERS, getOwedAmount } from '../../src/lib/affected-stakers';
 import { fundAccount, impersonateAccount, IMPERSONATED_ACCOUNT_STIPEND } from '../../src/migrations/helpers/impersonate-account';
 import { SM2Recovery } from '../../types';
-import { describeContract, TestContext } from '../helpers/describe-contract';
+import { describeContractHardhatRevertBeforeEach, TestContext } from '../helpers/describe-contract';
 import { getAffectedStakersForTest } from '../helpers/get-affected-stakers-for-test';
 
 const EXPECTED_TOTAL_OWED = '173204761823871505252385';
@@ -21,7 +21,7 @@ function init(ctx: TestContext) {
   contract = ctx.safetyModuleRecovery;
 }
 
-describeContract('SM2Recovery', init, (ctx: TestContext) => {
+describeContractHardhatRevertBeforeEach('SM2Recovery', init, (ctx: TestContext) => {
 
   it('Proxy admin is owned by the short timelock', async () => {
     const owner = await ctx.safetyModuleRecoveryProxyAdmin.owner();

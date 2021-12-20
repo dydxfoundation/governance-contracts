@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers';
 import { SM_ROLE_HASHES } from '../../src/lib/constants';
 import { getRole } from '../../src/lib/util';
 import { Role } from '../../src/types';
-import { TestContext, describeContract } from '../helpers/describe-contract';
+import { TestContext, describeContractHardhatRevertBeforeEach } from '../helpers/describe-contract';
 
 let staker: SignerWithAddress;
 
@@ -13,7 +13,7 @@ function init(ctx: TestContext) {
   [staker] = ctx.users;
 }
 
-describeContract('SafetyModuleV2 initial state', init, (ctx: TestContext) => {
+describeContractHardhatRevertBeforeEach('SafetyModuleV2 initial state', init, (ctx: TestContext) => {
 
   describe('Proxy admin', () => {
 

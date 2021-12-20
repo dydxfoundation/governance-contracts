@@ -9,7 +9,7 @@ import { IERC20 } from '../../types/IERC20';
 import { IStarkPerpetual } from '../../types/IStarkPerpetual';
 import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
-import { describeContractHardhat, TestContext } from '../helpers/describe-contract';
+import { describeContractHardhatRevertBefore, TestContext } from '../helpers/describe-contract';
 import { increaseTime, increaseTimeAndMine, loadSnapshot, saveSnapshot } from '../helpers/evm';
 import { findAddressWithRole } from '../helpers/get-address-with-role';
 import { StakingHelper } from '../helpers/staking-helper';
@@ -91,7 +91,7 @@ async function init(ctx: TestContext) {
   await saveSnapshot(snapshots, fundsStakedSnapshot, contract);
 }
 
-describeContractHardhat('SP1Borrowing', init, () => {
+describeContractHardhatRevertBefore('SP1Borrowing', init, () => {
 
   describe('After stake is deposited and allocations are set', () => {
     before(async () => {

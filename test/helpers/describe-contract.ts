@@ -42,15 +42,15 @@ export function describeContractForNetwork(
  * @notice Used for running tests on the Hardhat network (excluding mainnet forks). The tests
  *  will be skipped if on a non-Hardhat network or mainnet fork.
  *
- *  IMPORTANT: This method is different than `describeContract` because it does _not_ revert snapshots
- *  after each test (only after all tests have run). This is useful if the tests persist state into nested
- *  `describe` blocks.
+ *  IMPORTANT: This method is different than `describeContractHardhatRevertBeforeEach` because it does _not_
+ *  revert snapshots after each test (only after all tests have run). This is useful if you want the contracts
+ *  to persist state into nested `describe` blocks.
  *
  * @param  name   The name of the test.
  * @param  init   The function to run before running the tests.
  * @param  tests  The tests to run.
  */
-export function describeContractHardhat(
+export function describeContractHardhatRevertBefore(
   name: string,
   init: (ctx: TestContext) => void | Promise<void>,
   tests: (ctx: TestContext) => void,
@@ -156,5 +156,30 @@ async function maybeEvmReset(
 ): Promise<void> {
   if (config.isHardhat()) {
     await evmReset(id);
+  }
+}
+
+/**
+ * @notice Used for running tests on the Hardhat network (excluding mainnet forks). The tests
+ *  will be skipped if on a non-Hardhat network or mainnet fork.
+ *
+ *  IMPORTANT: This method is different than `describeContractHardhatRevertBefore` because it does _not_
+ *  revert snapshots after each test (only after all tests have run). This is useful if you don't want the
+ *  the contracts to persist state into nested `describe` blocks.
+ *
+ * @param  name   The name of the test.
+ * @param  init   The function to run before running the tests.
+ * @param  tests  The tests to run.
+ */
+export function describeContractHardhatRevertBeforeEach(
+  name: string,
+  init: (ctx: TestContext) => void | Promise<void>,
+  tests: (ctx: TestContext) => void,
+): void {
+  if (config.FORK_MAINNET) {
+    // Skip tests that do not run on mainnet forks when forking mainnet.
+    describe.skip(name, () => {});
+  } else {
+    describeContract(name, init, tests);
   }
 }

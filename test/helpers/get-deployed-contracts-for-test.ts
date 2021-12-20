@@ -44,10 +44,14 @@ async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
     deployedContracts = await getAllContracts();
   } else {
     deployedContracts = await deployContractsForTest();
+
+    // Put proposals that have already been executed on mainnet here.
+    await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
+    await executeStarkProxyProposalForTest(deployedContracts);
   }
 
-  await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
-  await executeStarkProxyProposalForTest(deployedContracts);
+  // Put proposals that have not been executed on mainnet here.
+
   await configureForTest(deployedContracts);
   return deployedContracts;
 }

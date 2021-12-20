@@ -12,7 +12,7 @@ import { IFreezableStarkPerpetual } from '../../types/IFreezableStarkPerpetual';
 import { IStarkPerpetual } from '../../types/IStarkPerpetual';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
 import { StarkProxyV2 } from '../../types/StarkProxyV2';
-import { TestContext, describeContract, describeContractForNetwork } from '../helpers/describe-contract';
+import { TestContext, describeContractForNetwork, describeContractHardhatRevertBeforeEach } from '../helpers/describe-contract';
 import { increaseTimeAndMine, incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { findAddressWithRole } from '../helpers/get-address-with-role';
 
@@ -28,7 +28,7 @@ async function init(ctx: TestContext): Promise<void> {
   borrowerStarkProxy = new StarkProxyV2__factory(borrower).attach(ctx.starkProxies[0].address);
 }
 
-describeContract('SP2Owner', init, (ctx: TestContext) => {
+describeContractHardhatRevertBeforeEach('SP2Owner', init, (ctx: TestContext) => {
 
   describeContractForNetwork(
     'SP2Owner Hardhat Tests',

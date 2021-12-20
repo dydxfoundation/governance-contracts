@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 import { SM_EXCHANGE_RATE_BASE } from '../../src/lib/constants';
 import { asBytes32, asUintHex, concatHex } from '../../src/lib/hex';
-import { TestContext, describeContract } from '../helpers/describe-contract';
+import { TestContext, describeContractHardhatRevertBeforeEach } from '../helpers/describe-contract';
 import { getAffectedStakersForTest } from '../helpers/get-affected-stakers-for-test';
 import hre from '../hre';
 
@@ -15,7 +15,7 @@ function init() {
   testStakers = getAffectedStakersForTest();
 }
 
-describeContract('SafetyModuleV2 initial storage slots', init, (ctx: TestContext) => {
+describeContractHardhatRevertBeforeEach('SafetyModuleV2 initial storage slots', init, (ctx: TestContext) => {
 
   it('0–49: AccessControlUpgradeable', async () => {
     await expectZeroes(_.range(0, 50));
