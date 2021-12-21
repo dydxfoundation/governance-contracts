@@ -49,20 +49,15 @@ function getRemoteNetworkConfig(
   networkId: number,
 ): HttpNetworkUserConfig {
   let accounts;
-  if (MNEMONIC) {
+  if (HARDHAT_PRIVATE_KEY) {
+    accounts = [HARDHAT_PRIVATE_KEY];
+  } else if (MNEMONIC) {
     accounts = {
       mnemonic: MNEMONIC,
       path: MNEMONIC_PATH,
       initialIndex: 0,
       count: 10,
     };
-  } else if (HARDHAT_PRIVATE_KEY) {
-    accounts = [HARDHAT_PRIVATE_KEY];
-  } else {
-    throw new Error(
-      'hardhat.config.ts: Network requires either MNEMONIC or HARDHAT_PRIVATE_KEY ' +
-      'to be specified',
-    );
   }
   return {
     url: `https://eth-${networkName}.alchemyapi.io/v2/${ALCHEMY_KEY}`,
