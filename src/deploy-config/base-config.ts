@@ -234,11 +234,14 @@ const config = {
   SM_RECOVERY_DISTRIBUTION_END: (
     DateTime.fromISO('2026-10-30T21:24:45', { zone: 'utc' }).toSeconds()
   ),
-  
+
   // dYdX Grants Program.
   // Amount to be transferred is $6,250,000 of DYDX at market.
-  // Using market price of $7.75 on 12/17/2021, rounded amount to be transferred is 810,000.00 DYDX
-  DGP_FUNDING_AMOUNT = '810000000000000000000000'
+  // Using market price of $8.07 on 12/20/2021 per DIP, rounded amount to be transferred is 775,000.00 DYDX
+  //
+  DGP_MULTISIG_ADDRESS: '0xFa3811E5C92358133330f9F787980ba1e8E0D99a',
+  //
+  DGP_FUNDING_AMOUNT: '775000000000000000000000',
 };
 
 export type BaseConfig = typeof config;

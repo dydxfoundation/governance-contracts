@@ -16,18 +16,17 @@ import { deploySafetyModuleRecovery } from '../../src/migrations/safety-module-r
 import { AllDeployedContracts } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
+import { fundGrantsProgramViaProposal, fundGrantsProgramNoProposal } from './grants-program-proposal';
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
-import { createGrantsProgramProposal } from '../../src/migrations/grants-program-proposal';
-import { fundGrantsProgramViaProposal, fundGrantsProgramNoProposal } from './grants-program-proposal';
 
 /**
  * Perform all deployments steps for the test environment.
  *
  * We use the mainnet deployments scripts to mimic the mainnet environment as closely as possible.
  */
-export async function deployContractsForTest(): Promise<AllDeployedContracts>{
+export async function deployContractsForTest(): Promise<AllDeployedContracts> {
   // Phase 1: Deploy core governance contracts.
   const phase1Contracts = await deployPhase1();
 
@@ -166,25 +165,26 @@ export async function executeStarkProxyProposalForTest(
 }
 
 export async function executeGrantsProgramProposalForTest(
-    deployedContracts: AllDeployedContracts,
-  ) {
-    if (config.TEST_FUND_GRANTS_PROGRAM_WITH_PROPOSAL) {
-      await fundGrantsProgramViaProposal({
-        dydxTokenAddress: deployedContracts.dydxToken.address,
-        governorAddress: deployedContracts.governor.address,
-        shortTimelockAddress: deployedContracts.shortTimelock.address,
-        communityTreasuryAddress: deployedContracts.communityTreasury.address,
-        dgpMultisigAddress: deployedContracts.dgpMultisig.address,
-      });
-    } else {
-      await fundGrantsProgramNoProposal({
-        dydxTokenAddress: deployedContracts.dydxToken.address,
-        shortTimelockAddress: deployedContracts.shortTimelock.address,
-        communityTreasuryAddress: deployedContracts.communityTreasury.address,
-        dgpMultisigAddress: deployedContracts.dgpMultisig.address,
-      });
-    }
+  deployedContracts: AllDeployedContracts,
+) {
+  const deployConfig = getDeployConfig();
+  if (config.TEST_FUND_GRANTS_PROGRAM_WITH_PROPOSAL) {
+    await fundGrantsProgramViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      communityTreasuryAddress: deployedContracts.communityTreasury.address,
+      dgpMultisigAddress: deployConfig.DGP_MULTISIG_ADDRESS,
+    });
+  } else {
+    await fundGrantsProgramNoProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      communityTreasuryAddress: deployedContracts.communityTreasury.address,
+      dgpMultisigAddress: deployConfig.DGP_MULTISIG_ADDRESS,
+    });
   }
+}
 
 /**
  * After the deploy scripts have run, this function configures the contracts for testing.

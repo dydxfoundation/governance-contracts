@@ -6,7 +6,7 @@ import {
   deployContractsForTest,
   executeSafetyModuleRecoveryProposalsForTest,
   executeStarkProxyProposalForTest,
-  executeGrantsProgramProposalForTest
+  executeGrantsProgramProposalForTest,
 } from '../migrations/deploy-contracts-for-test';
 
 let globalDeployedContracts: AllDeployedContracts;
@@ -45,23 +45,11 @@ async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
     deployedContracts = await getAllContracts();
   } else {
     deployedContracts = await deployContractsForTest();
-
-    // Execute the proposals which have already been executed on mainnet.
-    //
-    // The proposals will be executed when running on a local test network,
-    // but will not be executed when running on a mainnet fork.
     await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
     await executeStarkProxyProposalForTest(deployedContracts);
   }
 
-<<<<<<< HEAD
-  // Execute the proposals which have not yet been executed on mainnet.
-
-=======
-  await executeSafetyModuleRecoveryProposalsForTest(deployedContracts);
-  await executeStarkProxyProposalForTest(deployedContracts);
   await executeGrantsProgramProposalForTest(deployedContracts);
->>>>>>> Update get-deployed-contracts-for-test.ts
   await configureForTest(deployedContracts);
   return deployedContracts;
 }
