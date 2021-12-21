@@ -6,7 +6,7 @@ function init() { }
 
 describeContract('', init, (ctx: TestContext) => {
 
-    it.only('DGP multisig receives tokens from the community treasury', async () => {
+    it('DGP multisig receives tokens from the community treasury', async () => {
         const balance = await ctx.dydxToken.balanceOf(ctx.config.DGP_MULTISIG_ADDRESS);
         expect(balance).to.equal(ctx.config.DGP_FUNDING_AMOUNT);
     });
