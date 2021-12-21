@@ -68,9 +68,5 @@
     "ts-node": "^10.4.0",
     "typechain": "^5.1.2",
     "typescript": "^4.4.3"
-  },
-  "directories": {
-    "test": "test"
-  },
-  "license": "ISC"
+  }
 }
