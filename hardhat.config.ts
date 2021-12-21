@@ -26,6 +26,7 @@ const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
 const MNEMONIC = process.env.MNEMONIC || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
+const HARDHAT_PRIVATE_KEY = process.env.HARDHAT_PRIVATE_KEY || '';
 
 // Load hardhat tasks.
 if (!SKIP_LOAD) {
@@ -47,15 +48,26 @@ function getRemoteNetworkConfig(
   networkName: NetworkName,
   networkId: number,
 ): HttpNetworkUserConfig {
-  return {
-    url: `https://eth-${networkName}.alchemyapi.io/v2/${ALCHEMY_KEY}`,
-    chainId: networkId,
-    accounts: {
+  let accounts;
+  if (MNEMONIC) {
+    accounts = {
       mnemonic: MNEMONIC,
       path: MNEMONIC_PATH,
       initialIndex: 0,
       count: 10,
-    },
+    };
+  } else if (HARDHAT_PRIVATE_KEY) {
+    accounts = [HARDHAT_PRIVATE_KEY];
+  } else {
+    throw new Error(
+      'hardhat.config.ts: Network requires either MNEMONIC or HARDHAT_PRIVATE_KEY ' +
+      'to be specified',
+    );
+  }
+  return {
+    url: `https://eth-${networkName}.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+    chainId: networkId,
+    accounts,
   };
 }
 
