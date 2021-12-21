@@ -22,3 +22,5 @@ export const SM_ROLE_HASHES = [
   Role.CLAIM_OPERATOR_ROLE,
   Role.STAKE_OPERATOR_ROLE,
 ].map(getRole);
+
+export const DIP_6_IPFS_HASH = '0x48f4fd54def63e5aa2f09540b068f06705e47bf848d3bbc7dc731aef04f3b103'
