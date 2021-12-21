@@ -23,5 +23,6 @@ export const SM_ROLE_HASHES = [
   Role.STAKE_OPERATOR_ROLE,
 ].map(getRole);
 
-// DIP_6_IPFS_HASH taken from the dydxfoundation/dip/content/ipfs-dip/DIP-6-Ipfs-hashes file
-export const DIP_6_IPFS_HASH = '0x48f4fd54def63e5aa2f09540b068f06705e47bf848d3bbc7dc731aef04f3b103'
+// DIP_6_IPFS_HASH taken from the link below:
+// https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-6-Ipfs-hashes.json
+export const DIP_6_IPFS_HASH = '0x48f4fd54def63e5aa2f09540b068f06705e47bf848d3bbc7dc731aef04f3b103';
