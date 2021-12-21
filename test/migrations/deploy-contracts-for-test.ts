@@ -70,7 +70,6 @@ export async function deployContractsForTest(): Promise<AllDeployedContracts>{
     merkleDistributorProxyAdminAddress: phase2Contracts.merkleDistributorProxyAdmin.address,
     starkProxyAddresses: phase2Contracts.starkProxies.map((sp) => sp.address),
     starkProxyProxyAdminAddresses: phase2Contracts.starkProxyProxyAdmins.map((spa) => spa.address),
-    dgpMultisigAddress: phase2Contracts.dgpMultisig.address,
   });
 
   // Simulate mainnet staking activity with the broken Safety Module.
