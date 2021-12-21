@@ -167,21 +167,18 @@ export async function executeStarkProxyProposalForTest(
 export async function executeGrantsProgramProposalForTest(
   deployedContracts: AllDeployedContracts,
 ) {
-  const deployConfig = getDeployConfig();
   if (config.TEST_FUND_GRANTS_PROGRAM_WITH_PROPOSAL) {
     await fundGrantsProgramViaProposal({
       dydxTokenAddress: deployedContracts.dydxToken.address,
       governorAddress: deployedContracts.governor.address,
       shortTimelockAddress: deployedContracts.shortTimelock.address,
       communityTreasuryAddress: deployedContracts.communityTreasury.address,
-      dgpMultisigAddress: deployConfig.DGP_MULTISIG_ADDRESS,
     });
   } else {
     await fundGrantsProgramNoProposal({
       dydxTokenAddress: deployedContracts.dydxToken.address,
       shortTimelockAddress: deployedContracts.shortTimelock.address,
       communityTreasuryAddress: deployedContracts.communityTreasury.address,
-      dgpMultisigAddress: deployConfig.DGP_MULTISIG_ADDRESS,
     });
   }
 }

@@ -24,13 +24,11 @@ export async function fundGrantsProgramViaProposal({
   governorAddress,
   shortTimelockAddress,
   communityTreasuryAddress,
-  dgpMultisigAddress,
 }: {
   dydxTokenAddress: string,
   governorAddress: string,
   shortTimelockAddress: string,
   communityTreasuryAddress: string,
-  dgpMultisigAddress: string,
 }): Promise<void> {
   const deployConfig = getDeployConfig();
   const deployer = await getDeployerSigner();
@@ -65,7 +63,6 @@ export async function fundGrantsProgramViaProposal({
       governorAddress,
       shortTimelockAddress,
       communityTreasuryAddress,
-      dgpMultisigAddress,
       signer: voter,
     }));
 
@@ -120,12 +117,10 @@ export async function fundGrantsProgramNoProposal({
   dydxTokenAddress,
   shortTimelockAddress,
   communityTreasuryAddress,
-  dgpMultisigAddress,
 }: {
   dydxTokenAddress: string,
   shortTimelockAddress: string,
   communityTreasuryAddress: string,
-  dgpMultisigAddress: string,
 }): Promise<void> {
   const deployConfig = getDeployConfig();
   const mockShortTimelock = await impersonateAndFundAccount(shortTimelockAddress);
@@ -142,7 +137,7 @@ export async function fundGrantsProgramNoProposal({
   await waitForTx(
     await communityTreasury.transfer(
       dydxTokenAddress,
-      dgpMultisigAddress,
+      deployConfig.DGP_MULTISIG_ADDRESS,
       deployConfig.DGP_FUNDING_AMOUNT,
     ),
   );

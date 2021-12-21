@@ -16,7 +16,6 @@ export async function createGrantsProgramProposal({
   governorAddress,
   shortTimelockAddress,
   communityTreasuryAddress,
-  dgpMultisigAddress,
   signer,
 }: {
   proposalIpfsHashHex: string,
@@ -24,7 +23,6 @@ export async function createGrantsProgramProposal({
   governorAddress: string,
   shortTimelockAddress: string,
   communityTreasuryAddress: string,
-  dgpMultisigAddress: string,
   signer?: SignerWithAddress,
 }) {
   const hre = getHre();
@@ -33,7 +31,7 @@ export async function createGrantsProgramProposal({
   const deployerAddress = deployer.address;
   log(`Creating Grants Program proposal with proposer ${deployerAddress}.\n`);
 
-  const governor = await new DydxGovernor__factory(deployer).attach(governorAddress);
+  const governor = new DydxGovernor__factory(deployer).attach(governorAddress);
   const proposalId = await governor.getProposalsCount();
   const proposal: Proposal = [
     shortTimelockAddress,
@@ -42,13 +40,14 @@ export async function createGrantsProgramProposal({
     ['transfer(address,address,uint256)'],
     [hre.ethers.utils.defaultAbiCoder.encode(
       ['address', 'address', 'uint256'],
-      [dydxTokenAddress, dgpMultisigAddress, deployConfig.DGP_FUNDING_AMOUNT],
+      [dydxTokenAddress, deployConfig.DGP_MULTISIG_ADDRESS, deployConfig.DGP_FUNDING_AMOUNT],
     )],
     [false],
     proposalIpfsHashHex,
   ];
 
-  await waitForTx(await governor.create(...proposal));
+  console.log('Call data:', governor.interface.encodeFunctionData('create', proposal));
+  // await waitForTx(await governor.create(...proposal));
 
   return {
     proposalId,
