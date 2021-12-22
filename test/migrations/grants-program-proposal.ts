@@ -4,6 +4,7 @@ import { BigNumber, BigNumberish } from 'ethers';
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
+import { DIP_6_IPFS_HASH } from '../../src/lib/constants';
 import { log } from '../../src/lib/logging';
 import { waitForTx } from '../../src/lib/util';
 import { createGrantsProgramProposal } from '../../src/migrations/grants-program-proposal';
@@ -58,7 +59,7 @@ export async function fundGrantsProgramViaProposal({
   } else {
     log('Creating proposal');
     ({ proposalId } = await createGrantsProgramProposal({
-      proposalIpfsHashHex: MOCK_PROPOSAL_IPFS_HASH,
+      proposalIpfsHashHex: DIP_6_IPFS_HASH,
       dydxTokenAddress,
       governorAddress,
       shortTimelockAddress,
