@@ -1,3 +1,4 @@
+import { TransactionRequest } from '@ethersproject/providers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 import {
@@ -46,8 +47,18 @@ export async function createGrantsProgramProposal({
     proposalIpfsHashHex,
   ];
 
-  console.log('Call data:', governor.interface.encodeFunctionData('create', proposal));
+  const callData = governor.interface.encodeFunctionData('create', proposal);
+  const partialTxRequest: TransactionRequest = {
+    to: governor.address,
+    from: deployer.address,
+    data: callData,
+  };
+  const txRequest: TransactionRequest = await deployer.populateTransaction(partialTxRequest);
+  console.log('Calldata:');
+  console.log(txRequest.data);
+  console.log('End calldata:');
   // await waitForTx(await governor.create(...proposal));
+  await waitForTx(await deployer.sendTransaction(txRequest));
 
   return {
     proposalId,

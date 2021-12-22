@@ -4,10 +4,10 @@ import { describeContract, TestContext } from '../helpers/describe-contract';
 
 function init() { }
 
-describeContract('', init, (ctx: TestContext) => {
+describeContract('dYdX-grants-program', init, (ctx: TestContext) => {
 
-    it('DGP multisig receives tokens from the community treasury', async () => {
-        const balance = await ctx.dydxToken.balanceOf(ctx.config.DGP_MULTISIG_ADDRESS);
-        expect(balance).to.equal(ctx.config.DGP_FUNDING_AMOUNT);
-    });
+  it('DGP multisig receives tokens from the community treasury', async () => {
+    const balance = await ctx.dydxToken.balanceOf(ctx.config.DGP_MULTISIG_ADDRESS);
+    expect(balance).to.equal(ctx.config.DGP_FUNDING_AMOUNT);
+  });
 });
