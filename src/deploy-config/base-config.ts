@@ -238,12 +238,12 @@ const config = {
   // dYdX Grants Program.
   // Amount to be transferred is $6,250,000 of DYDX at market.
   // Per the DIP, price has been calculated using 24h VWAP from market data.
-  // Price derived is $8.07 using Binance.com DYDX/USDT on 12/19/21.
-  // Using market price of $8.07, rounded amount to be transferred is 775,000.00 DYDX.
+  // Price derived is $8.31 using Binance.com DYDX/USDT on 01/01/22.
+  // Using market price of $8.31, rounded amount to be transferred is 752,000.00 DYDX.
   //
   DGP_MULTISIG_ADDRESS: '0xFa3811E5C92358133330f9F787980ba1e8E0D99a',
   //
-  DGP_FUNDING_AMOUNT: '775000000000000000000000',
+  DGP_FUNDING_AMOUNT: '752000000000000000000000',
 };
 
 export type BaseConfig = typeof config;

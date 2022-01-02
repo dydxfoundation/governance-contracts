@@ -25,4 +25,4 @@ export const SM_ROLE_HASHES = [
 
 // DIP_6_IPFS_HASH taken from the link below:
 // https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-6-Ipfs-hashes.json
-export const DIP_6_IPFS_HASH = '0x48f4fd54def63e5aa2f09540b068f06705e47bf848d3bbc7dc731aef04f3b103';
+export const DIP_6_IPFS_HASH = '0xb659e2db02977540be8821312b75aa2e18d9e8ab60a2708b3d64e7fd5bc7c9bd';
