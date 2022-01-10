@@ -58,7 +58,7 @@ export async function getProposalMetadata(
     };
     return MEMORIZE[ipfsHash];
   } catch (e) {
-    console.error(`@dydxfoundation/governance-js: IPFS fetch Error: ${e.message}`);
+    console.error(`@dydxfoundation/governance-js: IPFS fetch Error: ${e}`);
     return {
       ipfsHash,
       dipId: -1,

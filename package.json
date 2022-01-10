@@ -1,6 +1,6 @@
 {
   "name": "@dydxfoundation/governance",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "dYdX governance smart contracts",
   "main": "dist/src/index.js",
   "scripts": {
@@ -23,6 +23,7 @@
     "ethereum"
   ],
   "author": "dYdX Foundation",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/dydxfoundation/governance-contracts/issues"
   },
@@ -37,6 +38,7 @@
     "ethereum-multicall": "^2.9.0",
     "graphql": "^16.2.0",
     "hardhat-abi-exporter": "^2.4.0",
+    "isomorphic-unfetch": "^3.1.0",
     "urql": "^2.0.6"
   },
   "devDependencies": {
