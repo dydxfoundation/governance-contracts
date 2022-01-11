@@ -266,7 +266,8 @@ export default class LiquidityModule extends BaseService<LiquidityStakingV1> {
   }
 
   public async getTotalStake(): Promise<tStringDecimalUnits> {
-    return this.erc20Service.totalSupply(this.liquidityModuleAddress);
+    const currentActiveBalance: BigNumber = await this.contract.getTotalActiveBalanceCurrentEpoch();
+    return formatUnits(currentActiveBalance, USDC_TOKEN_DECIMALS);
   }
 
   public async getRewardsPerSecond(): Promise<tStringDecimalUnits> {

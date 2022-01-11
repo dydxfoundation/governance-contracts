@@ -220,7 +220,8 @@ export default class SafetyModule extends BaseService<SafetyModuleV1> {
   }
 
   public async getTotalStake(): Promise<tStringDecimalUnits> {
-    return this.erc20Service.totalSupply(this.stakingContractAddress);
+    const currentActiveBalance: BigNumber = await this.contract.getTotalActiveBalanceCurrentEpoch();
+    return formatUnits(currentActiveBalance, DYDX_TOKEN_DECIMALS);
   }
 
   public async getRewardsPerSecond(): Promise<tStringDecimalUnits> {
