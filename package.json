@@ -33,6 +33,7 @@
   "dependencies": {
     "@chainlink/contracts": "^0.2.1",
     "axios": "^0.24.0",
+    "cids": "^1.1.9",
     "dotenv": "^10.0.0",
     "ethereum-multicall": "^2.9.0",
     "graphql": "^16.2.0",
