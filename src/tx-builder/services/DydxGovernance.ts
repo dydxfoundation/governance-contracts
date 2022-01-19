@@ -76,7 +76,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
   readonly executors: tEthereumAddress[] = [];
 
   readonly erc20Service: ERC20Service;
-  
+
   readonly governanceTokenDelegationService: GovernanceDelegationTokenService;
 
   readonly subgraphClient: Client;
@@ -425,7 +425,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     );
 
     const txs: EthereumTransactionTypeExtended[] = flatten(
-      await Promise.all(nonzeroTokenBalances.map(async (governanceToken: tEthereumAddress) => 
+      await Promise.all(nonzeroTokenBalances.map(async (governanceToken: tEthereumAddress) =>
         this.governanceTokenDelegationService.delegate({
           user,
           delegatee,
@@ -495,7 +495,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     );
 
     const txs: EthereumTransactionTypeExtended[] = flatten(
-      await Promise.all(nonzeroTokenBalances.map(async (governanceToken: tEthereumAddress) => 
+      await Promise.all(nonzeroTokenBalances.map(async (governanceToken: tEthereumAddress) =>
         this.governanceTokenDelegationService.delegateByType({
           user,
           delegatee,
@@ -526,7 +526,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
 
     const [
       numProposals,
-      votingDelay, 
+      votingDelay,
     ]: [
       BigNumber,
       BigNumber,
