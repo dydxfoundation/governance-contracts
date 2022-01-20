@@ -10,7 +10,16 @@ import {
 import { NetworkName } from '../../src/types';
 import { describeContract, describeContractForNetwork, TestContext } from '../helpers/describe-contract';
 
-function init(_ctx: TestContext): void {
+let txBuilder: TxBuilder;
+
+function init(ctx: TestContext): void {
+  txBuilder = new TxBuilder(
+    {
+      network: Network.hardhat,
+      hardhatGovernanceAddresses: { DYDX_GOVERNANCE: ctx.governor.address } as tDistinctGovernanceAddresses,
+      injectedProvider: hre.ethers.provider,
+    },
+  );
 }
 
 describeContract('DydxGovernance', init, (ctx: TestContext) => {
@@ -20,16 +29,6 @@ describeContract('DydxGovernance', init, (ctx: TestContext) => {
     NetworkName.hardhat,
     true,
     () => {
-      console.log(ctx, ctx.governor);
-
-      const txBuilder: TxBuilder = new TxBuilder(
-        {
-          network: Network.hardhat,
-          hardhatGovernanceAddresses: { DYDX_GOVERNANCE: ctx.governor.address } as tDistinctGovernanceAddresses,
-          injectedProvider: hre.ethers.provider,
-        },
-      );
-
       it('getGovernanceVoters with large range and expected votes', async () => {
         const voters = await txBuilder.dydxGovernanceService.getGovernanceVoters(
           DYDX_GOVERNOR_DEPLOYMENT_BLOCK,
