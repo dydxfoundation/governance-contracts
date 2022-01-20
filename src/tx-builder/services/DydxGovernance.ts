@@ -631,4 +631,22 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
       topAgainstVotes,
     };
   }
+
+  public async getGovernanceVoters(
+    governorContractAddress: string,
+    maxBlock: number,
+    startBlock: number = 0,
+  ): Promise<Set<string>> {
+    const { provider }: Configuration = this.config;
+
+    const governor: DydxGovernor = await DydxGovernor__factory.connect(
+      governorContractAddress,
+      provider,
+    );
+
+    const filter = governor.filters.VoteEmitted(null, null, null, null);
+    const events = await governor.queryFilter(filter, startBlock, maxBlock);
+
+    return new Set(events.map((event) => event.args![1] as string));
+  }
 }
