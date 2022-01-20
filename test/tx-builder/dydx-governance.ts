@@ -10,6 +10,8 @@ import {
 import { NetworkName } from '../../src/types';
 import { describeContract, describeContractForNetwork, TestContext } from '../helpers/describe-contract';
 
+const BLOCK_AFTER_GOVRNANCE_VOTES: number = 13679600;
+
 let txBuilder: TxBuilder;
 
 function init(ctx: TestContext): void {
@@ -47,7 +49,7 @@ describeContract('DydxGovernance', init, (ctx: TestContext) => {
       it('getGovernanceVoters with range and no expected votes', async () => {
         const emptyVoters = await txBuilder.dydxGovernanceService.getGovernanceVoters(
           DYDX_GOVERNOR_DEPLOYMENT_BLOCK,
-          13679600,
+          BLOCK_AFTER_GOVRNANCE_VOTES,
         );
         expect(emptyVoters.size).to.be.eq(0);
       });
