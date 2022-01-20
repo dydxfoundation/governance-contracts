@@ -68,6 +68,8 @@ import BaseService from './BaseService';
 import ERC20Service from './ERC20';
 import GovernanceDelegationTokenService from './GovernanceDelegationTokenService';
 
+const DEPLOYMENT_BLOCK: number = 12816310;
+
 export default class DydxGovernanceService extends BaseService<DydxGovernor> {
   readonly dydxGovernanceAddress: tEthereumAddress;
 
@@ -633,20 +635,16 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
   }
 
   public async getGovernanceVoters(
-    governorContractAddress: string,
-    maxBlock: number,
-    startBlock: number = 0,
+    endBlock: number,
+    startBlock: number = DEPLOYMENT_BLOCK,
   ): Promise<Set<string>> {
-    const { provider }: Configuration = this.config;
-
-    const governor: DydxGovernor = await DydxGovernor__factory.connect(
-      governorContractAddress,
-      provider,
+    const governor: DydxGovernor = this.getContractInstance(
+      this.dydxGovernanceAddress,
     );
-
     const filter = governor.filters.VoteEmitted(null, null, null, null);
-    const events = await governor.queryFilter(filter, startBlock, maxBlock);
+    const events = await governor.queryFilter(filter, startBlock, endBlock);
 
+    // args[1] = ethereumAddress
     return new Set(events.map((event) => event.args![1] as string));
   }
 }
