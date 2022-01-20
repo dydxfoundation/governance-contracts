@@ -13,6 +13,7 @@ import { Executor } from '../../../types/Executor';
 import { GovernanceStrategy } from '../../../types/GovernanceStrategy';
 import {
   dydxGovernanceAddresses,
+  DYDX_GOVERNOR_DEPLOYMENT_BLOCK,
   DYDX_TOKEN_DECIMALS,
 } from '../config';
 import {
@@ -76,7 +77,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
   readonly executors: tEthereumAddress[] = [];
 
   readonly erc20Service: ERC20Service;
-  
+
   readonly governanceTokenDelegationService: GovernanceDelegationTokenService;
 
   readonly subgraphClient: Client;
@@ -425,7 +426,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     );
 
     const txs: EthereumTransactionTypeExtended[] = flatten(
-      await Promise.all(nonzeroTokenBalances.map(async (governanceToken: tEthereumAddress) => 
+      await Promise.all(nonzeroTokenBalances.map(async (governanceToken: tEthereumAddress) =>
         this.governanceTokenDelegationService.delegate({
           user,
           delegatee,
@@ -495,7 +496,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     );
 
     const txs: EthereumTransactionTypeExtended[] = flatten(
-      await Promise.all(nonzeroTokenBalances.map(async (governanceToken: tEthereumAddress) => 
+      await Promise.all(nonzeroTokenBalances.map(async (governanceToken: tEthereumAddress) =>
         this.governanceTokenDelegationService.delegateByType({
           user,
           delegatee,
@@ -526,7 +527,7 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
 
     const [
       numProposals,
-      votingDelay, 
+      votingDelay,
     ]: [
       BigNumber,
       BigNumber,
@@ -630,5 +631,20 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
       topForVotes,
       topAgainstVotes,
     };
+  }
+
+  public async getGovernanceVoters(
+    endBlock: number,
+    startBlock: number = DYDX_GOVERNOR_DEPLOYMENT_BLOCK,
+  ): Promise<Set<string>> {
+    const governor: DydxGovernor = this.getContractInstance(
+      this.dydxGovernanceAddress,
+    );
+    const filter = governor.filters.VoteEmitted(null, null, null, null);
+    const events = await governor.queryFilter(filter, startBlock, endBlock);
+
+    // event VoteEmitted(uint256 id, address indexed voter, bool support, uint256 votingPower);
+    // see event: https://github.com/dydxfoundation/governance-contracts/blob/master/contracts/interfaces/IDydxGovernor.sol#L122
+    return new Set(events.map((event) => event.args![1] as string));
   }
 }

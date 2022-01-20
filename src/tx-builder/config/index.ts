@@ -7,6 +7,7 @@ import {
   tStringDecimalUnits,
 } from '../types';
 
+export const DYDX_GOVERNOR_DEPLOYMENT_BLOCK: number = 13678600;
 export const ONE_DAY_SECONDS: BigNumber = BigNumber.from(60 * 60 * 24);
 export const DEFAULT_NULL_VALUE_ON_TX = BigNumber.from(0).toHexString();
 export const DEFAULT_APPROVE_AMOUNT = constants.MaxUint256.toString();
