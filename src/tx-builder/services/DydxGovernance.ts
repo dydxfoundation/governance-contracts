@@ -644,7 +644,8 @@ export default class DydxGovernanceService extends BaseService<DydxGovernor> {
     const filter = governor.filters.VoteEmitted(null, null, null, null);
     const events = await governor.queryFilter(filter, startBlock, endBlock);
 
-    // args[1] = ethereumAddress
+    //   event VoteEmitted(uint256 id, address indexed voter, bool support, uint256 votingPower);
+    // see event: https://github.com/dydxfoundation/governance-contracts/blob/master/contracts/interfaces/IDydxGovernor.sol#L122
     return new Set(events.map((event) => event.args![1] as string));
   }
 }
