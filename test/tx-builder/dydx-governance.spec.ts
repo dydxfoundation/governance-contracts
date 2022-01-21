@@ -29,9 +29,9 @@ function init(ctx: TestContext): void {
   );
 }
 
-describeContract('DydxGovernance', init, (ctx: TestContext) => {
+describeContract('DydxGovernance Related Functions', init, (ctx: TestContext) => {
   describeContractForNetwork(
-    'DydxGovernance',
+    'DydxGovernance Related Functions',
     ctx,
     NetworkName.hardhat,
     true,
