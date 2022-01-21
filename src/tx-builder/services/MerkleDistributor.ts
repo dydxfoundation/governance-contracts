@@ -1,12 +1,14 @@
 import BNJS from 'bignumber.js';
 import { BigNumber, EventFilter, Event, utils } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
+import _ from 'lodash';
 
 import { DydxToken__factory, MerkleDistributorV1__factory } from '../../../types';
 import { DydxToken } from '../../../types/DydxToken';
 import { MerkleDistributorV1 } from '../../../types/MerkleDistributorV1';
 import BalanceTree from '../../merkle-tree-helpers/balance-tree';
 import {
+  EPOCH_ZERO,
   merkleDistributorAddresses,
 } from '../config';
 import {
@@ -76,7 +78,7 @@ export default class MerkleDistributor extends BaseService<MerkleDistributorV1> 
     return this.getContractInstance(this.merkleDistributorAddress);
   }
 
-  private async getActiveRootData(): Promise<ActiveRootDataAndHistory> {
+  public async getActiveRootData(): Promise<ActiveRootDataAndHistory> {
     const rootUpdatedFilter: EventFilter = this.contract.filters.RootUpdated(null, null, null);
 
     const rootUpdatedEvents: Event[] = await this.contract.queryFilter(rootUpdatedFilter);
@@ -110,7 +112,7 @@ export default class MerkleDistributor extends BaseService<MerkleDistributorV1> 
 
   private getActiveMerkleTree(
     activeRootEpochBalances: UserRewardBalances,
-    activeRootEpoch: number, 
+    activeRootEpoch: number,
   ): ActiveMerkleTree {
     let currentMerkleTreeData: ActiveMerkleTree | null = this._activeRootDataAndHistory.activeMerkleTree;
 
@@ -150,6 +152,40 @@ export default class MerkleDistributor extends BaseService<MerkleDistributorV1> 
 
   private async hasPendingRoot(): Promise<boolean> {
     return this.contract.hasPendingRoot();
+  }
+
+  public async getUserBalancesPerEpoch(): Promise<UserRewardsBalancesPerEpoch> {
+    const activeRootData: ActiveRootDataAndHistory = await this.getActiveRootData();
+    return activeRootData.userBalancesPerEpoch;
+  }
+
+  public async getActiveUsersInEpoch(epoch: number): Promise<string[]> {
+    const userBalancesPerEpoch: UserRewardsBalancesPerEpoch = await this.getUserBalancesPerEpoch();
+
+    // if epoch has not occurred then return
+    // NOTE: first epoch is zero
+    if (Object.keys(userBalancesPerEpoch).length <= epoch) {
+      return [];
+    }
+
+    // in epoch zero any user with a balance had to have been active
+    if (epoch === EPOCH_ZERO) {
+      return Object.keys(userBalancesPerEpoch[EPOCH_ZERO]);
+    }
+
+    return _.chain(Object.keys(userBalancesPerEpoch[epoch]))
+      .filter((address: string) => {
+        const addressBalanceInPreviousEpoch = userBalancesPerEpoch[epoch - 1][address];
+
+        // check if user was not in previous epoch
+        if (addressBalanceInPreviousEpoch === undefined) {
+          return true;
+        }
+
+        // check if user balance has changed since the previous epoch
+        return !userBalancesPerEpoch[epoch][address].eq(addressBalanceInPreviousEpoch);
+      })
+      .value();
   }
 
   public async getRewardToken(): Promise<string> {
@@ -193,7 +229,7 @@ export default class MerkleDistributor extends BaseService<MerkleDistributorV1> 
     if (!(activeRootEpoch in userBalancesPerEpoch)) {
       throw Error(`Balances were not found for epoch ${activeRootEpoch}`);
     }
-    
+
     if (!(checksummedAddress in userBalancesPerEpoch[activeRootEpoch])) {
       // user has no trading rewards
       return {
@@ -237,7 +273,7 @@ export default class MerkleDistributor extends BaseService<MerkleDistributorV1> 
   public async getRootUpdatedMetadata(): Promise<RootUpdatedMetadata> {
     const rootUpdatedEventFilter: EventFilter = this.contract.filters.RootUpdated(null, null, null);
     const rootUpdatedEvents: Event[] = await this.contract.queryFilter(rootUpdatedEventFilter);
-    
+
     if (rootUpdatedEvents.length === 0) {
       // root hasn't been updated yet
       return {
