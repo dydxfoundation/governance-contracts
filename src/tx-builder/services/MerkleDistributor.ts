@@ -78,7 +78,7 @@ export default class MerkleDistributor extends BaseService<MerkleDistributorV1> 
     return this.getContractInstance(this.merkleDistributorAddress);
   }
 
-  public async getActiveRootData(): Promise<ActiveRootDataAndHistory> {
+  private async getActiveRootData(): Promise<ActiveRootDataAndHistory> {
     const rootUpdatedFilter: EventFilter = this.contract.filters.RootUpdated(null, null, null);
 
     const rootUpdatedEvents: Event[] = await this.contract.queryFilter(rootUpdatedFilter);
@@ -154,13 +154,9 @@ export default class MerkleDistributor extends BaseService<MerkleDistributorV1> 
     return this.contract.hasPendingRoot();
   }
 
-  public async getUserBalancesPerEpoch(): Promise<UserRewardsBalancesPerEpoch> {
-    const activeRootData: ActiveRootDataAndHistory = await this.getActiveRootData();
-    return activeRootData.userBalancesPerEpoch;
-  }
-
   public async getActiveUsersInEpoch(epoch: number): Promise<string[]> {
-    const userBalancesPerEpoch: UserRewardsBalancesPerEpoch = await this.getUserBalancesPerEpoch();
+    const activeRootData: ActiveRootDataAndHistory = await this.getActiveRootData();
+    const userBalancesPerEpoch: UserRewardsBalancesPerEpoch = activeRootData.userBalancesPerEpoch;
 
     // if epoch has not occurred then return
     // NOTE: first epoch is zero
@@ -173,6 +169,7 @@ export default class MerkleDistributor extends BaseService<MerkleDistributorV1> 
       return Object.keys(userBalancesPerEpoch[EPOCH_ZERO]);
     }
 
+    // we assume all addresses are stored as checksummed in IPFS
     return _.chain(Object.keys(userBalancesPerEpoch[epoch]))
       .filter((address: string) => {
         const addressBalanceInPreviousEpoch = userBalancesPerEpoch[epoch - 1][address];

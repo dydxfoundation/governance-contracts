@@ -21,17 +21,14 @@ function init(ctx: TestContext): void {
       hardhatGovernanceAddresses: {
         DYDX_GOVERNANCE: ctx.governor.address,
       } as tDistinctGovernanceAddresses,
-      hardhatMerkleDistributorAddresses: {
-        MERKLE_DISTRIBUTOR_ADDRESS: ctx.merkleDistributor.address,
-      },
       injectedProvider: hre.ethers.provider,
     },
   );
 }
 
-describeContract('DydxGovernance Related Functions', init, (ctx: TestContext) => {
+describeContract('DydxGovernance', init, (ctx: TestContext) => {
   describeContractForNetwork(
-    'DydxGovernance Related Functions',
+    'DydxGovernance',
     ctx,
     NetworkName.hardhat,
     true,
@@ -57,27 +54,6 @@ describeContract('DydxGovernance Related Functions', init, (ctx: TestContext) =>
           BLOCK_AFTER_GOVRNANCE_VOTES,
         );
         expect(emptyVoters.size).to.be.eq(0);
-      });
-
-      it('getUserBalancesPerEpoch', async () => {
-        const userBalancesPerEpoch = await txBuilder.merkleDistributorService.getUserBalancesPerEpoch();
-        expect(Object.keys(userBalancesPerEpoch).length).to.be.eq(3);
-        expect(Object.keys(userBalancesPerEpoch['2']).length).to.be.eq(40867);
-      });
-
-      it('getActiveUsersInEpoch 0', async () => {
-        const activeUsers = await txBuilder.merkleDistributorService.getActiveUsersInEpoch(0);
-        expect(activeUsers.length).to.be.eq(32457);
-      });
-
-      it('getActiveUsersInEpoch 1', async () => {
-        const activeUsers = await txBuilder.merkleDistributorService.getActiveUsersInEpoch(1);
-        expect(activeUsers.length).to.be.eq(9979);
-      });
-
-      it('getActiveUsersInEpoch 11', async () => {
-        const activeUsers = await txBuilder.merkleDistributorService.getActiveUsersInEpoch(11);
-        expect(activeUsers.length).to.be.eq(0);
       });
     },
   );
