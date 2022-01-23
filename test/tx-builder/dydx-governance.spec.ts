@@ -18,7 +18,9 @@ function init(ctx: TestContext): void {
   txBuilder = new TxBuilder(
     {
       network: Network.hardhat,
-      hardhatGovernanceAddresses: { DYDX_GOVERNANCE: ctx.governor.address } as tDistinctGovernanceAddresses,
+      hardhatGovernanceAddresses: {
+        DYDX_GOVERNANCE: ctx.governor.address,
+      } as tDistinctGovernanceAddresses,
       injectedProvider: hre.ethers.provider,
     },
   );
