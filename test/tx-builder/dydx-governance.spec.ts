@@ -35,7 +35,7 @@ describeContract('DydxGovernance', init, (ctx: TestContext) => {
     () => {
       it('getGovernanceVoters with large range and expected votes', async () => {
         const voters = await txBuilder.dydxGovernanceService.getGovernanceVoters(
-          DYDX_GOVERNOR_DEPLOYMENT_BLOCK,
+          BLOCK_AFTER_GOVRNANCE_VOTES,
         );
         expect(voters.size).to.be.eq(790);
       });
@@ -50,7 +50,7 @@ describeContract('DydxGovernance', init, (ctx: TestContext) => {
 
       it('getGovernanceVoters with range and no expected votes', async () => {
         const emptyVoters = await txBuilder.dydxGovernanceService.getGovernanceVoters(
-          DYDX_GOVERNOR_DEPLOYMENT_BLOCK,
+          BLOCK_AFTER_GOVRNANCE_VOTES + 1000,
           BLOCK_AFTER_GOVRNANCE_VOTES,
         );
         expect(emptyVoters.size).to.be.eq(0);
