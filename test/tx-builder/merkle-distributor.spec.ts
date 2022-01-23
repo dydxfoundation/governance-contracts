@@ -39,7 +39,15 @@ describeContract('MerkleDistributor', init, (ctx: TestContext) => {
         expect(activeUsers.length).to.be.eq(9979);
       });
 
-      it('getActiveUsersInEpoch 5000 - this is way in the future', async () => {
+      it('getActiveUsersInEpoch 5', async () => {
+        await hre.network.provider.send('evm_increaseTime', [604800]);
+        await ctx.merkleDistributor.updateRoot();
+
+        const activeUsers = await txBuilder.merkleDistributorService.getActiveUsersInEpoch(5);
+        expect(activeUsers.length).to.be.eq(4877);
+      });
+
+      it('getActiveUsersInEpoch for future epoch', async () => {
         const activeUsers = await txBuilder.merkleDistributorService.getActiveUsersInEpoch(5000);
         expect(activeUsers.length).to.be.eq(0);
       });
