@@ -10,7 +10,7 @@ import {
 import { NetworkName } from '../../src/types';
 import { describeContract, describeContractForNetwork, TestContext } from '../helpers/describe-contract';
 
-const BLOCK_AFTER_GOVRNANCE_VOTES: number = 13679600;
+const BLOCK_AFTER_GOVERNANCE_VOTES: number = 13679600;
 
 let txBuilder: TxBuilder;
 
@@ -35,7 +35,7 @@ describeContract('DydxGovernance', init, (ctx: TestContext) => {
     () => {
       it('getGovernanceVoters with large range and expected votes', async () => {
         const voters = await txBuilder.dydxGovernanceService.getGovernanceVoters(
-          DYDX_GOVERNOR_DEPLOYMENT_BLOCK,
+          BLOCK_AFTER_GOVERNANCE_VOTES,
         );
         expect(voters.size).to.be.eq(790);
       });
@@ -50,8 +50,8 @@ describeContract('DydxGovernance', init, (ctx: TestContext) => {
 
       it('getGovernanceVoters with range and no expected votes', async () => {
         const emptyVoters = await txBuilder.dydxGovernanceService.getGovernanceVoters(
-          DYDX_GOVERNOR_DEPLOYMENT_BLOCK,
-          BLOCK_AFTER_GOVRNANCE_VOTES,
+          BLOCK_AFTER_GOVERNANCE_VOTES + 1000,
+          BLOCK_AFTER_GOVERNANCE_VOTES,
         );
         expect(emptyVoters.size).to.be.eq(0);
       });
