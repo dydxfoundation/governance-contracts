@@ -69,6 +69,6 @@ export async function deployStarkProxyV3({
   console.log('\n=== NEW STARK PROXY IMPLEMENTATION DEPLOYMENT COMPLETE ===\n');
 
   return {
-    starkProxyV3Impl: starkProxyV1 as unknown as StarkProxyV3,
+    starkProxyV1WithV3Impl: starkProxyV1,
   };
 }

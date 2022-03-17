@@ -306,7 +306,7 @@ abstract contract SP3Owner is
       token == STAKED_DYDX_ADDRESS,
       'tokenAddress is not DYDX or stakedDYDX'
     );
-    //IGovernancePowerDelegationERC20(token).delegate(delegatee);
+    IGovernancePowerDelegationERC20(token).delegate(delegatee);
   }
 
   /**
@@ -330,6 +330,6 @@ abstract contract SP3Owner is
       token == STAKED_DYDX_ADDRESS,
       'tokenAddress is not DYDX or stakedDYDX'
     );
-    //IGovernancePowerDelegationERC20(token).delegateByType(delegatee, delegationType);
+    IGovernancePowerDelegationERC20(token).delegateByType(delegatee, delegationType);
   }
 }

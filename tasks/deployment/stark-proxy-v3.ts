@@ -16,6 +16,6 @@ hardhatTask('deploy:stark-proxy-v3', 'Deploy the StarkProxyV2 contracts.')
     starkPerpetualAddress: string,
     dydxCollateralTokenAddress: string,
   }) => {
-    const { starkProxyV3Impl } = await deployStarkProxyV3(args);
-    log(`New StarkProxyV3 implementation deployed to ${starkProxyV3Impl.address}.`);
+    const { starkProxyV1WithV3Impl } = await deployStarkProxyV3(args);
+    log(`New StarkProxyV3 implementation deployed to ${starkProxyV1WithV3Impl.address}.`);
   });
