@@ -5,6 +5,7 @@ import {
 } from 'ethers';
 
 import { deployStarkProxyV2 } from './migrations/deploy-stark-proxy-v2';
+import { deployStarkProxyV3 } from './migrations/deploy-stark-proxy-v3';
 import { deployMocks } from './migrations/helpers/deploy-mocks';
 import { deployPhase1 } from './migrations/phase-1';
 import { deployPhase2 } from './migrations/phase-2';
@@ -20,6 +21,7 @@ export type AllDeployedContracts = (
   UnwrapPromise<ReturnType<typeof deployPhase2>> &
   UnwrapPromise<ReturnType<typeof deploySafetyModuleRecovery>> &
   UnwrapPromise<ReturnType<typeof deployStarkProxyV2>> &
+  UnwrapPromise<ReturnType<typeof deployStarkProxyV3>> &
   UnwrapPromise<ReturnType<typeof deployMocks>>
 );
 

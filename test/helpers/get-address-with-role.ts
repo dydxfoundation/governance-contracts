@@ -2,10 +2,11 @@ import _ from 'lodash';
 
 import { getRole } from '../../src/lib/util';
 import { Role } from '../../src/types';
+import { StarkProxyV3 } from '../../types';
 import { StarkProxyV1 } from '../../types/StarkProxyV1';
 
 export async function findAddressWithRole(
-  starkProxy: StarkProxyV1,
+  starkProxy: StarkProxyV1 | StarkProxyV3,
   role: Role,
 ): Promise<string> {
   const roleHash = getRole(role);

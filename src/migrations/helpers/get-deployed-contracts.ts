@@ -11,6 +11,7 @@ import {
   Treasury__factory,
   TreasuryVester__factory,
   IStarkPerpetual__factory,
+  StarkProxyV3__factory,
 } from '../../../types';
 import { IERC20__factory } from '../../../types/factories/IERC20__factory';
 import { LiquidityStakingV1__factory } from '../../../types/factories/LiquidityStakingV1__factory';
@@ -66,5 +67,6 @@ export async function getMainnetDeployedContracts(): Promise<MainnetDeployedCont
     dydxCollateralToken: IERC20__factory.connect(deployedAddresses.dydxCollateralToken, deployer),
     starkPerpetual: IStarkPerpetual__factory.connect(deployedAddresses.starkPerpetual, deployer),
     starkProxyNewImpl: new StarkProxyV2__factory(deployer).attach(deployedAddresses.starkProxyNewImpl),
+    starkProxyV3Impl: new StarkProxyV3__factory(deployer).attach(deployedAddresses.starkProxyNewImpl),
   };
 }

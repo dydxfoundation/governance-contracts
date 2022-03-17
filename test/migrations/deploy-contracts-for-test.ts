@@ -7,6 +7,7 @@ import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
 import { SM_ROLE_HASHES } from '../../src/lib/constants';
 import { deployStarkProxyV2 } from '../../src/migrations/deploy-stark-proxy-v2';
+import { deployStarkProxyV3 } from '../../src/migrations/deploy-stark-proxy-v3';
 import { deployMocks } from '../../src/migrations/helpers/deploy-mocks';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { deployPhase1 } from '../../src/migrations/phase-1';
@@ -94,11 +95,20 @@ export async function deployContractsForTest(): Promise<AllDeployedContracts> {
     dydxCollateralTokenAddress: mockContracts.dydxCollateralToken.address,
   });
 
+  // Deploy contracts for Stark Proxy upgrade.
+  const starkProxyV3Contracts = await deployStarkProxyV3({
+    liquidityStakingAddress: phase2Contracts.liquidityStaking.address,
+    merkleDistributorAddress: phase2Contracts.merkleDistributor.address,
+    starkPerpetualAddress: mockContracts.starkPerpetual.address,
+    dydxCollateralTokenAddress: mockContracts.dydxCollateralToken.address,
+  });
+
   return {
     ...phase1Contracts,
     ...phase2Contracts,
     ...smRecoveryContracts,
     ...starkProxyRecoveryContracts,
+    ...starkProxyV3Contracts,
     ...mockContracts,
   };
 }
