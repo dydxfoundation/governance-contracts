@@ -11,7 +11,7 @@ import { SP2Exchange } from '../../v2/impl/SP2Exchange.sol';
 import { IGovernancePowerDelegationERC20 } from '../../../interfaces/IGovernancePowerDelegationERC20.sol';
 
 /**
- * @title SP2Owner
+ * @title SP3Owner
  * @author dYdX
  *
  * @dev Actions which may be called only by OWNER_ROLE. These include actions with a larger amount
@@ -77,9 +77,9 @@ abstract contract SP3Owner is
     address ethKey = STARK_PERPETUAL.getEthKey(starkKey);
 
     // Require the STARK key to be registered to this contract before we allow it to be used.
-    require(ethKey == address(this), 'SP2Owner: STARK key not registered to this contract');
+    require(ethKey == address(this), 'SP3Owner: STARK key not registered to this contract');
 
-    require(!_ALLOWED_STARK_KEYS_[starkKey], 'SP2Owner: STARK key already allowed');
+    require(!_ALLOWED_STARK_KEYS_[starkKey], 'SP3Owner: STARK key already allowed');
     _ALLOWED_STARK_KEYS_[starkKey] = true;
     emit UpdatedStarkKey(starkKey, true);
   }
@@ -96,7 +96,7 @@ abstract contract SP3Owner is
     nonReentrant
     onlyRole(OWNER_ROLE)
   {
-    require(_ALLOWED_STARK_KEYS_[starkKey], 'SP2Owner: STARK key already disallowed');
+    require(_ALLOWED_STARK_KEYS_[starkKey], 'SP3Owner: STARK key already disallowed');
     _ALLOWED_STARK_KEYS_[starkKey] = false;
     emit UpdatedStarkKey(starkKey, false);
   }
@@ -113,7 +113,7 @@ abstract contract SP3Owner is
     nonReentrant
     onlyRole(OWNER_ROLE)
   {
-    require(!_ALLOWED_RECIPIENTS_[recipient], 'SP2Owner: Recipient already allowed');
+    require(!_ALLOWED_RECIPIENTS_[recipient], 'SP3Owner: Recipient already allowed');
     _ALLOWED_RECIPIENTS_[recipient] = true;
     emit UpdatedExternalRecipient(recipient, true);
   }
@@ -130,7 +130,7 @@ abstract contract SP3Owner is
     nonReentrant
     onlyRole(OWNER_ROLE)
   {
-    require(_ALLOWED_RECIPIENTS_[recipient], 'SP2Owner: Recipient already disallowed');
+    require(_ALLOWED_RECIPIENTS_[recipient], 'SP3Owner: Recipient already disallowed');
     _ALLOWED_RECIPIENTS_[recipient] = false;
     emit UpdatedExternalRecipient(recipient, false);
   }
@@ -231,16 +231,16 @@ abstract contract SP3Owner is
     uint256 timestamp = _QUEUED_FORCED_TRADE_TIMESTAMPS_[argsHash];
     require(
       timestamp != 0,
-      'SP2Owner: Forced trade not queued or was vetoed'
+      'SP3Owner: Forced trade not queued or was vetoed'
     );
     uint256 elapsed = block.timestamp.sub(timestamp);
     require(
       elapsed >= FORCED_TRADE_WAITING_PERIOD,
-      'SP2Owner: Waiting period has not elapsed for forced trade'
+      'SP3Owner: Waiting period has not elapsed for forced trade'
     );
     require(
       elapsed <= FORCED_TRADE_WAITING_PERIOD.add(FORCED_TRADE_GRACE_PERIOD),
-      'SP2Owner: Grace period has elapsed for forced trade'
+      'SP3Owner: Grace period has elapsed for forced trade'
     );
     _QUEUED_FORCED_TRADE_TIMESTAMPS_[argsHash] = 0;
     _forcedTradeRequest(args, signature, false);
