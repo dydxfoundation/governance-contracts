@@ -3,7 +3,7 @@ import { types } from 'hardhat/config';
 import { DIP_12_IPFS_HASH } from '../../src/lib/constants';
 import mainnetAddresses from '../../src/deployed-addresses/mainnet.json';
 import { hardhatTask } from '../../src/hre';
-import { createNewMarketsProposal } from '../../src/migrations/new-markets';
+import { createNewMarketsProposal } from '../../src/migrations/new-markets-proposal';
 
 hardhatTask('deploy:new-markets-proposal', 'Create proposal to add 15 new markets to dYdX.')
   .addParam('proposalIpfsHashHex', 'IPFS hash for the uploaded DIP describing the proposal', DIP_12_IPFS_HASH, types.string)

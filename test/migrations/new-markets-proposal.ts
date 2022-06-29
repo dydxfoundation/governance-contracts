@@ -1,17 +1,17 @@
 import BNJS from 'bignumber.js';
-import { BigNumber, BigNumberish } from 'ethers';
+import { BigNumberish } from 'ethers';
 
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
 import { log } from '../../src/lib/logging';
 import { waitForTx } from '../../src/lib/util';
-import { createNewMarketsProposal } from '../../src/migrations/new-markets';
+import { createNewMarketsProposal } from '../../src/migrations/new-markets-proposal';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import {
   DydxGovernor__factory,
   DydxToken__factory,
-  Executor__factory,
+  StarkExHelperGovernor__factory,
 } from '../../types';
 import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
 
@@ -116,7 +116,7 @@ export async function listNewMarketsNoProposal({
 }): Promise<void> {
   const deployConfig = getDeployConfig();
   const mockStarkwareExecutor = await impersonateAndFundAccount(priorityExecutorStarkware);
-  const starkexHelper = new Executor__factory(mockStarkwareExecutor).attach(
+  const starkexHelper = new StarkExHelperGovernor__factory(mockStarkwareExecutor).attach(
     starkexHelperGovernor,
   );
 
