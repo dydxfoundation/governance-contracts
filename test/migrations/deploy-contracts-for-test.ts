@@ -17,6 +17,7 @@ import { AllDeployedContracts } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
 import { fundGrantsProgramViaProposal, fundGrantsProgramNoProposal } from './grants-program-proposal';
+import { listNewMarketsNoProposal, listNewMarketsViaProposal } from './new-markets-proposal';
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
@@ -182,6 +183,25 @@ export async function executeGrantsProgramProposalForTest(
       shortTimelockAddress: deployedContracts.shortTimelock.address,
       communityTreasuryAddress: deployedContracts.communityTreasury.address,
       dgpMultisigAddress: deployConfig.DGP_MULTISIG_ADDRESS,
+    });
+  }
+}
+
+export async function executeNewAssetListingForTest(
+  deployedContracts: AllDeployedContracts,
+) {
+  const deployConfig = getDeployConfig();
+  if (config.TEST_LIST_NEW_MARKETS_WITH_PROPOSAL) {
+    await listNewMarketsViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      priorityExecutorStarkware: '0xa306989BA6BcacdECCf3C0614FfF2B8C668e3CaE',
+      starkexHelperGovernor: '0x0db9b3F7Dd83e29C9bece8E5e1089bA4369E694a',
+    });
+  } else {
+    await listNewMarketsNoProposal({
+      priorityExecutorStarkware: '0xa306989BA6BcacdECCf3C0614FfF2B8C668e3CaE',
+      starkexHelperGovernor: '0x0db9b3F7Dd83e29C9bece8E5e1089bA4369E694a',
     });
   }
 }

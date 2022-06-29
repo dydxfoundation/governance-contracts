@@ -7,6 +7,7 @@ import {
   executeSafetyModuleRecoveryProposalsForTest,
   executeStarkProxyProposalForTest,
   executeGrantsProgramProposalForTest,
+  executeNewAssetListingForTest,
 } from '../migrations/deploy-contracts-for-test';
 
 let globalDeployedContracts: AllDeployedContracts;
@@ -54,6 +55,7 @@ async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
   }
   // Execute the proposals which have not yet been executed on mainnet.
   await executeGrantsProgramProposalForTest(deployedContracts);
+  await executeNewAssetListingForTest(deployedContracts);
   await configureForTest(deployedContracts);
   return deployedContracts;
 }
