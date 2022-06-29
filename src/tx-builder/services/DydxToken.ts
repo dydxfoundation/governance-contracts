@@ -7,7 +7,7 @@ import {
 } from 'ethereum-multicall';
 import { BigNumber } from 'ethers';
 
-import multicallAbi from '../../../abi/contracts/dependencies/makerdao/multicall2.sol';
+import multicallAbi from '../../../abi/contracts/dependencies/makerdao/multicall2.sol/Multicall2.json';
 import dydxTokenAbi from '../../../abi/contracts/governance/token/DydxToken.sol/DydxToken.json';
 import liquidityModuleAbi from '../../../abi/contracts/liquidity/v1/LiquidityStakingV1.sol/LiquidityStakingV1.json';
 import safetyModuleAbi from '../../../abi/contracts/safety/v1/SafetyModuleV1.sol/SafetyModuleV1.json';
