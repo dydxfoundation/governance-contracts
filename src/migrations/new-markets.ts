@@ -37,7 +37,7 @@ export async function createNewMarketsProposal({
     ['0'],
     ['executeAssetConfigurationChanges(uint256[],bytes32[])'],
     [hre.ethers.utils.defaultAbiCoder.encode(
-      ['utin256[]', 'bytes32[]'],
+      ['uint256[]', 'bytes32[]'],
       [deployConfig.NEW_ASSET_IDS, deployConfig.NEW_ASSET_HASHES],
     )],
     [false],
