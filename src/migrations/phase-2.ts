@@ -77,6 +77,7 @@ export async function deployPhase2({
   longTimelockAddress: string,
   shortTimelockAddress: string,
   merklePauserTimelockAddress: string,
+  starkwarePriorityAddress: string,
 
   // Phase 2 deployed contracts.
   rewardsTreasuryAddress?: string,
@@ -95,6 +96,7 @@ export async function deployPhase2({
   merkleDistributorProxyAdminAddress?: string,
   starkProxyAddresses?: string[],
   starkProxyProxyAdminAddresses?: string[],
+  starkexHelperGovernorAddress?: string,
 }) {
   log('Beginning phase 2 deployment\n');
   const deployConfig = getDeployConfig();
@@ -487,6 +489,7 @@ export async function deployPhase2({
       // Assign roles for the Governor.
       await governor.grantRole(getRole(Role.OWNER_ROLE), longTimelock.address),
       await governor.grantRole(getRole(Role.ADD_EXECUTOR_ROLE), shortTimelock.address),
+
     ];
 
     await Promise.all(txs.map((tx) => waitForTx(tx)));

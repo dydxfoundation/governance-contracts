@@ -127,7 +127,7 @@ export async function deployPhase1({
   }
 
   if (startStep <= 6) {
-    log('Step 5. Deploy starkware priority timelock');
+    log('Step 6. Deploy starkware priority timelock');
     starkwarePriority = await deployExecutor(
       deployer,
       governorAddress,
@@ -142,7 +142,7 @@ export async function deployPhase1({
   }
 
   if (startStep <= 7) {
-    log('Step 6. Authorize timelocks on governance contract');
+    log('Step 7. Authorize timelocks on governance contract');
     await waitForTx(
       await governor.authorizeExecutors(
         [longTimelockAddress, shortTimelockAddress, merklePauserTimelockAddress, starkwarePriorityAddress],
@@ -151,7 +151,7 @@ export async function deployPhase1({
   }
 
   if (startStep <= 8) {
-    log('Step 7. Add deployer to token transfer allowlist');
+    log('Step 8. Add deployer to token transfer allowlist');
     await waitForTx(
       await dydxToken.addToTokenTransferAllowlist(
         [deployerAddress],
@@ -160,7 +160,7 @@ export async function deployPhase1({
   }
 
   if (startStep <= 9) {
-    log('Step 8. Add test addresses to token transfer allowlist');
+    log('Step 9. Add test addresses to token transfer allowlist');
     await waitForTx(
       await dydxToken.addToTokenTransferAllowlist(
         deployConfig.TOKEN_TEST_ADDRESSES,
@@ -169,7 +169,7 @@ export async function deployPhase1({
   }
 
   if (startStep <= 10) {
-    log('Step 9. Send test tokens.');
+    log('Step 10. Send test tokens.');
 
     const testAllocations = [
       deployConfig.TOKEN_ALLOCATIONS.TEST_TOKENS_1,

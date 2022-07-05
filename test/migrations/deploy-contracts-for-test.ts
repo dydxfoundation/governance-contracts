@@ -21,6 +21,7 @@ import { listNewMarketsNoProposal, listNewMarketsViaProposal } from './new-marke
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
+import mainnetAddresses from '../../src/deployed-addresses/mainnet.json';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -195,13 +196,13 @@ export async function executeNewAssetListingForTest(
     await listNewMarketsViaProposal({
       dydxTokenAddress: deployedContracts.dydxToken.address,
       governorAddress: deployedContracts.governor.address,
-      priorityExecutorStarkware: '0xa306989BA6BcacdECCf3C0614FfF2B8C668e3CaE',
-      starkexHelperGovernor: '0x0db9b3F7Dd83e29C9bece8E5e1089bA4369E694a',
+      priorityExecutorStarkware: mainnetAddresses.starkwarePriorityTimelock,
+      starkexHelperGovernor: mainnetAddresses.starkexHelperGovernor,
     });
   } else {
     await listNewMarketsNoProposal({
-      priorityExecutorStarkware: '0xa306989BA6BcacdECCf3C0614FfF2B8C668e3CaE',
-      starkexHelperGovernor: '0x0db9b3F7Dd83e29C9bece8E5e1089bA4369E694a',
+      priorityExecutorStarkware: mainnetAddresses.starkwarePriorityTimelock,
+      starkexHelperGovernor: mainnetAddresses.starkexHelperGovernor,
     });
   }
 }
