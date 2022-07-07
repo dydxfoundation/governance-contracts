@@ -46,6 +46,7 @@ export async function deployContractsForTest(): Promise<AllDeployedContracts> {
     shortTimelockAddress: phase1Contracts.shortTimelock.address,
     merklePauserTimelockAddress: phase1Contracts.merklePauserTimelock.address,
     longTimelockAddress: phase1Contracts.longTimelock.address,
+    starkwarePriorityAddress: phase1Contracts.starkwarePriority.address,
   });
 
   // Phase 3: Finalize the deployment w/ actions that cannot be reversed without governance action.
