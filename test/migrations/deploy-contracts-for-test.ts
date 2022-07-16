@@ -17,9 +17,11 @@ import { AllDeployedContracts } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
 import { fundGrantsProgramViaProposal, fundGrantsProgramNoProposal } from './grants-program-proposal';
+import { listNewMarketsNoProposal, listNewMarketsViaProposal } from './new-markets-proposal';
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
+import mainnetAddresses from '../../src/deployed-addresses/mainnet.json';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -44,6 +46,7 @@ export async function deployContractsForTest(): Promise<AllDeployedContracts> {
     shortTimelockAddress: phase1Contracts.shortTimelock.address,
     merklePauserTimelockAddress: phase1Contracts.merklePauserTimelock.address,
     longTimelockAddress: phase1Contracts.longTimelock.address,
+    starkwarePriorityAddress: phase1Contracts.starkwarePriority.address,
   });
 
   // Phase 3: Finalize the deployment w/ actions that cannot be reversed without governance action.
@@ -80,7 +83,7 @@ export async function deployContractsForTest(): Promise<AllDeployedContracts> {
   });
 
   // Deploy contracts for Safety Module recovery.
-  const smRecoveryContracts = await deploySafetyModuleRecovery({
+  const smRecoveryContracts = await deploySafetyModuleRecovery({  
     dydxTokenAddress: phase1Contracts.dydxToken.address,
     shortTimelockAddress: phase1Contracts.shortTimelock.address,
     rewardsTreasuryAddress: phase2Contracts.rewardsTreasury.address,
@@ -182,6 +185,25 @@ export async function executeGrantsProgramProposalForTest(
       shortTimelockAddress: deployedContracts.shortTimelock.address,
       communityTreasuryAddress: deployedContracts.communityTreasury.address,
       dgpMultisigAddress: deployConfig.DGP_MULTISIG_ADDRESS,
+    });
+  }
+}
+
+export async function executeNewAssetListingForTest(
+  deployedContracts: AllDeployedContracts,
+) {
+  const deployConfig = getDeployConfig();
+  if (config.TEST_LIST_NEW_MARKETS_WITH_PROPOSAL) {
+    await listNewMarketsViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      priorityExecutorStarkware: mainnetAddresses.starkwarePriorityTimelock,
+      starkexHelperGovernor: mainnetAddresses.starkexHelperGovernor,
+    });
+  } else {
+    await listNewMarketsNoProposal({
+      priorityExecutorStarkware: mainnetAddresses.starkwarePriorityTimelock,
+      starkexHelperGovernor: mainnetAddresses.starkexHelperGovernor,
     });
   }
 }
