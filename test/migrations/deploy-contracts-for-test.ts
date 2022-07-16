@@ -83,7 +83,7 @@ export async function deployContractsForTest(): Promise<AllDeployedContracts> {
   });
 
   // Deploy contracts for Safety Module recovery.
-  const smRecoveryContracts = await deploySafetyModuleRecovery({
+  const smRecoveryContracts = await deploySafetyModuleRecovery({  
     dydxTokenAddress: phase1Contracts.dydxToken.address,
     shortTimelockAddress: phase1Contracts.shortTimelock.address,
     rewardsTreasuryAddress: phase2Contracts.rewardsTreasury.address,
