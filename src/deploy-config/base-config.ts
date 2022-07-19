@@ -247,7 +247,7 @@ const config = {
   // DGP Funding Round v1.5
   // Amount to be transferred is $5,500,000 of DYDX.
   //
-  DGP_FUNDING_AMOUNT_v1_5: '2619000000000000000000000',
+  DGP_FUNDING_AMOUNT_v1_5: '2582000000000000000000000',
 };
 
 export type BaseConfig = typeof config;
