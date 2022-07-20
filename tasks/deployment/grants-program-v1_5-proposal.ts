@@ -1,8 +1,8 @@
 import { types } from 'hardhat/config';
 
-import { DIP_12_IPFS_HASH } from '../../src/lib/constants';
 import mainnetAddresses from '../../src/deployed-addresses/mainnet.json';
 import { hardhatTask } from '../../src/hre';
+import { DIP_12_IPFS_HASH } from '../../src/lib/constants';
 import { createGrantsProgramV1_5Proposal } from '../../src/migrations/grants-program-v1_5-proposal';
 
 hardhatTask('deploy:grants-program-v1_5-proposal', 'Create proposal to fund DGP v1.5 with multisig funding.')

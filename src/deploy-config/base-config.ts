@@ -245,7 +245,7 @@ const config = {
   //
   DGP_FUNDING_AMOUNT: '752000000000000000000000',
   // DGP Funding Round v1.5
-  // Amount to be transferred is $5,500,000 of DYDX.
+  // Amount to be transferred is $5,500,000 of DYDX at 24 hour TWAP price of $2.13.
   //
   DGP_FUNDING_AMOUNT_v1_5: '2582000000000000000000000',
 };

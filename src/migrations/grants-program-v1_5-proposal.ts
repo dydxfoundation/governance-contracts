@@ -42,7 +42,7 @@ export async function createGrantsProgramV1_5Proposal({
     ['transfer(address,address,uint256)'],
     [hre.ethers.utils.defaultAbiCoder.encode(
       ['address', 'address', 'uint256'],
-      [dydxTokenAddress, dgpMultisigAddress, deployConfig.DGP_FUNDING_AMOUNT_v1_5],
+      [dydxTokenAddress, deployConfig.DGP_MULTISIG_ADDRESS, deployConfig.DGP_FUNDING_AMOUNT_v1_5],
     )],
     [false],
     proposalIpfsHashHex,
