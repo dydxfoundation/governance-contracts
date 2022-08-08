@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { expect } from 'chai';
 
 import { describeContract, TestContext } from '../helpers/describe-contract';
