@@ -33,3 +33,8 @@ export const DIP_12_IPFS_HASH = '0x842193abdf79d8611e365fd072cb5cd3cd679045c26ff
 // DIP_14_IPFS_HASH taken from the link below:
 // https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-14-Ipfs-hashes.json
 export const DIP_14_IPFS_HASH = '0x32db80af31713b3a4eda8ce6a30cf125dd8361d6f3df437c6667c98432757795';
+
+
+// DIP_UPDATE_REWARDS_IPFS_HASH
+export const DIP_UPDATE_REWARDS_IPFS_HASH =
+  '0x0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f';

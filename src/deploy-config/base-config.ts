@@ -248,6 +248,13 @@ const config = {
   // Amount to be transferred is $5,500,000 of DYDX at 24 hour TWAP price of $2.13.
   //
   DGP_FUNDING_AMOUNT_v1_5: '2582000000000000000000000',
+
+  // Update Merkle Distributor Rewards Parameters.
+  // This is to reduce trading rewards by 25%. LP rewards are unaffected.
+  // Alpha parameter is set to 0 to indicate that it is not used anymore.
+  UPDATE_MERKLE_DISTRIBUTOR_LP_REWARDS_AMOUNT: '1150685000000000000000000',
+  UPDATE_MERKLE_DISTRIBUTOR_TRADER_REWARDS_AMOUNT: '2876712000000000000000000',
+  UPDATE_MERKLE_DISTRIBUTOR_ALPHA_PARAMETER: '0',
 };
 
 export type BaseConfig = typeof config;

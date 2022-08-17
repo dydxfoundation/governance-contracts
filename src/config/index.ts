@@ -25,6 +25,8 @@ const configSchema = {
   TEST_FUND_GRANTS_PROGRAM_v1_5_WITH_PROPOSAL: parseBoolean({ default: true }),
   WIND_DOWN_BORROWING_POOL_PROPOSAL_ID: parseInteger({ default: null }),
   WIND_DOWN_BORROWING_POOL_WITH_PROPOSAL: parseBoolean({ default: true }),
+  UPDATE_MERKLE_DISTRIBUTOR_REWARDS_PARAMETERS_PROPOSAL_ID: parseInteger({ default: null }),
+  TEST_UPDATE_MERKLE_DISTRIBUTOR_REWARDS_PARAMETERS_WITH_PROPOSAL: parseBoolean({ default: true }),
 };
 
 const config = parseSchema(configSchema);
