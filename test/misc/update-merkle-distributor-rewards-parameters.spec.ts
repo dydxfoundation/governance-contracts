@@ -9,7 +9,7 @@ import { describeContract, TestContext } from '../helpers/describe-contract';
 
 function init() { }
 
-describeContract('', init, (ctx: TestContext) => {
+describeContract('MerkleDistributor', init, (ctx: TestContext) => {
 
   it('Merkle distributor reward parameters are updated', async () => {
     const [

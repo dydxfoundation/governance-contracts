@@ -5,7 +5,7 @@ import { hardhatTask } from '../../src/hre';
 import { DIP_UPDATE_REWARDS_IPFS_HASH } from '../../src/lib/constants';
 import { updateMerkleDistributorRewardsParametersProposal } from '../../src/migrations/update-merkle-distributor-rewards-parameters-proposal';
 
-hardhatTask('deploy:update-merkle-distributor-rewards-parameters-proposal', 'Create proposal to wind down the borrowing pool.')
+hardhatTask('deploy:update-merkle-distributor-rewards-parameters-proposal', 'Create proposal to update merkle distributor rewards parameters')
   // TODO: Specify the correct DIP IPFS hash.
   .addParam('proposalIpfsHashHex', 'IPFS hash for the uploaded DIP describing the proposal', DIP_UPDATE_REWARDS_IPFS_HASH, types.string)
   .addParam('governorAddress', 'Address of the deployed DydxGovernor contract', mainnetAddresses.governor, types.string)
@@ -14,4 +14,4 @@ hardhatTask('deploy:update-merkle-distributor-rewards-parameters-proposal', 'Cre
   .setAction(async (args) => {
     await updateMerkleDistributorRewardsParametersProposal(args);
   });
-  
+

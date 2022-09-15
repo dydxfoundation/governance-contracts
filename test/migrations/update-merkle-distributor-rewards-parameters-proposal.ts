@@ -23,8 +23,8 @@ export async function updateMerkleDistributorRewardsParametersNoProposal({
   shortTimelockAddress: string,
 }) {
   const deployConfig = getDeployConfig();
-  const mockShortTimelock = await impersonateAndFundAccount(shortTimelockAddress);
-  const merkleDistributor = new MerkleDistributorV1__factory(mockShortTimelock).attach(merkleDistributorAddress);
+  const shortTimelockSigner = await impersonateAndFundAccount(shortTimelockAddress);
+  const merkleDistributor = new MerkleDistributorV1__factory(shortTimelockSigner).attach(merkleDistributorAddress);
   
   await merkleDistributor.setRewardsParameters(
     deployConfig.UPDATE_MERKLE_DISTRIBUTOR_LP_REWARDS_AMOUNT,

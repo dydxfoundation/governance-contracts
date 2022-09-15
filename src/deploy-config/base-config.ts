@@ -253,6 +253,7 @@ const config = {
   // This is to reduce trading rewards by 25%. LP rewards are unaffected.
   // Alpha parameter is set to 0 to indicate that it is not used anymore.
   UPDATE_MERKLE_DISTRIBUTOR_LP_REWARDS_AMOUNT: '1150685000000000000000000',
+  // Trading rewards are being reduced by 25% from `3,835,616` tokens to `2,876,712` per epoch.
   UPDATE_MERKLE_DISTRIBUTOR_TRADER_REWARDS_AMOUNT: '2876712000000000000000000',
   UPDATE_MERKLE_DISTRIBUTOR_ALPHA_PARAMETER: '0',
 };
