@@ -5,7 +5,7 @@ import { Interface } from 'ethers/lib/utils';
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
-import { ONE_DAY_SECONDS } from '../../src/lib/constants';
+import { DIP_14_IPFS_HASH, ONE_DAY_SECONDS } from '../../src/lib/constants';
 import { log } from '../../src/lib/logging';
 import { waitForTx } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
@@ -16,10 +16,6 @@ import {
 } from '../../types';
 import { LiquidityStakingV1__factory } from '../../types/factories/LiquidityStakingV1__factory';
 import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
-
-const MOCK_PROPOSAL_IPFS_HASH = (
-  '0x0000000000000000000000000000000000000000000000000000000000000000'
-);
 
 export async function executeWindDownBorrowingPoolViaProposal({
   dydxTokenAddress,
@@ -55,7 +51,7 @@ export async function executeWindDownBorrowingPoolViaProposal({
     log('Creating proposal');
     ({ proposalId } = await createWindDownBorrowingPoolProposal({
       // TODO: Replace with IPFS proposal hash for wind down borrowing pool proposal.
-      proposalIpfsHashHex: MOCK_PROPOSAL_IPFS_HASH,
+      proposalIpfsHashHex: DIP_14_IPFS_HASH,
       governorAddress,
       shortTimelockAddress,
       liquidityModuleAddress,

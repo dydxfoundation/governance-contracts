@@ -69,6 +69,8 @@ export async function createWindDownBorrowingPoolProposal({
   // If the proposal will be passed in the current epoch, ensure it's before the blackout window.
   const isWithinCurrentEpochBlackoutWindow = proposalPassTimestampDiff < 0 &&
     Math.abs(proposalPassTimestampDiff) <= blackoutWindowLengthSeconds.toNumber();
+  console.log("diff:", proposalPassTimestampDiff)
+  console.log("End:", endOfEpochTimestamp, "proposalPass:", earliestProposalPassTimestampSeconds)
   if (isWithinCurrentEpochBlackoutWindow) {
     throw new Error("This proposal will be executable within the current epoch's blackout window.");
   }
