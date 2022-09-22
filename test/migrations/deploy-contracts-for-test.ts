@@ -21,8 +21,8 @@ import { fundGrantsProgramV15ViaProposal, fundGrantsProgramV15NoProposal } from 
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
-import { executeWindDownBorrowingPoolNoProposal, executeWindDownBorrowingPoolViaProposal } from './wind-down-borrowing-pool';
 import { updateMerkleDistributorRewardsParametersViaProposal, updateMerkleDistributorRewardsParametersNoProposal } from './update-merkle-distributor-rewards-parameters-proposal';
+import { executeWindDownBorrowingPoolNoProposal, executeWindDownBorrowingPoolViaProposal } from './wind-down-borrowing-pool';
 
 /**
  * Perform all deployments steps for the test environment.

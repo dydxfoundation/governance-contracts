@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 
+import { DIP_16_IPFS_HASH } from '../../src/lib/constants';
 import { describeContract, TestContext } from '../helpers/describe-contract';
 
 // LP rewards should stay the same (1150685000000000000000000)
@@ -9,7 +10,13 @@ import { describeContract, TestContext } from '../helpers/describe-contract';
 
 function init() { }
 
-describeContract('MerkleDistributor', init, (ctx: TestContext) => {
+describeContract('update-merkle-distributor-rewards-parameters', init, (ctx: TestContext) => {
+
+  it('Proposal IPFS hash is correct', async () => {
+    const updateMerkleDistributorRewardParametersProposalId = 8;
+    const proposal = await ctx.governor.getProposalById(updateMerkleDistributorRewardParametersProposalId);
+    expect(proposal.ipfsHash).to.equal(DIP_16_IPFS_HASH);
+  });
 
   it('Merkle distributor reward parameters are updated', async () => {
     const [

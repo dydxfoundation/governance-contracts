@@ -1,19 +1,16 @@
 import BNJS from 'bignumber.js';
-import { BigNumber, BigNumberish } from 'ethers';
+import { BigNumberish } from 'ethers';
 
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
+import { DIP_16_IPFS_HASH } from '../../src/lib/constants';
 import { log } from '../../src/lib/logging';
 import { waitForTx } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { updateMerkleDistributorRewardsParametersProposal } from '../../src/migrations/update-merkle-distributor-rewards-parameters-proposal';
 import { DydxGovernor__factory, DydxToken__factory, MerkleDistributorV1__factory } from '../../types';
 import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
-
-const MOCK_PROPOSAL_IPFS_HASH = (
-  '0x0000000000000000000000000000000000000000000000000000000000000000'
-);
 
 export async function updateMerkleDistributorRewardsParametersNoProposal({
   merkleDistributorAddress,
@@ -66,7 +63,7 @@ export async function updateMerkleDistributorRewardsParametersViaProposal({
   } else {
     log('Creating proposal');
     ({ proposalId } = await updateMerkleDistributorRewardsParametersProposal({
-      proposalIpfsHashHex: MOCK_PROPOSAL_IPFS_HASH,
+      proposalIpfsHashHex: DIP_16_IPFS_HASH,
       governorAddress,
       merkleDistributorAddress,
       shortTimelockAddress,
