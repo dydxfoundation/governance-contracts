@@ -21,6 +21,7 @@ import { fundGrantsProgramV15ViaProposal, fundGrantsProgramV15NoProposal } from 
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
+import { updateMerkleDistributorRewardsParametersViaProposal, updateMerkleDistributorRewardsParametersNoProposal } from './update-merkle-distributor-rewards-parameters-proposal';
 import { executeWindDownBorrowingPoolNoProposal, executeWindDownBorrowingPoolViaProposal } from './wind-down-borrowing-pool';
 
 /**
@@ -224,6 +225,24 @@ export async function executeWindDownBorrowingPoolProposalForTest(
     await executeWindDownBorrowingPoolNoProposal({
       shortTimelockAddress: deployedContracts.shortTimelock.address,
       liquidityModuleAddress: deployedContracts.liquidityStaking.address,
+    });
+  }
+}
+
+export async function executeUpdateMerkleDistributorRewardsParametersProposalForTest(
+  deployedContracts: AllDeployedContracts,
+) {
+  if (config.TEST_UPDATE_MERKLE_DISTRIBUTOR_REWARDS_PARAMETERS_WITH_PROPOSAL) {
+    await updateMerkleDistributorRewardsParametersViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      merkleDistributorAddress: deployedContracts.merkleDistributor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+    });
+  } else {
+    await updateMerkleDistributorRewardsParametersNoProposal({
+      merkleDistributorAddress: deployedContracts.merkleDistributor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
     });
   }
 }
