@@ -50,7 +50,6 @@ export async function executeWindDownBorrowingPoolViaProposal({
   } else {
     log('Creating proposal');
     ({ proposalId } = await createWindDownBorrowingPoolProposal({
-      // TODO: Replace with IPFS proposal hash for wind down borrowing pool proposal.
       proposalIpfsHashHex: DIP_14_IPFS_HASH,
       governorAddress,
       shortTimelockAddress,
