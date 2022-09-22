@@ -162,46 +162,4 @@ describeContract('SP2Guardian', init, (ctx: TestContext) => {
           .to.be.revertedWith(accessControlError);
       });
     });
-
-  describeContractForNetwork(
-    'Stark Proxy deposit cancel and reclaim',
-    ctx,
-    NetworkName.hardhat,
-    true,
-    () => {
-      it('GUARDIAN_ROLE can cancel faulty deposit and reclaim funds', async () => {
-        const wintermuteStarkProxy: StarkProxyV2 = borrowerStarkProxy.connect(shortTimelockSigner);
-
-        const starkProxyBalanceBefore = await wintermuteStarkProxy.getTokenBalance();
-
-        const depositEvents = await wintermuteStarkProxy.queryFilter(
-          wintermuteStarkProxy.filters.DepositedToExchange(null, null, null, null),
-        );
-
-        const badVaultId = '32';
-        const faultyDeposits = depositEvents.filter((e) => e.args.starkVaultId.toString() === badVaultId);
-
-        expect(faultyDeposits.length).to.equal(1);
-
-        const starkKey = faultyDeposits[0].args.starkKey;
-        const assetType = faultyDeposits[0].args.starkAssetType;
-
-        await expect(wintermuteStarkProxy.guardianDepositCancel(starkKey, assetType, badVaultId))
-          .to.emit(wintermuteStarkProxy, 'DepositCanceled')
-          .withArgs(starkKey, assetType, badVaultId, true);
-
-        const twoDaysSeconds = 2 * 24 * 60 * 60;
-        await increaseTimeAndMine(twoDaysSeconds);
-
-        const lockedFunds: BigNumber = parseUnits('50000000', 6);
-        await expect(wintermuteStarkProxy.guardianDepositReclaim(starkKey, assetType, badVaultId))
-          .to.emit(wintermuteStarkProxy, 'DepositReclaimed')
-          .withArgs(starkKey, assetType, badVaultId, lockedFunds, true);
-
-        const starkProxyBalanceAfter = await wintermuteStarkProxy.getTokenBalance();
-
-        const diff = starkProxyBalanceAfter.sub(starkProxyBalanceBefore).toString();
-        expect(diff).to.equal(lockedFunds);
-      });
-    });
 });

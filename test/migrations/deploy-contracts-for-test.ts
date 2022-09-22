@@ -17,10 +17,11 @@ import { AllDeployedContracts } from '../../src/types';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
 import { fundGrantsProgramViaProposal, fundGrantsProgramNoProposal } from './grants-program-proposal';
-import { fundGrantsProgramV1_5ViaProposal, fundGrantsProgramV1_5NoProposal } from './grants-program-v1_5-proposal';
+import { fundGrantsProgramV15ViaProposal, fundGrantsProgramV15NoProposal } from './grants-program-v1_5-proposal';
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
+import { executeWindDownBorrowingPoolNoProposal, executeWindDownBorrowingPoolViaProposal } from './wind-down-borrowing-pool';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -187,12 +188,12 @@ export async function executeGrantsProgramProposalForTest(
   }
 }
 
-export async function executeGrantsProgramv1_5ProposalForTest(
+export async function executeGrantsProgramv15ProposalForTest(
   deployedContracts: AllDeployedContracts,
 ) {
   const deployConfig = getDeployConfig();
   if (config.TEST_FUND_GRANTS_PROGRAM_v1_5_WITH_PROPOSAL) {
-    await fundGrantsProgramV1_5ViaProposal({
+    await fundGrantsProgramV15ViaProposal({
       dydxTokenAddress: deployedContracts.dydxToken.address,
       governorAddress: deployedContracts.governor.address,
       shortTimelockAddress: deployedContracts.shortTimelock.address,
@@ -200,11 +201,29 @@ export async function executeGrantsProgramv1_5ProposalForTest(
       dgpMultisigAddress: deployConfig.DGP_MULTISIG_ADDRESS,
     });
   } else {
-    await fundGrantsProgramV1_5NoProposal({
+    await fundGrantsProgramV15NoProposal({
       dydxTokenAddress: deployedContracts.dydxToken.address,
       shortTimelockAddress: deployedContracts.shortTimelock.address,
       communityTreasuryAddress: deployedContracts.communityTreasury.address,
       dgpMultisigAddress: deployConfig.DGP_MULTISIG_ADDRESS,
+    });
+  }
+}
+
+export async function executeWindDownBorrowingPoolProposalForTest(
+  deployedContracts: AllDeployedContracts,
+) {
+  if (config.WIND_DOWN_BORROWING_POOL_WITH_PROPOSAL) {
+    await executeWindDownBorrowingPoolViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      liquidityModuleAddress: deployedContracts.liquidityStaking.address,
+    });
+  } else {
+    await executeWindDownBorrowingPoolNoProposal({
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      liquidityModuleAddress: deployedContracts.liquidityStaking.address,
     });
   }
 }

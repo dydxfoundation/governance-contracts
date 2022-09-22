@@ -8,7 +8,7 @@ import {
 const configSchema = {
   DEPLOYMENT_LOGS: parseBoolean({ default: null }),
   FORK_MAINNET: parseBoolean({ default: false }),
-  FORK_BLOCK_NUMBER: parseInteger({ default: 14063365 }),
+  FORK_BLOCK_NUMBER: parseInteger({ default: 15589832 }),
   HARDHAT_SIMULATE_AFFECTED_STAKERS: parseInteger({ default: 3 }),
   OVERRIDE_DEPLOYER_ADDRESS: parseString({ default: null }),
   PROMPT_AUTO_YES: parseBoolean({ default: false }),
@@ -23,6 +23,8 @@ const configSchema = {
   TEST_FUND_GRANTS_PROGRAM_WITH_PROPOSAL: parseBoolean({ default: true }),
   FUND_GRANTS_PROGRAM_v1_5_PROPOSAL_ID: parseInteger({ default: null }),
   TEST_FUND_GRANTS_PROGRAM_v1_5_WITH_PROPOSAL: parseBoolean({ default: true }),
+  WIND_DOWN_BORROWING_POOL_PROPOSAL_ID: parseInteger({ default: null }),
+  WIND_DOWN_BORROWING_POOL_WITH_PROPOSAL: parseBoolean({ default: true }),
 };
 
 const config = parseSchema(configSchema);
