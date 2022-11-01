@@ -23,6 +23,7 @@ import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProp
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
 import { updateMerkleDistributorRewardsParametersViaProposal, updateMerkleDistributorRewardsParametersNoProposal } from './update-merkle-distributor-rewards-parameters-proposal';
 import { executeWindDownBorrowingPoolNoProposal, executeWindDownBorrowingPoolViaProposal } from './wind-down-borrowing-pool';
+import { executeWindDownSafetyModuleNoProposal, executeWindDownSafetyModuleViaProposal } from './wind-down-safety-module';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -228,6 +229,25 @@ export async function executeWindDownBorrowingPoolProposalForTest(
     });
   }
 }
+
+export async function executeWindDownSafetyModuleProposalForTest(
+  deployedContracts: AllDeployedContracts,
+) {
+  if (config.TEST_WIND_DOWN_SAFETY_MODULE_WITH_PROPOSAL) {
+    await executeWindDownSafetyModuleViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      safetyModuleAddress: deployedContracts.safetyModule.address,
+    });
+  } else {
+    await executeWindDownSafetyModuleNoProposal({
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      safetyModuleAddress: deployedContracts.safetyModule.address,
+    });
+  }
+}
+
 
 export async function executeUpdateMerkleDistributorRewardsParametersProposalForTest(
   deployedContracts: AllDeployedContracts,

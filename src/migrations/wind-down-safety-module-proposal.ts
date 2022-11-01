@@ -2,7 +2,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 import {
   DydxGovernor__factory,
-  LiquidityStakingV1__factory,
+  SafetyModuleV2__factory,
 } from '../../types';
 import { Executor__factory } from '../../types/factories/Executor__factory';
 import { getDeployerSigner } from '../deploy-config/get-deployer-address';
@@ -12,24 +12,24 @@ import { log } from '../lib/logging';
 import { waitForTx } from '../lib/util';
 import { Proposal } from '../types';
 
-export async function createWindDownBorrowingPoolProposal({
+export async function createWindDownSafetyModuleProposal({
   proposalIpfsHashHex,
   governorAddress,
   shortTimelockAddress,
-  liquidityModuleAddress,
+  safetyModuleAddress,
   signer,
 }: {
   proposalIpfsHashHex: string,
   governorAddress: string,
   shortTimelockAddress: string,
-  liquidityModuleAddress: string,
+  safetyModuleAddress: string,
   signer?: SignerWithAddress,
 }) {
   const hre = getHre();
   const deployer = signer || await getDeployerSigner();
   const deployerAddress = deployer.address;
 
-  const liquidityModule = new LiquidityStakingV1__factory(deployer).attach(liquidityModuleAddress);
+  const safetyModule = new SafetyModuleV2__factory(deployer).attach(safetyModuleAddress);
   const shortTimelock = new Executor__factory(deployer).attach(shortTimelockAddress);
   const governor = new DydxGovernor__factory(deployer).attach(governorAddress);
 
@@ -43,9 +43,9 @@ export async function createWindDownBorrowingPoolProposal({
     votingDelayBlocks,
     latestBlock,
   ] = await Promise.all([
-    liquidityModule.getBlackoutWindow(),
-    liquidityModule.getEpochParameters(),
-    liquidityModule.getTimeRemainingInCurrentEpoch(),
+    safetyModule.getBlackoutWindow(),
+    safetyModule.getEpochParameters(),
+    safetyModule.getTimeRemainingInCurrentEpoch(),
     shortTimelock.getDelay(),
     shortTimelock.VOTING_DURATION(),
     governor.getVotingDelay(),
@@ -87,7 +87,7 @@ export async function createWindDownBorrowingPoolProposal({
   const proposalId = await governor.getProposalsCount();
   const proposal: Proposal = [
     shortTimelockAddress,
-    [liquidityModuleAddress, liquidityModuleAddress],
+    [safetyModuleAddress, safetyModuleAddress],
     ['0', '0'],
     [
       'setRewardsPerSecond(uint256)',
