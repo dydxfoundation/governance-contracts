@@ -25,9 +25,7 @@ describeContract('wind-down-safety-module-proposal', init, (ctx: TestContext) =>
   it('Proposal IPFS hash is correct', async () => {
     const windDownBorrowingPoolProposalId = 9;
     const proposal = await ctx.governor.getProposalById(windDownBorrowingPoolProposalId);
-    // TODO: Uncomment this line and update the `DIP_17_IPFS_HASH` variable to the correct value.
-    // expect(proposal.ipfsHash).to.equal(DIP_17_IPFS_HASH);
-    expect(false).to.equal(true);
+    expect(proposal.ipfsHash).to.equal(DIP_17_IPFS_HASH);
   });
 
   it('Existing stakers can unstake', async () => {

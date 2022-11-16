@@ -29,49 +29,4 @@ describeContract('wind-down-borrowing-pool-proposal', init, (ctx: TestContext) =
     const proposal = await ctx.governor.getProposalById(windDownBorrowingPoolProposalId);
     expect(proposal.ipfsHash).to.equal(DIP_14_IPFS_HASH);
   });
-
-  it('Existing stakers can unstake', async () => {
-    // Advance to beginning of next epoch.
-    const timeToNextEpoch = await ctx.liquidityStaking.getTimeRemainingInCurrentEpoch();
-
-    // Existing staker pulled from this transaction:
-    // https://etherscan.io/tx/0x73c976b3955b3fe494c3318051ebc71f2ca4acbba449f8313baa68fc33767c13
-    const existingStaker = '0xb105C388968e407979537dab44aB3e857ed25F08';
-    const mockedExistingStaker = await impersonateAndFundAccount(existingStaker);
-    const existingStakerLiquidityStaking = ctx.liquidityStaking.connect(mockedExistingStaker);
-
-    const stakerBalanceBeforeUnstake = await ctx.dydxCollateralToken.balanceOf(existingStaker);
-    const stakerDydxRewardsBeforeUnstake = await existingStakerLiquidityStaking.callStatic.claimRewards(existingStaker);
-    const existingStakerActiveBalance = await ctx.liquidityStaking.getActiveBalanceCurrentEpoch(existingStaker);
-    const minStakedAmount = parseNumberToString('250000', USDC_TOKEN_DECIMALS);
-    expect(existingStakerActiveBalance.toNumber()).to.be.at.least(Number.parseInt(minStakedAmount))
-
-    const currentTimestamp = await latestBlockTimestamp();
-    await incrementTimeToTimestamp(currentTimestamp + timeToNextEpoch.toNumber());
-    // Request to withdraw 250k USDC.
-    await waitForTx(await existingStakerLiquidityStaking.requestWithdrawal(minStakedAmount));
-
-    // Advance to beginning of next epoch.
-    const timeToNextEpoch2 = await ctx.liquidityStaking.getTimeRemainingInCurrentEpoch();
-    const currentTimestamp2 = await latestBlockTimestamp();
-    await incrementTimeToTimestamp(currentTimestamp2 + timeToNextEpoch2.toNumber());
-
-    // Withdraw 250k USDC.
-    await waitForTx(
-        await existingStakerLiquidityStaking.withdrawStake(
-            existingStaker,
-            minStakedAmount,
-        ),
-    );
-
-    const stakerBalanceAfterUnstake = await ctx.dydxCollateralToken.balanceOf(existingStaker);
-    const diff = stakerBalanceAfterUnstake.sub(stakerBalanceBeforeUnstake)
-    expect(diff).to.equal(minStakedAmount)
-
-    // Ensure user can claim rewards, and earned no additional rewards since rewards per second
-    // was set to zero.
-    await expect(existingStakerLiquidityStaking.claimRewards(existingStaker))
-      .to.emit(ctx.liquidityStaking, 'ClaimedRewards')
-      .withArgs(existingStaker, existingStaker, stakerDydxRewardsBeforeUnstake);
-  });
 });
