@@ -34,7 +34,10 @@ export const DIP_12_IPFS_HASH = '0x842193abdf79d8611e365fd072cb5cd3cd679045c26ff
 // https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-14-Ipfs-hashes.json
 export const DIP_14_IPFS_HASH = '0x32db80af31713b3a4eda8ce6a30cf125dd8361d6f3df437c6667c98432757795';
 
-
 // DIP_16_IPFS_HASH taken from the link below:
 // https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-16-Ipfs-hashes.json
 export const DIP_16_IPFS_HASH = '0xb2c2e8a63f8ee41fc40601c1f0b0ef41f919b34cb2a0547402153cd9accd4c6a';
+
+// DIP_17_IPFS_HASH taken from the link below:
+// https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-17-Ipfs-hashes.json
+export const DIP_17_IPFS_HASH = '0x458f80f0cde145e2d3cbccfeea97d961cf282bedcc291d3960b82e2bee1a2f50';

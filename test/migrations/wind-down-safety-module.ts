@@ -4,28 +4,28 @@ import { BigNumberish } from 'ethers';
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
-import { DIP_14_IPFS_HASH, ONE_DAY_SECONDS } from '../../src/lib/constants';
+import { DIP_17_IPFS_HASH, ONE_DAY_SECONDS } from '../../src/lib/constants';
 import { log } from '../../src/lib/logging';
 import { waitForTx } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
-import { createWindDownBorrowingPoolProposal } from '../../src/migrations/wind-down-borrowing-pool-proposal';
+import { createWindDownSafetyModuleProposal } from '../../src/migrations/wind-down-safety-module-proposal';
 import {
   DydxGovernor__factory,
   DydxToken__factory,
 } from '../../types';
-import { LiquidityStakingV1__factory } from '../../types/factories/LiquidityStakingV1__factory';
+import { SafetyModuleV2__factory } from '../../types/factories/SafetyModuleV2__factory';
 import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
 
-export async function executeWindDownBorrowingPoolViaProposal({
+export async function executeWindDownSafetyModuleViaProposal({
   dydxTokenAddress,
   governorAddress,
   shortTimelockAddress,
-  liquidityModuleAddress,
+  safetyModuleAddress,
 }: {
   dydxTokenAddress: string,
   governorAddress: string,
   shortTimelockAddress: string,
-  liquidityModuleAddress: string,
+  safetyModuleAddress: string,
 }): Promise<void> {
   const deployConfig = getDeployConfig();
   const deployer = await getDeployerSigner();
@@ -48,11 +48,11 @@ export async function executeWindDownBorrowingPoolViaProposal({
     proposalId = config.WIND_DOWN_BORROWING_POOL_PROPOSAL_ID;
   } else {
     log('Creating proposal');
-    ({ proposalId } = await createWindDownBorrowingPoolProposal({
-      proposalIpfsHashHex: DIP_14_IPFS_HASH,
+    ({ proposalId } = await createWindDownSafetyModuleProposal({
+      proposalIpfsHashHex: DIP_17_IPFS_HASH,
       governorAddress,
       shortTimelockAddress,
-      liquidityModuleAddress,
+      safetyModuleAddress,
       signer: voter,
     }));
 
@@ -100,30 +100,30 @@ export async function executeWindDownBorrowingPoolViaProposal({
   await waitForTx(await governor.execute(proposalId));
   log('Proposal executed');
 
-  log('\n=== WIND DOWN BORROWING POOL COMPLETE ===\n');
+  log('\n=== WIND DOWN SAFETY MODULE COMPLETE ===\n');
 }
 
-export async function executeWindDownBorrowingPoolNoProposal({
+export async function executeWindDownSafetyModuleNoProposal({
   shortTimelockAddress,
-  liquidityModuleAddress,
+  safetyModuleAddress,
 }: {
   shortTimelockAddress: string,
-  liquidityModuleAddress: string,
+  safetyModuleAddress: string,
 }): Promise<void> {
   const mockShortTimelock = await impersonateAndFundAccount(shortTimelockAddress);
-  const liquidityModule = new LiquidityStakingV1__factory(mockShortTimelock).attach(
-    liquidityModuleAddress,
+  const safetyModule = new SafetyModuleV2__factory(mockShortTimelock).attach(
+    safetyModuleAddress,
   );
 
   await waitForTx(
-    await liquidityModule.setRewardsPerSecond(0),
+    await safetyModule.setRewardsPerSecond(0),
   );
 
   const threeDaysSeconds = ONE_DAY_SECONDS * 3;
   await waitForTx(
-    await liquidityModule.setBlackoutWindow(threeDaysSeconds),
+    await safetyModule.setBlackoutWindow(threeDaysSeconds),
   );
 
 
-  log('\n=== WIND DOWN BORROWING POOL COMPLETE ===\n');
+  log('\n=== WIND DOWN SAFETY MODULE COMPLETE ===\n');
 }
