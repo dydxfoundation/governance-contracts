@@ -18,6 +18,7 @@ import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 import { simulateAffectedStakers } from './affected-stakers';
 import { fundGrantsProgramViaProposal, fundGrantsProgramNoProposal } from './grants-program-proposal';
 import { fundGrantsProgramV15ViaProposal, fundGrantsProgramV15NoProposal } from './grants-program-v1_5-proposal';
+import { fundOpsTrustNoProposal, fundOpsTrustViaProposal } from './ops-trust-proposal';
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
@@ -263,6 +264,28 @@ export async function executeUpdateMerkleDistributorRewardsParametersProposalFor
     await updateMerkleDistributorRewardsParametersNoProposal({
       merkleDistributorAddress: deployedContracts.merkleDistributor.address,
       shortTimelockAddress: deployedContracts.shortTimelock.address,
+    });
+  }
+}
+
+export async function executeOpsTrustProposalForTest(
+  deployedContracts: AllDeployedContracts,
+) {
+  const deployConfig = getDeployConfig();
+  if (config.TEST_FUND_OPS_TRUST_WITH_PROPOSAL) {
+    await fundOpsTrustViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      communityTreasuryAddress: deployedContracts.communityTreasury.address,
+      dotMultisigAddress: deployConfig.DOT_MULTISIG_ADDRESS,
+    });
+  } else {
+    await fundOpsTrustNoProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      communityTreasuryAddress: deployedContracts.communityTreasury.address,
+      dotMultisigAddress: deployConfig.DOT_MULTISIG_ADDRESS,
     });
   }
 }

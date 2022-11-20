@@ -11,6 +11,7 @@ import {
   executeWindDownBorrowingPoolProposalForTest,
   executeUpdateMerkleDistributorRewardsParametersProposalForTest,
   executeWindDownSafetyModuleProposalForTest,
+  executeOpsTrustProposalForTest,
 } from '../migrations/deploy-contracts-for-test';
 
 let globalDeployedContracts: AllDeployedContracts;
@@ -61,6 +62,7 @@ async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
     await executeUpdateMerkleDistributorRewardsParametersProposalForTest(deployedContracts);
   }
   await executeWindDownSafetyModuleProposalForTest(deployedContracts);
+  await executeOpsTrustProposalForTest(deployedContracts);
   // Execute the proposals which have not yet been executed on mainnet.
   await configureForTest(deployedContracts);
   return deployedContracts;
