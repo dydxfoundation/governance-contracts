@@ -262,7 +262,7 @@ const config = {
   // Per the DIP price has been calculated using 24h VWAP from market data
   // Price derived is $0.00 using Binance.com DYDX/USDT on
   // Using market price of $0.00, rounded amount to be transferred is XX DYDX
-  DOT_MULTISIG_ADDRESS: '0x9A7ed136B4f519cD3557Fef9Ca322b121d98Fa39', // Temporary for initial testing
+  DOT_MULTISIG_ADDRESS: '0xa8541f948411b3F95d9e89e8D339a56A9ed3D00b',
   //
   DOT_FUNDING_AMOUNT: '10000000000', // Temporary for initial testing
 };

@@ -44,4 +44,4 @@ export const DIP_17_IPFS_HASH = '0x458f80f0cde145e2d3cbccfeea97d961cf282bedcc291
 
 // DIP_18_IPFS_HASH taken from the link below:
 // 
-export const DIP_18_IPFS_HASH = '';
+export const DIP_18_IPFS_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000';

@@ -60,8 +60,8 @@ async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
     await executeGrantsProgramv15ProposalForTest(deployedContracts);
     await executeWindDownBorrowingPoolProposalForTest(deployedContracts);
     await executeUpdateMerkleDistributorRewardsParametersProposalForTest(deployedContracts);
+    await executeWindDownSafetyModuleProposalForTest(deployedContracts);
   }
-  await executeWindDownSafetyModuleProposalForTest(deployedContracts);
   await executeOpsTrustProposalForTest(deployedContracts);
   // Execute the proposals which have not yet been executed on mainnet.
   await configureForTest(deployedContracts);
