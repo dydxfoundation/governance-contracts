@@ -260,11 +260,11 @@ const config = {
   // Ops Trust ("DOT") Funding Amount (DIP 18)
   // Amount to be transferred is $360,000 of DYDX at 24 hour TWAP price of $1.855
   // Per the DIP price has been calculated using 24h VWAP from market data
-  // Price derived is $1.855 using Binance.com DYDX/USDT on
-  // Using market price of $1.855, rounded amount to be transferred is 195,000 DYDX
+  // Price derived is $1.606 using Binance.com DYDX/USDT on
+  // Using market price of $1.606, rounded amount to be transferred is 225,000 DYDX
   DOT_MULTISIG_ADDRESS: '0xa8541f948411b3F95d9e89e8D339a56A9ed3D00b',
   //
-  DOT_FUNDING_AMOUNT: '195000000000000000000000',
+  DOT_FUNDING_AMOUNT: '225000000000000000000000',
 };
 
 export type BaseConfig = typeof config;
