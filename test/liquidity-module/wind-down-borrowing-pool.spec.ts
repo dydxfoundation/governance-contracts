@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
+
 import { USDC_TOKEN_DECIMALS } from '../../src';
 import { DIP_14_IPFS_HASH } from '../../src/lib/constants';
 import { waitForTx } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { parseNumberToString } from '../../src/tx-builder/utils/parsings';
-
 import { describeContract, TestContext } from '../helpers/describe-contract';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 

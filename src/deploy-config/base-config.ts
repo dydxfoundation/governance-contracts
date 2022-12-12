@@ -256,6 +256,15 @@ const config = {
   // Trading rewards are being reduced by 25% from `3,835,616` tokens to `2,876,712` per epoch.
   UPDATE_MERKLE_DISTRIBUTOR_TRADER_REWARDS_AMOUNT: '2876712000000000000000000',
   UPDATE_MERKLE_DISTRIBUTOR_ALPHA_PARAMETER: '0',
+
+  // Ops Trust ("DOT") Funding Amount (DIP 18)
+  // Amount to be transferred is $360,000 of DYDX at 24 hour TWAP price of $1.855
+  // Per the DIP price has been calculated using 24h VWAP from market data
+  // Price derived is $1.606 using Binance.com DYDX/USDT on
+  // Using market price of $1.606, rounded amount to be transferred is 225,000 DYDX
+  DOT_MULTISIG_ADDRESS: '0xa8541f948411b3F95d9e89e8D339a56A9ed3D00b',
+  //
+  DOT_FUNDING_AMOUNT: '225000000000000000000000',
 };
 
 export type BaseConfig = typeof config;

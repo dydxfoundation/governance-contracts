@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
+
 import { DIP_17_IPFS_HASH } from '../../src/lib/constants';
 import { waitForTx } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
-
 import { describeContract, TestContext } from '../helpers/describe-contract';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 
@@ -41,7 +41,7 @@ describeContract('wind-down-safety-module-proposal', init, (ctx: TestContext) =>
     const stakerBalanceBeforeUnstake = await ctx.safetyModule.balanceOf(existingStaker);
     const stakerDydxRewardsBeforeUnstake = await existingStakerSafetyModule.callStatic.claimRewards(existingStaker);
     const existingStakerActiveBalance = await ctx.safetyModule.getActiveBalanceCurrentEpoch(existingStaker);
-    expect(stakerBalanceBeforeUnstake.toString()).to.equal(existingStakerActiveBalance.toString())
+    expect(stakerBalanceBeforeUnstake.toString()).to.equal(existingStakerActiveBalance.toString());
 
     const currentTimestamp = await latestBlockTimestamp();
     await incrementTimeToTimestamp(currentTimestamp + timeToNextEpoch.toNumber());
@@ -55,18 +55,18 @@ describeContract('wind-down-safety-module-proposal', init, (ctx: TestContext) =>
 
     // Withdraw the staked DYDX.
     await waitForTx(
-        await existingStakerSafetyModule.withdrawStake(
-            existingStaker,
-            stakerBalanceBeforeUnstake.toString(),
-        ),
+      await existingStakerSafetyModule.withdrawStake(
+        existingStaker,
+        stakerBalanceBeforeUnstake.toString(),
+      ),
     );
 
     const stakerBalanceAfterUnstake = await ctx.safetyModule.balanceOf(existingStaker);
-    const diff = stakerBalanceBeforeUnstake.sub(stakerBalanceAfterUnstake)
-    expect(diff).to.equal(stakerBalanceBeforeUnstake.toString())
+    const diff = stakerBalanceBeforeUnstake.sub(stakerBalanceAfterUnstake);
+    expect(diff).to.equal(stakerBalanceBeforeUnstake.toString());
 
     // Ensure user has their DYDX tokens.
-    expect(await ctx.dydxToken.balanceOf(existingStaker)).to.equal(stakerBalanceBeforeUnstake.toString())
+    expect(await ctx.dydxToken.balanceOf(existingStaker)).to.equal(stakerBalanceBeforeUnstake.toString());
 
     // Ensure user can claim rewards, and earned no additional rewards since rewards per second
     // was set to zero.
