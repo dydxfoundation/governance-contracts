@@ -31,6 +31,8 @@ const configSchema = {
   TEST_WIND_DOWN_SAFETY_MODULE_WITH_PROPOSAL: parseBoolean({ default: true }),
   FUND_OPS_TRUST_PROPOSAL_ID: parseInteger({ default: null }),
   TEST_FUND_OPS_TRUST_WITH_PROPOSAL: parseBoolean({ default: true }),
+  UPDATE_MERKLE_DISTRIBUTOR_REWARDS_PARAMETERS_v2_PROPOSAL_ID: parseInteger({ default: null }),
+  TEST_UPDATE_MERKLE_DISTRIBUTOR_REWARDS_PARAMETERS_v2_WITH_PROPOSAL: parseBoolean({ default: true }),
 };
 
 const config = parseSchema(configSchema);
