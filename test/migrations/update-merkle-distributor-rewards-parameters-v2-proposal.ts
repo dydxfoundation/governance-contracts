@@ -114,5 +114,5 @@ export async function updateMerkleDistributorRewardsParametersV2ViaProposal({
   await waitForTx(await governor.execute(proposalId));
   log('Proposal executed');
 
-  log('\n=== UPDATE MERKLE DISTRIBUTOR REWARDS PARAMETERS COMPLETE ===\n');
+  log('\n=== UPDATE MERKLE DISTRIBUTOR REWARDS PARAMETERS V2 COMPLETE ===\n');
 }
