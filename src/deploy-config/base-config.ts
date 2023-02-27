@@ -265,14 +265,6 @@ const config = {
   DOT_MULTISIG_ADDRESS: '0xa8541f948411b3F95d9e89e8D339a56A9ed3D00b',
   //
   DOT_FUNDING_AMOUNT: '225000000000000000000000',
-
-  // Update Merkle Distributor Rewards Parameters v2. (DIP 20)
-  // This is to reduce trading rewards by 45%. LP rewards are unaffected.
-  // Alpha parameter remains unchanged since the last update and is equal to 0.
-  UPDATE_MERKLE_DISTRIBUTOR_LP_REWARDS_AMOUNT_v2: '1150685000000000000000000',
-  // Trading rewards are being reduced by 45% from `2,876,712` tokens to `1,582,192` per epoch.
-  UPDATE_MERKLE_DISTRIBUTOR_TRADER_REWARDS_AMOUNT_v2: '1582192000000000000000000',
-  UPDATE_MERKLE_DISTRIBUTOR_ALPHA_PARAMETER_v2: '0',
 };
 
 export type BaseConfig = typeof config;
