@@ -6,12 +6,12 @@ import { DIP_14_IPFS_HASH } from '../../src/lib/constants';
 import { waitForTx } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
 import { parseNumberToString } from '../../src/tx-builder/utils/parsings';
-import { describeContract, TestContext } from '../helpers/describe-contract';
+import { describeContractHardhatRevertBefore, TestContext } from '../helpers/describe-contract';
 import { incrementTimeToTimestamp, latestBlockTimestamp } from '../helpers/evm';
 
 function init() { }
 
-describeContract('wind-down-borrowing-pool-proposal', init, (ctx: TestContext) => {
+describeContractHardhatRevertBefore('wind-down-borrowing-pool-proposal', init, (ctx: TestContext) => {
 
   it('Blackout window is set to 3 days', async () => {
     const blackoutWindowLengthSeconds: BigNumber = await ctx.liquidityStaking.getBlackoutWindow();

@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 
 import { DIP_16_IPFS_HASH } from '../../src/lib/constants';
-import { describeContract, TestContext } from '../helpers/describe-contract';
+import { describeContractHardhatRevertBefore, TestContext } from '../helpers/describe-contract';
 
 // LP rewards should stay the same (1150685000000000000000000)
 // Trader rewards should be reduced by 25% (3835616000000000000000000 => 2876712000000000000000000)
@@ -10,7 +10,7 @@ import { describeContract, TestContext } from '../helpers/describe-contract';
 
 function init() { }
 
-describeContract('update-merkle-distributor-rewards-parameters', init, (ctx: TestContext) => {
+describeContractHardhatRevertBefore('update-merkle-distributor-rewards-parameters', init, (ctx: TestContext) => {
 
   it('Proposal IPFS hash is correct', async () => {
     const updateMerkleDistributorRewardParametersProposalId = 8;
