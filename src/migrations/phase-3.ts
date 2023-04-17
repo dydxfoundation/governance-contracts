@@ -30,7 +30,6 @@ export async function deployPhase3({
   governorAddress,
   shortTimelockAddress,
   longTimelockAddress,
-  starkwarePriorityAddress,
 
   // Phase 2 deployed contracts.
   rewardsTreasuryAddress,

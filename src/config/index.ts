@@ -8,7 +8,7 @@ import {
 const configSchema = {
   DEPLOYMENT_LOGS: parseBoolean({ default: null }),
   FORK_MAINNET: parseBoolean({ default: false }),
-  FORK_BLOCK_NUMBER: parseInteger({ default: 16746792 }),
+  FORK_BLOCK_NUMBER: parseInteger({ default: 17067508 }),
   HARDHAT_SIMULATE_AFFECTED_STAKERS: parseInteger({ default: 3 }),
   OVERRIDE_DEPLOYER_ADDRESS: parseString({ default: null }),
   PROMPT_AUTO_YES: parseBoolean({ default: false }),
@@ -34,7 +34,7 @@ const configSchema = {
   UPDATE_MERKLE_DISTRIBUTOR_REWARDS_PARAMETERS_v2_PROPOSAL_ID: parseInteger({ default: null }),
   TEST_UPDATE_MERKLE_DISTRIBUTOR_REWARDS_PARAMETERS_v2_WITH_PROPOSAL: parseBoolean({ default: true }),
   V3_DATA_AVAILABILITY_PROPOSAL_ID: parseInteger({ default: null }),
-  V3_DATA_AVAILABILITY_WITH_PROPOSAL: parseBoolean({ default: true }),
+  TEST_V3_DATA_AVAILABILITY_WITH_PROPOSAL: parseBoolean({ default: true }),
 };
 
 const config = parseSchema(configSchema);
