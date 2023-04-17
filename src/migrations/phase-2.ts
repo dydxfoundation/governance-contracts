@@ -45,6 +45,7 @@ export async function deployPhase2({
   governorAddress,
   shortTimelockAddress,
   longTimelockAddress,
+  starkwarePriorityAddress,
   merklePauserTimelockAddress: merkleTimelockAddress,
 
   // Phase 2 deployed contracts.
@@ -76,6 +77,7 @@ export async function deployPhase2({
   governorAddress: string,
   longTimelockAddress: string,
   shortTimelockAddress: string,
+  starkwarePriorityAddress: string,
   merklePauserTimelockAddress: string,
 
   // Phase 2 deployed contracts.
@@ -107,6 +109,7 @@ export async function deployPhase2({
   const governor = new DydxGovernor__factory(deployer).attach(governorAddress);
   const longTimelock = new Executor__factory(deployer).attach(longTimelockAddress);
   const shortTimelock = new Executor__factory(deployer).attach(shortTimelockAddress);
+  const starkwarePriorityTimelock = new Executor__factory(deployer).attach(starkwarePriorityAddress);
 
   // Phase 2 deployed contracts.
   let rewardsTreasury: Treasury;

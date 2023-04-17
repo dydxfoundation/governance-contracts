@@ -26,6 +26,7 @@ import { updateMerkleDistributorRewardsParametersViaProposal, updateMerkleDistri
 import { updateMerkleDistributorRewardsParametersV2ViaProposal, updateMerkleDistributorRewardsParametersV2NoProposal } from './update-merkle-distributor-rewards-parameters-v2-proposal';
 import { executeWindDownBorrowingPoolNoProposal, executeWindDownBorrowingPoolViaProposal } from './wind-down-borrowing-pool';
 import { executeWindDownSafetyModuleNoProposal, executeWindDownSafetyModuleViaProposal } from './wind-down-safety-module';
+import { executeV3DataAvailabilityViaProposal } from './v3-data-availability-proposal';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -50,6 +51,7 @@ export async function deployContractsForTest(): Promise<AllDeployedContracts> {
     shortTimelockAddress: phase1Contracts.shortTimelock.address,
     merklePauserTimelockAddress: phase1Contracts.merklePauserTimelock.address,
     longTimelockAddress: phase1Contracts.longTimelock.address,
+    starkwarePriorityAddress: phase1Contracts.starkwarePriorityTimelock.address,
   });
 
   // Phase 3: Finalize the deployment w/ actions that cannot be reversed without governance action.
@@ -59,6 +61,7 @@ export async function deployContractsForTest(): Promise<AllDeployedContracts> {
     governorAddress: phase1Contracts.governor.address,
     shortTimelockAddress: phase1Contracts.shortTimelock.address,
     longTimelockAddress: phase1Contracts.longTimelock.address,
+    starkwarePriorityAddress: phase1Contracts.starkwarePriorityTimelock.address,
 
     // Phase 2 deployed contracts.
     rewardsTreasuryAddress: phase2Contracts.rewardsTreasury.address,
@@ -307,6 +310,17 @@ export async function executeUpdateMerkleDistributorRewardsParametersV2ProposalF
       shortTimelockAddress: deployedContracts.shortTimelock.address,
     });
   }
+}
+
+export async function executeV3DataAvailabilityProposalForTest(
+  deployedContracts: AllDeployedContracts,
+) {
+    await executeV3DataAvailabilityViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      starkwarePriorityAddress: deployedContracts.starkwarePriorityTimelock.address,
+      starkPerpetualAddress: deployedContracts.starkPerpetual.address,
+    });
 }
 
 /**

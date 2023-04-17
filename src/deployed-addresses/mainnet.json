@@ -4,6 +4,7 @@
   "shortTimelock": "0x64c7d40c07EFAbec2AafdC243bF59eaF2195c6dc",
   "longTimelock": "0xEcaE9BF44A21d00E2350a42127A377Bf5856d84B",
   "merklePauserTimelock": "0xd98e7A71BacB6F11438A8271dDB2EFd7f9361F52",
+  "starkwarePriorityTimelock": "0xa306989BA6BcacdECCf3C0614FfF2B8C668e3CaE",
   "rewardsTreasury": "0x639192D54431F8c816368D3FB4107Bc168d0E871",
   "rewardsTreasuryProxyAdmin": "0x40D6992cbd03E0DC1c2DE9606D29Cb245E737a5d",
   "safetyModule": "0x65f7BA4Ec257AF7c55fd5854E5f6356bBd0fb8EC",
