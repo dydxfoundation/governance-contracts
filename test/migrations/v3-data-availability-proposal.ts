@@ -12,8 +12,30 @@ import { createV3DataAvailabilityProposal } from '../../src/migrations/v3-data-a
 import {
   DydxGovernor__factory,
   DydxToken__factory,
+  MockStarkPerpetual__factory,
 } from '../../types';
 import { advanceBlock, increaseTimeAndMine } from '../helpers/evm';
+
+export async function executeV3DataAvailabilityNoProposal({
+  starkwarePriorityAddress,
+  starkPerpetualAddress,
+}: {
+  starkwarePriorityAddress: string,
+  starkPerpetualAddress: string,
+}) {
+  const deployConfig = getDeployConfig();
+  const starkwarePrioritySigner = await impersonateAndFundAccount(starkwarePriorityAddress);
+  const starkPerpetual = new MockStarkPerpetual__factory(starkwarePrioritySigner).attach(starkPerpetualAddress);
+
+  
+  await waitForTx(await starkPerpetual.mainAcceptGovernance());
+  await waitForTx(await starkPerpetual.applyGlobalConfigurationChange(deployConfig.STARK_PERPETUAL_CONFIG_HASH));
+  await waitForTx(await starkPerpetual.proxyAcceptGovernance());
+  await waitForTx(await starkPerpetual.addImplementation(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
+  await waitForTx(await starkPerpetual.upgradeTo(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
+
+  log('\n=== V3 DATA AVAILABILITY PROPOSAL COMPLETE ===\n');
+}
 
 export async function executeV3DataAvailabilityViaProposal({
   dydxTokenAddress,

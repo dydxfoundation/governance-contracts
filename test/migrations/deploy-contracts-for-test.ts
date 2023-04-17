@@ -26,7 +26,7 @@ import { updateMerkleDistributorRewardsParametersViaProposal, updateMerkleDistri
 import { updateMerkleDistributorRewardsParametersV2ViaProposal, updateMerkleDistributorRewardsParametersV2NoProposal } from './update-merkle-distributor-rewards-parameters-v2-proposal';
 import { executeWindDownBorrowingPoolNoProposal, executeWindDownBorrowingPoolViaProposal } from './wind-down-borrowing-pool';
 import { executeWindDownSafetyModuleNoProposal, executeWindDownSafetyModuleViaProposal } from './wind-down-safety-module';
-import { executeV3DataAvailabilityViaProposal } from './v3-data-availability-proposal';
+import { executeV3DataAvailabilityViaProposal, executeV3DataAvailabilityNoProposal } from './v3-data-availability-proposal';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -315,12 +315,19 @@ export async function executeUpdateMerkleDistributorRewardsParametersV2ProposalF
 export async function executeV3DataAvailabilityProposalForTest(
   deployedContracts: AllDeployedContracts,
 ) {
-    await executeV3DataAvailabilityViaProposal({
-      dydxTokenAddress: deployedContracts.dydxToken.address,
-      governorAddress: deployedContracts.governor.address,
+    if (config.TEST_V3_DATA_AVAILABILITY_WITH_PROPOSAL) {
+      await executeV3DataAvailabilityViaProposal({
+        dydxTokenAddress: deployedContracts.dydxToken.address,
+        governorAddress: deployedContracts.governor.address,
+        starkwarePriorityAddress: deployedContracts.starkwarePriorityTimelock.address,
+        starkPerpetualAddress: deployedContracts.starkPerpetual.address,
+    });
+  } else {
+    await executeV3DataAvailabilityNoProposal({
       starkwarePriorityAddress: deployedContracts.starkwarePriorityTimelock.address,
       starkPerpetualAddress: deployedContracts.starkPerpetual.address,
     });
+  }
 }
 
 /**

@@ -19,8 +19,6 @@ import {
   TreasuryVester,
   TreasuryVester__factory,
   Treasury__factory,
-  StarkExHelperGovernor__factory,
-  StarkExHelperGovernor
 } from '../../types';
 import { StarkProxyV1__factory } from '../../types/factories/StarkProxyV1__factory';
 import { LiquidityStakingV1 } from '../../types/LiquidityStakingV1';
@@ -67,7 +65,6 @@ export async function deployPhase2({
   merkleDistributorProxyAdminAddress,
   starkProxyAddresses,
   starkProxyProxyAdminAddresses,
-  starkExHelperGovernorAddress,
 }: {
   startStep?: number,
 
@@ -100,7 +97,6 @@ export async function deployPhase2({
   merkleDistributorProxyAdminAddress?: string,
   starkProxyAddresses?: string[],
   starkProxyProxyAdminAddresses?: string[],
-  starkExHelperGovernorAddress: string,
 }) {
   log('Beginning phase 2 deployment\n');
   const deployConfig = getDeployConfig();
@@ -132,7 +128,6 @@ export async function deployPhase2({
   let merkleDistributorProxyAdmin: ProxyAdmin;
   let starkProxies: StarkProxyV1[];
   let starkProxyProxyAdmins: ProxyAdmin[];
-  let starkExHelperGovernor: StarkExHelperGovernor;
 
   const deployerBalance = await dydxToken.balanceOf(deployerAddress);
   if (deployerBalance.lt(toWad(500_000_00))) {
@@ -509,19 +504,6 @@ export async function deployPhase2({
     );
   }
 
-  if (startStep <= 25) {
-    log('Step 25. Deploy StarkEx helper governor');
-    starkExHelperGovernor = await new StarkExHelperGovernor__factory(deployer).deploy(
-      starkPerpetualAddress
-    );
-    starkExHelperGovernorAddress = starkExHelperGovernor.address;
-  } else {
-    if (!starkExHelperGovernorAddress) {
-      throw new Error('Expected starkExHelperGovernorAddress to be specified.');
-    }
-    starkExHelperGovernor = new StarkExHelperGovernor__factory(deployer).attach(starkExHelperGovernorAddress)
-  }
-
   log('\n=== PHASE 2 DEPLOYMENT COMPLETE ===\n');
 
   return {
@@ -541,6 +523,5 @@ export async function deployPhase2({
     merkleDistributorProxyAdmin,
     starkProxies,
     starkProxyProxyAdmins,
-    starkExHelperGovernor,
   };
 }
