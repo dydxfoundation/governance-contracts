@@ -9,13 +9,13 @@ function init() { }
 
 describeContract('update the funding rate config hash', init, (ctx: TestContext) => {
 
-  it.only('Proposal IPFS hash is correct', async () => {
+  it('Proposal IPFS hash is correct', async () => {
     const V3_DATA_AVAILABILITY_PROPOSAL_ID = 21;
     const proposal = await ctx.governor.getProposalById(V3_DATA_AVAILABILITY_PROPOSAL_ID);
-    expect("0x0000000000000000000000000000000000000000000000000000000000000000").to.equal(DIP_22_IPFS_HASH);
+    expect(proposal.ipfsHash).to.equal(DIP_22_IPFS_HASH);
   });
 
-  it.only('Global configuration hash has been updated', async () => {
+  it('Global configuration hash has been updated', async () => {
     const globalConfig = await ctx.starkPerpetual.globalConfigurationHash()
     expect(globalConfig).to.equal(ctx.config.STARK_PERPETUAL_CONFIG_HASH);
   });

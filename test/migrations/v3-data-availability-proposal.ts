@@ -23,16 +23,16 @@ export async function executeV3DataAvailabilityNoProposal({
   starkwarePriorityAddress: string,
   starkPerpetualAddress: string,
 }) {
-  //const deployConfig = getDeployConfig();
+  const deployConfig = getDeployConfig();
   const starkwarePrioritySigner = await impersonateAndFundAccount(starkwarePriorityAddress);
   const starkPerpetual = new MockStarkPerpetual__factory(starkwarePrioritySigner).attach(starkPerpetualAddress);
 
-  await starkPerpetual.mainAcceptGovernance();
-  //await waitForTx(await starkPerpetual.registerGlobalConfigurationChange(deployConfig.STARK_PERPETUAL_CONFIG_HASH));
-  //await waitForTx(await starkPerpetual.applyGlobalConfigurationChange(deployConfig.STARK_PERPETUAL_CONFIG_HASH));
-  //await waitForTx(await starkPerpetual.proxyAcceptGovernance());
-  //await waitForTx(await starkPerpetual.addImplementation(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
-  // await waitForTx(await starkPerpetual.upgradeTo(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
+  await waitForTx(await starkPerpetual.mainAcceptGovernance());
+  await waitForTx(await starkPerpetual.registerGlobalConfigurationChange(deployConfig.STARK_PERPETUAL_CONFIG_HASH));
+  await waitForTx(await starkPerpetual.applyGlobalConfigurationChange(deployConfig.STARK_PERPETUAL_CONFIG_HASH));
+  await waitForTx(await starkPerpetual.proxyAcceptGovernance());
+  await waitForTx(await starkPerpetual.addImplementation(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
+  await waitForTx(await starkPerpetual.upgradeTo(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
 
   log('\n=== V3 DATA AVAILABILITY PROPOSAL COMPLETE ===\n');
 }
