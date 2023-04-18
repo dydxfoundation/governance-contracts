@@ -4,7 +4,7 @@ import { BigNumberish } from 'ethers';
 import config from '../../src/config';
 import { getDeployConfig } from '../../src/deploy-config';
 import { getDeployerSigner } from '../../src/deploy-config/get-deployer-address';
-import { DIP_21_IPFS_HASH } from '../../src/lib/constants';
+import { DIP_22_IPFS_HASH } from '../../src/lib/constants';
 import { log } from '../../src/lib/logging';
 import { waitForTx } from '../../src/lib/util';
 import { impersonateAndFundAccount } from '../../src/migrations/helpers/impersonate-account';
@@ -23,16 +23,16 @@ export async function executeV3DataAvailabilityNoProposal({
   starkwarePriorityAddress: string,
   starkPerpetualAddress: string,
 }) {
-  const deployConfig = getDeployConfig();
+  //const deployConfig = getDeployConfig();
   const starkwarePrioritySigner = await impersonateAndFundAccount(starkwarePriorityAddress);
   const starkPerpetual = new MockStarkPerpetual__factory(starkwarePrioritySigner).attach(starkPerpetualAddress);
 
-  
-  await waitForTx(await starkPerpetual.mainAcceptGovernance());
-  await waitForTx(await starkPerpetual.applyGlobalConfigurationChange(deployConfig.STARK_PERPETUAL_CONFIG_HASH));
-  await waitForTx(await starkPerpetual.proxyAcceptGovernance());
-  await waitForTx(await starkPerpetual.addImplementation(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
-  await waitForTx(await starkPerpetual.upgradeTo(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
+  await starkPerpetual.mainAcceptGovernance();
+  //await waitForTx(await starkPerpetual.registerGlobalConfigurationChange(deployConfig.STARK_PERPETUAL_CONFIG_HASH));
+  //await waitForTx(await starkPerpetual.applyGlobalConfigurationChange(deployConfig.STARK_PERPETUAL_CONFIG_HASH));
+  //await waitForTx(await starkPerpetual.proxyAcceptGovernance());
+  //await waitForTx(await starkPerpetual.addImplementation(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
+  // await waitForTx(await starkPerpetual.upgradeTo(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
 
   log('\n=== V3 DATA AVAILABILITY PROPOSAL COMPLETE ===\n');
 }
@@ -70,7 +70,7 @@ export async function executeV3DataAvailabilityViaProposal({
   } else {
     log('Creating proposal');
     ({ proposalId } = await createV3DataAvailabilityProposal({
-      proposalIpfsHashHex: DIP_21_IPFS_HASH,
+      proposalIpfsHashHex: DIP_22_IPFS_HASH,
       governorAddress,
       starkwarePriorityAddress,
       starkPerpetualAddress,

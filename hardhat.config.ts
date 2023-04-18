@@ -61,11 +61,14 @@ function getRemoteNetworkConfig(
 
 function getHardhatConfig(): HardhatNetworkUserConfig {
   const networkConfig: HardhatNetworkUserConfig = {
-    hardfork: 'berlin',
-    blockGasLimit: 15000000,
+    //hardfork: 'berlin',
+    initialDate: '2023-04-18T00:00:00.00Z',
+    gas: 10000000,
+    blockGasLimit: 30000000,
     chainId: 31337,
     throwOnTransactionFailures: true,
     throwOnCallFailures: true,
+    loggingEnabled: true,
   };
 
   if (config.FORK_MAINNET) {
