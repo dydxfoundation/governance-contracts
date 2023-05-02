@@ -62,6 +62,7 @@ interface IStarkPerpetual {
   function applyGlobalConfigurationChange(bytes32 configHash) external;
 
   function getEthKey(uint256 starkKey) external view returns (address);
+  function globalConfigurationHash() external view returns (bytes32);
 
   function depositCancel(
     uint256 starkKey,

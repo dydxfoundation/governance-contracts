@@ -20,6 +20,7 @@ export async function deployPhase1({
   governorAddress,
   longTimelockAddress,
   shortTimelockAddress,
+  starkwarePriorityAddress,
   merklePauserTimelockAddress,
 }: {
   startStep?: number,
@@ -27,6 +28,7 @@ export async function deployPhase1({
   governorAddress?: string,
   longTimelockAddress?: string,
   shortTimelockAddress?: string,
+  starkwarePriorityAddress?: string,
   merklePauserTimelockAddress?: string,
 } = {}) {
   log('Beginning phase 1 deployment\n');
@@ -40,6 +42,7 @@ export async function deployPhase1({
   let governor: DydxGovernor;
   let longTimelock: Executor;
   let shortTimelock: Executor;
+  let starkwarePriorityTimelock: Executor;
   let merklePauserTimelock: Executor;
 
   if (startStep <= 1) {
@@ -109,7 +112,22 @@ export async function deployPhase1({
   }
 
   if (startStep <= 5) {
-    log('Step 5. Deploy merkle timelock');
+    log('Step 5. Deploy starkware priority timelock');
+    starkwarePriorityTimelock = await deployExecutor(
+      deployer,
+      governorAddress,
+      deployConfig.STARKWARE_TIMELOCK_CONFIG,
+    );
+    starkwarePriorityAddress = starkwarePriorityTimelock.address;
+  } else {
+    if (!starkwarePriorityAddress) {
+      throw new Error('Expected parameter starkwarePriorityAddress to be specified.');
+    }
+    starkwarePriorityTimelock = new Executor__factory(deployer).attach(starkwarePriorityAddress);
+  }
+
+  if (startStep <= 6) {
+    log('Step 6. Deploy merkle timelock');
     merklePauserTimelock = await deployExecutor(
       deployer,
       governorAddress,
@@ -123,17 +141,17 @@ export async function deployPhase1({
     merklePauserTimelock = new Executor__factory(deployer).attach(merklePauserTimelockAddress);
   }
 
-  if (startStep <= 6) {
-    log('Step 6. Authorize timelocks on governance contract');
+  if (startStep <= 7) {
+    log('Step 7. Authorize timelocks on governance contract');
     await waitForTx(
       await governor.authorizeExecutors(
-        [longTimelockAddress, shortTimelockAddress, merklePauserTimelockAddress],
+        [longTimelockAddress, shortTimelockAddress, starkwarePriorityAddress, merklePauserTimelockAddress],
       ),
     );
   }
 
-  if (startStep <= 7) {
-    log('Step 7. Add deployer to token transfer allowlist');
+  if (startStep <= 8) {
+    log('Step 8. Add deployer to token transfer allowlist');
     await waitForTx(
       await dydxToken.addToTokenTransferAllowlist(
         [deployerAddress],
@@ -141,8 +159,8 @@ export async function deployPhase1({
     );
   }
 
-  if (startStep <= 8) {
-    log('Step 8. Add test addresses to token transfer allowlist');
+  if (startStep <= 9) {
+    log('Step 9. Add test addresses to token transfer allowlist');
     await waitForTx(
       await dydxToken.addToTokenTransferAllowlist(
         deployConfig.TOKEN_TEST_ADDRESSES,
@@ -150,8 +168,8 @@ export async function deployPhase1({
     );
   }
 
-  if (startStep <= 9) {
-    log('Step 9. Send test tokens.');
+  if (startStep <= 10) {
+    log('Step 10. Send test tokens.');
 
     const testAllocations = [
       deployConfig.TOKEN_ALLOCATIONS.TEST_TOKENS_1,
@@ -174,6 +192,7 @@ export async function deployPhase1({
     ['Governor', governorAddress],
     ['ShortTimelock', shortTimelockAddress],
     ['LongTimelock', longTimelockAddress],
+    ['starkwarePriorityTimelock', starkwarePriorityAddress],
     ['MerkleTimelock', merklePauserTimelockAddress],
     ['Distributor EOA', deployerAddress],
   ];
@@ -184,6 +203,7 @@ export async function deployPhase1({
     governor,
     shortTimelock,
     longTimelock,
+    starkwarePriorityTimelock,
     merklePauserTimelock,
   };
 }

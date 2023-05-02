@@ -44,6 +44,7 @@ export async function getMainnetDeployedContracts(): Promise<MainnetDeployedCont
     shortTimelock: new Executor__factory(deployer).attach(deployedAddresses.shortTimelock),
     longTimelock: new Executor__factory(deployer).attach(deployedAddresses.longTimelock),
     merklePauserTimelock: new Executor__factory(deployer).attach(deployedAddresses.merklePauserTimelock),
+    starkwarePriorityTimelock: new Executor__factory(deployer).attach(deployedAddresses.starkwarePriorityTimelock),
     rewardsTreasury: new Treasury__factory(deployer).attach(deployedAddresses.rewardsTreasury),
     rewardsTreasuryProxyAdmin: new ProxyAdmin__factory(deployer).attach(deployedAddresses.rewardsTreasuryProxyAdmin),
     safetyModule: new SafetyModuleV1__factory(deployer).attach(deployedAddresses.safetyModule),
