@@ -16,7 +16,7 @@ describeContract('update the funding rate config hash', init, (ctx: TestContext)
   });
 
   it('Global configuration hash has been updated', async () => {
-    const globalConfig = await ctx.starkPerpetual.globalConfigurationHash()
+    const globalConfig = await ctx.starkPerpetual.globalConfigurationHash();
     expect(globalConfig).to.equal(ctx.config.STARK_PERPETUAL_CONFIG_HASH);
   });
 });

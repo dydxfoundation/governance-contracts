@@ -2,9 +2,9 @@
 pragma solidity 0.7.5;
 pragma abicoder v2;
 
-import { IGovernancePowerDelegationERC20 } from '../interfaces/IGovernancePowerDelegationERC20.sol';
-import { IGovernanceStrategy } from '../interfaces/IGovernanceStrategy.sol';
-import { GovernancePowerDelegationERC20Mixin } from './token/GovernancePowerDelegationERC20Mixin.sol';
+import { IGovernancePowerDelegationERC20 } from '../../interfaces/IGovernancePowerDelegationERC20.sol';
+import { IGovernanceStrategy } from '../../interfaces/IGovernanceStrategy.sol';
+import { GovernancePowerDelegationERC20Mixin } from '../token/GovernancePowerDelegationERC20Mixin.sol';
 
 interface IDydxToken {
   function _totalSupplySnapshots(
@@ -33,7 +33,7 @@ interface IDydxToken {
  * - getPropositionPowerAt: fetching a user Proposition Power at a specified block
  * - getVotingPowerAt: fetching a user Voting Power at a specified block
  */
-contract GovernanceStrategy is
+contract GovernanceStrategyV2 is
   IGovernanceStrategy
 {
   // ============ Constants ============
