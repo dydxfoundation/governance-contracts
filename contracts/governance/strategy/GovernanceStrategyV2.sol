@@ -21,13 +21,13 @@ interface IDydxToken {
 }
 
 /**
- * @title GovernanceStrategy
+ * @title GovernanceStrategyV2
  * @author dYdX
  *
  * @notice Smart contract containing logic to measure users' relative governance power for creating
  *  and voting on proposals.
  *
- *  User Power = User Power from DYDX token + User Power from staked-DYDX token.
+ *  User Power = User Power from each of: DYDX, stkDYDX, brgDYDX.
  *  User Power from Token = Token Power + Token Power as Delegatee [- Token Power if user has delegated]
  * Two wrapper functions linked to DYDX tokens's GovernancePowerDelegationERC20Mixin.sol implementation
  * - getPropositionPowerAt: fetching a user Proposition Power at a specified block
@@ -44,14 +44,19 @@ contract GovernanceStrategyV2 is
   /// @notice Token representing staked positions of the DYDX token.
   address public immutable STAKED_DYDX_TOKEN;
 
+  /// @notice Token representing bridged DYDX tokens.
+  address public immutable BRIDGED_DYDX_TOKEN;
+
   // ============ Constructor ============
 
   constructor(
     address dydxToken,
-    address stakedDydxToken
+    address stakedDydxToken,
+    address bridgedDydxToken
   ) {
     DYDX_TOKEN = dydxToken;
     STAKED_DYDX_TOKEN = stakedDydxToken;
+    BRIDGED_DYDX_TOKEN = bridgedDydxToken;
   }
 
   // ============ Other Functions ============
@@ -158,6 +163,11 @@ contract GovernanceStrategyV2 is
         powerType
       ) +
       IGovernancePowerDelegationERC20(STAKED_DYDX_TOKEN).getPowerAtBlock(
+        user,
+        blockNumber,
+        powerType
+      ) +
+      IGovernancePowerDelegationERC20(BRIDGED_DYDX_TOKEN).getPowerAtBlock(
         user,
         blockNumber,
         powerType

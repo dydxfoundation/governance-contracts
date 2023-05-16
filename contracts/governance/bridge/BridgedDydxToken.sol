@@ -2,45 +2,46 @@
 pragma solidity 0.7.5;
 
 import { ERC20 } from '../../dependencies/open-zeppelin/ERC20.sol';
-import { Ownable } from '../../dependencies/open-zeppelin/Ownable.sol';
+import { SafeERC20 } from '../../dependencies/open-zeppelin/SafeERC20.sol';
 import { SafeMath } from '../../dependencies/open-zeppelin/SafeMath.sol';
-import { GovernancePowerDelegationERC20Mixin } from './GovernancePowerDelegationERC20Mixin.sol';
+import { IERC20 } from '../../interfaces/IERC20.sol';
+import { GovernancePowerDelegationERC20Mixin } from '../token/GovernancePowerDelegationERC20Mixin.sol';
 
 /**
- * @title DydxToken
+ * @title BridgeDydxToken
  * @author dYdX
  *
- * @notice The dYdX governance token.
+ * @notice The Bridged dYdX governance token.
  */
-contract DydxToken is
-  GovernancePowerDelegationERC20Mixin,
-  Ownable
+contract BridgeDydxToken is
+  GovernancePowerDelegationERC20Mixin
 {
+  using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
   // ============ Events ============
 
   /**
-   * @dev Emitted when an address has been added to or removed from the token transfer allowlist.
+   * @dev Emitted when a bridge event occurs.
    *
-   * @param  account    Address that was added to or removed from the token transfer allowlist.
-   * @param  isAllowed  True if the address was added to the allowlist, false if removed.
+   * @param  id          Unique, incrementing ID of the bridge event.
+   * @param  amount      Amount of tokens bridged.
+   * @param  accAddress  Account address of the wallet to send to.
+   * @param  operAddress Operator address of the validator to stake to.
+   * @param  data        Any arbitrary data.
    */
-  event TransferAllowlistUpdated(address account, bool isAllowed);
-
-  /**
-   * @dev Emitted when the transfer restriction timestamp is reassigned.
-   *
-   * @param  transfersRestrictedBefore  The new timestamp on and after which non-allowlisted transfers may occur.
-   */
-  event TransfersRestrictedBeforeUpdated(uint256 transfersRestrictedBefore);
+  event Bridge(
+    uint256 indexed id,
+    uint256 amount,
+    bytes32 accAddress,
+    bytes32 operAddress,
+    bytes data
+  );
 
   // ============ Constants ============
 
-  string internal constant NAME = 'dYdX';
-  string internal constant SYMBOL = 'DYDX';
-
-  uint256 public constant INITIAL_SUPPLY = 1_000_000_000 ether;
+  string internal constant NAME = 'Bridged dYdX';
+  string internal constant SYMBOL = 'brgDYDX';
 
   bytes32 public immutable DOMAIN_SEPARATOR;
   bytes public constant EIP712_VERSION = '1';
@@ -51,15 +52,7 @@ contract DydxToken is
     'Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)'
   );
 
-  /// @notice Minimum time between mints.
-  uint256 public constant MINT_MIN_INTERVAL = 365 days;
-
-  /// @notice Cap on the percentage of the total supply that can be minted at each mint.
-  ///  Denominated in percentage points (units out of 100).
-  uint256 public immutable MINT_MAX_PERCENT;
-
-  /// @notice The timestamp on and after which the transfer restriction must be lifted.
-  uint256 public immutable TRANSFER_RESTRICTION_LIFTED_NO_LATER_THAN;
+  IERC20 public immutable DYDX_TOKEN;
 
   // ============ Storage ============
 
@@ -74,42 +67,18 @@ contract DydxToken is
   mapping(address => uint256) public _propositionPowerSnapshotsCounts;
   mapping(address => address) public _propositionPowerDelegates;
 
-  /// @notice Snapshots of the token total supply, at each block where the total supply has changed.
-  mapping(uint256 => Snapshot) public _totalSupplySnapshots;
-
-  /// @notice Number of snapshots of the token total supply.
-  uint256 public _totalSupplySnapshotsCount;
-
-  /// @notice Allowlist of addresses which may send or receive tokens while transfers are
-  ///  otherwise restricted.
-  mapping(address => bool) public _tokenTransferAllowlist;
-
-  /// @notice The timestamp on and after which minting may occur.
-  uint256 public _mintingRestrictedBefore;
-
-  /// @notice The timestamp on and after which non-allowlisted transfers may occur.
-  uint256 public _transfersRestrictedBefore;
+  /// @notice The next available (unused) id for the bridge event. Equal to the number of events.
+  uint256 public _nextAvailableBridgeId;
 
   // ============ Constructor ============
 
   /**
    * @notice Constructor.
-   *
-   * @param  distributor                           The address which will receive the initial supply of tokens.
-   * @param  transfersRestrictedBefore             Timestamp, before which transfers are restricted unless the
-   *                                               origin or destination address is in the allowlist.
-   * @param  transferRestrictionLiftedNoLaterThan  Timestamp, which is the maximum timestamp that transfer
-   *                                               restrictions can be extended to.
-   * @param  mintingRestrictedBefore               Timestamp, before which minting is not allowed.
-   * @param  mintMaxPercent                        Cap on the percentage of the total supply that can be minted at
-   *                                               each mint.
+
+   * @param  tokenAddress  The address of the token to bridge.
    */
   constructor(
-    address distributor,
-    uint256 transfersRestrictedBefore,
-    uint256 transferRestrictionLiftedNoLaterThan,
-    uint256 mintingRestrictedBefore,
-    uint256 mintMaxPercent
+    ERC20 tokenAddress
   )
     ERC20(NAME, SYMBOL)
   {
@@ -130,102 +99,39 @@ contract DydxToken is
       )
     );
 
-    // Validate and set parameters.
-    require(transfersRestrictedBefore > block.timestamp, 'TRANSFERS_RESTRICTED_BEFORE_TOO_EARLY');
-    require(transfersRestrictedBefore <= transferRestrictionLiftedNoLaterThan, 'MAX_TRANSFER_RESTRICTION_TOO_EARLY');
-    require(mintingRestrictedBefore > block.timestamp, 'MINTING_RESTRICTED_BEFORE_TOO_EARLY');
-    _transfersRestrictedBefore = transfersRestrictedBefore;
-    TRANSFER_RESTRICTION_LIFTED_NO_LATER_THAN = transferRestrictionLiftedNoLaterThan;
-    _mintingRestrictedBefore = mintingRestrictedBefore;
-    MINT_MAX_PERCENT = mintMaxPercent;
-
-    // Mint the initial supply.
-    _mint(distributor, INITIAL_SUPPLY);
-
-    emit TransfersRestrictedBeforeUpdated(transfersRestrictedBefore);
-  }
-
-  // ============ Other Functions ============
-
-  /**
-   * @notice Adds addresses to the token transfer allowlist. Reverts if any of the addresses
-   *  already exist in the allowlist. Only callable by owner.
-   *
-   * @param  addressesToAdd  Addresses to add to the token transfer allowlist.
-   */
-  function addToTokenTransferAllowlist(address[] calldata addressesToAdd)
-    external
-    onlyOwner
-  {
-    for (uint256 i = 0; i < addressesToAdd.length; i++) {
-      require(
-        !_tokenTransferAllowlist[addressesToAdd[i]],
-        'ADDRESS_EXISTS_IN_TRANSFER_ALLOWLIST'
-      );
-      _tokenTransferAllowlist[addressesToAdd[i]] = true;
-      emit TransferAllowlistUpdated(addressesToAdd[i], true);
-    }
+    DYDX_TOKEN = tokenAddress;
   }
 
   /**
-   * @notice Removes addresses from the token transfer allowlist. Reverts if any of the addresses
-   *  don't exist in the allowlist. Only callable by owner.
+   * @notice Bridge the DYDX token and receive brgDYDX.
    *
-   * @param  addressesToRemove  Addresses to remove from the token transfer allowlist.
+   * @param  amount       The amount of tokens to bridge
+   * @param  accAddress   The address to send to.
+   * @param  operAddress  The address of the validator to bond to.
+   * @param  data         Arbitrary data to include in the event. For possible future compatibility.
    */
-  function removeFromTokenTransferAllowlist(address[] calldata addressesToRemove)
+  function bridge(
+    uint256 amount,
+    bytes32 accAddress,
+    bytes32 operAddress,
+    bytes calldata data
+  )
     external
-    onlyOwner
   {
-    for (uint256 i = 0; i < addressesToRemove.length; i++) {
-      require(
-        _tokenTransferAllowlist[addressesToRemove[i]],
-        'ADDRESS_DOES_NOT_EXIST_IN_TRANSFER_ALLOWLIST'
-      );
-      _tokenTransferAllowlist[addressesToRemove[i]] = false;
-      emit TransferAllowlistUpdated(addressesToRemove[i], false);
-    }
-  }
+    // Wrap the tokens.
+    DYDX_TOKEN.safeTransferFrom(msg.sender, address(this), amount);
+    _mint(msg.sender, amount);
 
-  /**
-   * @notice Updates the transfer restriction. Reverts if the transfer restriction has already passed,
-   *  the new transfer restriction is earlier than the previous one, or the new transfer restriction is
-   *  after the maximum transfer restriction.
-   *
-   * @param  transfersRestrictedBefore  The timestamp on and after which non-allowlisted transfers may occur.
-   */
-  function updateTransfersRestrictedBefore(uint256 transfersRestrictedBefore)
-    external
-    onlyOwner
-  {
-    uint256 previousTransfersRestrictedBefore = _transfersRestrictedBefore;
-    require(block.timestamp < previousTransfersRestrictedBefore, 'TRANSFER_RESTRICTION_ENDED');
-    require(previousTransfersRestrictedBefore <= transfersRestrictedBefore, 'NEW_TRANSFER_RESTRICTION_TOO_EARLY');
-    require(transfersRestrictedBefore <= TRANSFER_RESTRICTION_LIFTED_NO_LATER_THAN, 'AFTER_MAX_TRANSFER_RESTRICTION');
-
-    _transfersRestrictedBefore = transfersRestrictedBefore;
-
-    emit TransfersRestrictedBeforeUpdated(transfersRestrictedBefore);
-  }
-
-  /**
-   * @notice Mint new tokens. Only callable by owner after the required time period has elapsed.
-   *
-   * @param  recipient  The address to receive minted tokens.
-   * @param  amount     The number of tokens to mint.
-   */
-  function mint(address recipient, uint256 amount)
-    external
-    onlyOwner
-  {
-    require(block.timestamp >= _mintingRestrictedBefore, 'MINT_TOO_EARLY');
-    require(amount <= totalSupply().mul(MINT_MAX_PERCENT).div(100), 'MAX_MINT_EXCEEDED');
-
-    // Update the next allowed minting time.
-    _mintingRestrictedBefore = block.timestamp.add(MINT_MIN_INTERVAL);
-
-    // Mint the amount.
-    _mint(recipient, amount);
+    // Emit the event and increase the nonce.
+    uint256 nonce = _nextAvailableBridgeId;
+    emit Bridge(
+      nonce,
+      amount,
+      accAddress,
+      operAddress,
+      data
+    );
+    _nextAvailableBridgeId = nonce + 1;
   }
 
   /**
@@ -280,67 +186,6 @@ contract DydxToken is
     returns (uint256)
   {
     return _nonces[owner];
-  }
-
-  function transfer(address recipient, uint256 amount)
-    public
-    override
-    returns (bool)
-  {
-    _requireTransferAllowed(_msgSender(), recipient);
-    return super.transfer(recipient, amount);
-  }
-
-  function transferFrom(address sender, address recipient, uint256 amount)
-    public
-    override
-    returns (bool)
-  {
-    _requireTransferAllowed(sender, recipient);
-    return super.transferFrom(sender, recipient, amount);
-  }
-
-  /**
-   * @dev Override _mint() to write a snapshot whenever the total supply changes.
-   *
-   *  These snapshots are intended to be used by the governance strategy.
-   *
-   *  Note that the ERC20 _burn() function is never used. If desired, an official burn mechanism
-   *  could be implemented external to this contract, and accounted for in the governance strategy.
-   */
-  function _mint(address account, uint256 amount)
-    internal
-    override
-  {
-    super._mint(account, amount);
-
-    uint256 snapshotsCount = _totalSupplySnapshotsCount;
-    uint128 currentBlock = uint128(block.number);
-    uint128 newValue = uint128(totalSupply());
-
-    // Note: There is no special case for the total supply being updated multiple times in the same
-    // block. That should never occur.
-    _totalSupplySnapshots[snapshotsCount] = Snapshot(currentBlock, newValue);
-    _totalSupplySnapshotsCount = snapshotsCount.add(1);
-  }
-
-  function _requireTransferAllowed(address sender, address recipient)
-    view
-    internal
-  {
-    // Compare against the constant `TRANSFER_RESTRICTION_LIFTED_NO_LATER_THAN` first
-    // to avoid additional gas costs from reading from storage.
-    if (
-      block.timestamp < TRANSFER_RESTRICTION_LIFTED_NO_LATER_THAN &&
-      block.timestamp < _transfersRestrictedBefore
-    ) {
-      // While transfers are restricted, a transfer is permitted if either the sender or the
-      // recipient is on the allowlist.
-      require(
-        _tokenTransferAllowlist[sender] || _tokenTransferAllowlist[recipient],
-        'NON_ALLOWLIST_TRANSFERS_DISABLED'
-      );
-    }
   }
 
   /**
