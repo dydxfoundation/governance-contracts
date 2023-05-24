@@ -19,14 +19,15 @@ import { simulateAffectedStakers } from './affected-stakers';
 import { fundGrantsProgramViaProposal, fundGrantsProgramNoProposal } from './grants-program-proposal';
 import { fundGrantsProgramV15ViaProposal, fundGrantsProgramV15NoProposal } from './grants-program-v1_5-proposal';
 import { fundOpsTrustNoProposal, fundOpsTrustViaProposal } from './ops-trust-proposal';
+import { fundOpsTrustV2ViaProposal, fundOpsTrustV2NoProposal } from './ops-trust-v2-proposal';
 import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
 import { updateMerkleDistributorRewardsParametersViaProposal, updateMerkleDistributorRewardsParametersNoProposal } from './update-merkle-distributor-rewards-parameters-proposal';
 import { updateMerkleDistributorRewardsParametersV2ViaProposal, updateMerkleDistributorRewardsParametersV2NoProposal } from './update-merkle-distributor-rewards-parameters-v2-proposal';
+import { executeV3DataAvailabilityViaProposal, executeV3DataAvailabilityNoProposal } from './v3-data-availability-proposal';
 import { executeWindDownBorrowingPoolNoProposal, executeWindDownBorrowingPoolViaProposal } from './wind-down-borrowing-pool';
 import { executeWindDownSafetyModuleNoProposal, executeWindDownSafetyModuleViaProposal } from './wind-down-safety-module';
-import { executeV3DataAvailabilityViaProposal, executeV3DataAvailabilityNoProposal } from './v3-data-availability-proposal';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -315,17 +316,39 @@ export async function executeUpdateMerkleDistributorRewardsParametersV2ProposalF
 export async function executeV3DataAvailabilityProposalForTest(
   deployedContracts: AllDeployedContracts,
 ) {
-    if (config.TEST_V3_DATA_AVAILABILITY_WITH_PROPOSAL) {
-      await executeV3DataAvailabilityViaProposal({
-        dydxTokenAddress: deployedContracts.dydxToken.address,
-        governorAddress: deployedContracts.governor.address,
-        starkwarePriorityAddress: deployedContracts.starkwarePriorityTimelock.address,
-        starkPerpetualAddress: deployedContracts.starkPerpetual.address,
+  if (config.TEST_V3_DATA_AVAILABILITY_WITH_PROPOSAL) {
+    await executeV3DataAvailabilityViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      starkwarePriorityAddress: deployedContracts.starkwarePriorityTimelock.address,
+      starkPerpetualAddress: deployedContracts.starkPerpetual.address,
     });
   } else {
     await executeV3DataAvailabilityNoProposal({
       starkwarePriorityAddress: deployedContracts.starkwarePriorityTimelock.address,
       starkPerpetualAddress: deployedContracts.starkPerpetual.address,
+    });
+  }
+}
+
+export async function executeOpsTrustV2ProposalForTest(
+  deployedContracts: AllDeployedContracts,
+) {
+  const deployConfig = getDeployConfig();
+  if (config.TEST_FUND_OPS_TRUST_v2_WITH_PROPOSAL) {
+    await fundOpsTrustV2ViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      communityTreasuryAddress: deployedContracts.communityTreasury.address,
+      dotMultisigAddress: deployConfig.DOT_MULTISIG_ADDRESS,
+    });
+  } else {
+    await fundOpsTrustV2NoProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      communityTreasuryAddress: deployedContracts.communityTreasury.address,
+      dotMultisigAddress: deployConfig.DOT_MULTISIG_ADDRESS,
     });
   }
 }
@@ -358,7 +381,7 @@ export async function configureForTest(
     );
   }
 
-  // Advance to the the next epoch start, to ensure we don't begin the tests in a blackout window.
+  // Advance to the next epoch start, to ensure we don't begin the tests in a blackout window.
   const nextEpochStart = (
     await latestBlockTimestamp() +
     Number(await deployedContracts.safetyModule.getTimeRemainingInCurrentEpoch())
