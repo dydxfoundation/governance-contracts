@@ -294,9 +294,9 @@ const config = {
   // Ops Trust ("DOT") Funding Amount (DIP 23)
   // Amount to be transferred is $6,600,000 of DYDX
   // Per the DIP price has been calculated using 24h VWAP from market data
-  // Price derived is $2.09 using Binance.com DYDX/USDT on
-  // Using market price of $2.09, rounded amount to be transferred is 3,157,894 DYDX
-  DOT_FUNDING_AMOUNT_v2: '3157894000000000000000000',
+  // Price derived is $1.53 using Binance.com DYDX/USDT on
+  // Using market price of $1.53, rounded amount to be transferred is 4,314,000 DYDX
+  DOT_FUNDING_AMOUNT_v2: '4314000000000000000000000',
 };
 
 export type BaseConfig = typeof config;
