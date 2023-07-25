@@ -36,38 +36,38 @@ export async function createV3DataAvailabilityProposal({
     [starkPerpetualAddress, starkPerpetualAddress, starkPerpetualAddress, starkPerpetualAddress, starkPerpetualAddress, starkPerpetualAddress],
     ['0', '0', '0', '0', '0', '0'],
     [
-      'mainAcceptGovernance()',
-      'registerGlobalConfigurationChange(bytes32)',
-      'applyGlobalConfigurationChange(bytes32)',
-      'proxyAcceptGovernance()',
-      'addImplementation(address,bytes,bool)',
-      'upgradeTo(address,bytes,bool)',
+        'mainAcceptGovernance()',
+        'registerGlobalConfigurationChange(bytes32)',
+        'applyGlobalConfigurationChange(bytes32)',
+        'proxyAcceptGovernance()',
+        'addImplementation(address,bytes,bool)',
+        'upgradeTo(address,bytes,bool)',
     ],
     [
-      hre.ethers.utils.defaultAbiCoder.encode(
-        [],
-        [],
-      ),
-      hre.ethers.utils.defaultAbiCoder.encode(
-        ['bytes32'],
-        [deployConfig.STARK_PERPETUAL_CONFIG_HASH],
-      ),
-      hre.ethers.utils.defaultAbiCoder.encode(
-        ['bytes32'],
-        [deployConfig.STARK_PERPETUAL_CONFIG_HASH],
-      ),
-      hre.ethers.utils.defaultAbiCoder.encode(
-        [],
-        [], 
-      ),
-      hre.ethers.utils.defaultAbiCoder.encode(
-        ['address', 'bytes', 'bool'],
-        [deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false],
-      ),
-      hre.ethers.utils.defaultAbiCoder.encode(
-        ['address', 'bytes', 'bool'],
-        [deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false],
-      ),
+        hre.ethers.utils.defaultAbiCoder.encode(
+            [],
+            [],
+        ),
+        hre.ethers.utils.defaultAbiCoder.encode(
+            ['bytes32'],
+            [deployConfig.STARK_PERPETUAL_CONFIG_HASH],
+        ),
+        hre.ethers.utils.defaultAbiCoder.encode(
+            ['bytes32'],
+            [deployConfig.STARK_PERPETUAL_CONFIG_HASH],
+        ),
+        hre.ethers.utils.defaultAbiCoder.encode(
+            [],
+            [], 
+        ),
+        hre.ethers.utils.defaultAbiCoder.encode(
+            ['address', 'bytes', 'bool'],
+            [deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false],
+        ),
+        hre.ethers.utils.defaultAbiCoder.encode(
+            ['address', 'bytes', 'bool'],
+            [deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false],
+        ),
     ],
     [false, false, false, false, false, false],
     proposalIpfsHashHex,

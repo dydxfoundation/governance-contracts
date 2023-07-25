@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-
 import { DIP_18_IPFS_HASH } from '../../src/lib/constants';
 import { describeContractHardhatRevertBefore, TestContext } from '../helpers/describe-contract';
 
