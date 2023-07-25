@@ -57,3 +57,8 @@ export const DIP_22_IPFS_HASH = '0x11e2866e87f43c68118021b1efaf1053be1f3cb0d25c0
 // DIP_23_IPFS_HASH taken from the link below:
 // https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-23-Ipfs-hashes.json
 export const DIP_23_IPFS_HASH = '0x5aca381042cb641c1000126d5a183c38b17492eb60a86910973d0c3f1e867f43';
+
+
+// DIP_24_IPFS_HASH taken from the link below:
+//
+export const DIP_24_IPFS_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000';

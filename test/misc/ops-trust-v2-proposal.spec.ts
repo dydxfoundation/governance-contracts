@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 
 import { DIP_23_IPFS_HASH } from '../../src/lib/constants';
-import { describeContract, TestContext } from '../helpers/describe-contract';
+import { describeContractHardhatRevertBefore, TestContext } from '../helpers/describe-contract';
 
 function init() {}
 
-describeContract('ops-trust-v2-proposal', init, (ctx: TestContext) => {
+describeContractHardhatRevertBefore('ops-trust-v2-proposal', init, (ctx: TestContext) => {
 
   it('Proposal IPFS hash is correct', async () => {
     const opsTrustV2ProposalId = 13;
