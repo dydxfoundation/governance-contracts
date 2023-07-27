@@ -13,7 +13,7 @@ function init() { }
 describeContract('update-merkle-distributor-rewards-parameters-dip24', init, (ctx: TestContext) => {
 
   it('Proposal IPFS hash is correct', async () => {
-      const updateMerkleDistributorRewardsParametersDIP24Proposal = 24;
+      const updateMerkleDistributorRewardsParametersDIP24Proposal = 14;
       const proposal = await ctx.governor.getProposalById(updateMerkleDistributorRewardsParametersDIP24Proposal);
       expect(proposal.ipfsHash).to.equal(DIP_24_IPFS_HASH);
     });
