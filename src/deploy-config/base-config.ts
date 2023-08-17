@@ -297,6 +297,15 @@ const config = {
   // Price derived is $1.53 using Binance.com DYDX/USDT on
   // Using market price of $1.53, rounded amount to be transferred is 4,314,000 DYDX
   DOT_FUNDING_AMOUNT_v2: '4314000000000000000000000',
+
+  // Update Merkle Distributor LP Rewards (DIP 24)
+  // Proposal to reduce the current LP rewards by 50%. Trading rewards will not be changed.
+  // Alpha parameter will remain unchanged.
+  // LP rewards being reduced by 50% from '1,150,685' to '575,343' per epoch.
+  UPDATE_MERKLE_DISTRIBUTOR_LP_REWARDS_AMOUNT_DIP24: '575343000000000000000000',
+  // Trading rewards and alpha are unchanged.
+  UPDATE_MERKLE_DISTRIBUTOR_TRADER_REWARDS_AMOUNT_DIP24: '1582192000000000000000000',
+  UPDATE_MERKLE_DISTRIBUTOR_ALPHA_PARAMETER_DIP24: '0',
 };
 
 export type BaseConfig = typeof config;
