@@ -42,6 +42,7 @@
     "urql": "^2.0.6"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-verify": "^1.1.1",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@typechain/ethers-v5": "^7.1.0",
@@ -62,7 +63,7 @@
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eth-sig-util": "^3.0.1",
     "ethereum-waffle": "^3.4.0",
-    "hardhat": "^2.17.0",
+    "hardhat": "^2.17.2",
     "lodash": "^4.17.21",
     "luxon": "^2.0.2",
     "reflect-metadata": "^0.1.13",
