@@ -2,7 +2,7 @@
 pragma solidity 0.7.5;
 pragma abicoder v2;
 
-import { BridgedDydxToken } from '../bridge/BridgedDydxToken.sol';
+import { IBridge } from '../governance/bridge/IBridge.sol';
 import { Treasury } from './Treasury.sol';
 import { TreasuryVester } from './TreasuryVester.sol';
 
@@ -19,23 +19,23 @@ contract TreasuryBridge is
 {
   // Immutable addresses
   TreasuryVester public immutable TREASURY_VESTER;
-  BridgedDydxToken public immutable BRIDGE;
+  IBridge public immutable BRIDGE;
   address public immutable BURN_ADDRESS;
 
   /**
    * @notice Constructor.
    *
    * @param  treasuryVester  The address of the treasury vester.
-   * @param  bridge          The address of bridge contract.
+   * @param  bridgeAddress   The address of bridge contract.
    * @param  burnAddress     The address of where to move the vesting to.
    */
   constructor(
     address treasuryVester,
-    address bridge,
+    address bridgeAddress,
     address burnAddress
   ) {
     TREASURY_VESTER = TreasuryVester(treasuryVester);
-    BRIDGE = BridgedDydxToken(bridge);
+    BRIDGE = IBridge(bridgeAddress);
     BURN_ADDRESS = burnAddress;
   }
 
@@ -46,13 +46,21 @@ contract TreasuryBridge is
    */
   function initialize()
     external
+    virtual
+    override
     initializer
   {
     TREASURY_VESTER.claim();
     TREASURY_VESTER.setRecipient(BURN_ADDRESS);
   }
 
-  function getRevision() internal pure override returns (uint256) {
+  function getRevision()
+    internal
+    pure
+    virtual
+    override
+    returns (uint256)
+  {
     return 2;
   }
 
@@ -61,16 +69,16 @@ contract TreasuryBridge is
    *
    * @param  amount       The amount of tokens to bridge
    * @param  accAddress   The address to send to.
-   * @param  data         Arbitrary data to include in the event. For possible future compatibility.
+   * @param  data         Arbitrary data to include in the event.
    */
-  function bridge(
+  function bridgeTreasury(
     uint256 amount,
     bytes32 accAddress,
-    bytes data
+    bytes calldata data
   )
     external
     onlyOwner
   {
-    BRIDGE.bridge(amount, address, data);
+    BRIDGE.bridge(amount, accAddress, data);
   }
 }

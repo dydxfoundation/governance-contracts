@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.7.5;
 
+import { IBridge } from './IBridge.sol';
 import { ERC20 } from '../../dependencies/open-zeppelin/ERC20.sol';
 import { SafeERC20 } from '../../dependencies/open-zeppelin/SafeERC20.sol';
 import { SafeMath } from '../../dependencies/open-zeppelin/SafeMath.sol';
@@ -8,38 +9,22 @@ import { IERC20 } from '../../interfaces/IERC20.sol';
 import { GovernancePowerDelegationERC20Mixin } from '../token/GovernancePowerDelegationERC20Mixin.sol';
 
 /**
- * @title BridgeDydxToken
+ * @title WrappedEthereumDydxToken
  * @author dYdX
  *
- * @notice The Bridged dYdX governance token.
+ * @notice The Wrapped Ethereum DYDX governance token.
  */
-contract BridgeDydxToken is
-  GovernancePowerDelegationERC20Mixin
+contract WrappedEthereumDydxToken is
+  GovernancePowerDelegationERC20Mixin,
+  IBridge
 {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
-  // ============ Events ============
-
-  /**
-   * @dev Emitted when a bridge event occurs.
-   *
-   * @param  id          Unique, incrementing ID of the bridge event.
-   * @param  amount      Amount of tokens bridged.
-   * @param  accAddress  Account address of the wallet to send to.
-   * @param  data        Any arbitrary data.
-   */
-  event Bridge(
-    uint256 indexed id,
-    uint256 amount,
-    bytes32 accAddress,
-    bytes data
-  );
-
   // ============ Constants ============
 
-  string internal constant NAME = 'Bridged dYdX';
-  string internal constant SYMBOL = 'brgDYDX';
+  string internal constant NAME = 'Wrapped Ethereum DYDX';
+  string internal constant SYMBOL = 'wethDYDX';
 
   bytes32 public immutable DOMAIN_SEPARATOR;
   bytes public constant EIP712_VERSION = '1';
@@ -101,7 +86,7 @@ contract BridgeDydxToken is
   }
 
   /**
-   * @notice Bridge the DYDX token and receive brgDYDX.
+   * @notice Bridge the DYDX token and receive wethDYDX.
    *
    * @param  amount       The amount of tokens to bridge
    * @param  accAddress   The address to send to.
@@ -113,6 +98,7 @@ contract BridgeDydxToken is
     bytes calldata memo
   )
     external
+    override
   {
     // Wrap the tokens.
     DYDX_TOKEN.safeTransferFrom(msg.sender, address(this), amount);

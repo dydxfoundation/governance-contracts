@@ -27,7 +27,7 @@ interface IDydxToken {
  * @notice Smart contract containing logic to measure users' relative governance power for creating
  *  and voting on proposals.
  *
- *  User Power = User Power from each of: DYDX, stkDYDX, brgDYDX.
+ *  User Power = User Power from each of: DYDX, stkDYDX, wethDYDX.
  *  User Power from Token = Token Power + Token Power as Delegatee [- Token Power if user has delegated]
  * Two wrapper functions linked to DYDX tokens's GovernancePowerDelegationERC20Mixin.sol implementation
  * - getPropositionPowerAt: fetching a user Proposition Power at a specified block

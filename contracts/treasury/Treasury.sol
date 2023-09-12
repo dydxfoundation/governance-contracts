@@ -23,6 +23,7 @@ contract Treasury is
 
   function initialize()
     external
+    virtual
     initializer
   {
     __Ownable_init();
@@ -52,7 +53,13 @@ contract Treasury is
     token.safeTransfer(recipient, amount);
   }
 
-  function getRevision() internal pure override returns (uint256) {
+  function getRevision()
+    internal
+    pure
+    virtual
+    override
+    returns (uint256)
+  {
     return REVISION;
   }
 }
