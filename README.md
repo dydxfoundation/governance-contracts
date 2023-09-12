@@ -16,3 +16,12 @@ All major new smart contracts have been audited by Peckshield:
 * MerkleDistributorV1 audited at [3fd209c](https://github.com/dydxfoundation/governance-contracts/commit/3fd209c768da33d138a74092b196c38c970c2342)
 
 The core governance and token contracts are based on the AAVE governance contracts (audited by Peckshield) and AAVE token contracts (audited by CertiK and Certora).
+
+The following contracts supporting a potential migration of DYDX from Ethereum to the dYdX Chain (if and when deployed) have also been audited:
+
+* [WrappedEthereumDydxToken]([url](https://github.com/dydxfoundation/governance-contracts/tree/master/contracts/governance/bridge)) 
+* [GovernanceStrategyV2]([url](https://github.com/dydxfoundation/governance-contracts/blob/master/contracts/governance/strategy/GovernanceStrategyV2.sol))
+* [TreasuryBridge]([url](https://github.com/dydxfoundation/governance-contracts/blob/master/contracts/treasury/TreasuryBridge.sol))
+
+Audit report:
+[https://github.com/dydxfoundation/governance-contracts/tree/master/audits](url)
