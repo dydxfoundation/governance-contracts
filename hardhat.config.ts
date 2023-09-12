@@ -16,6 +16,7 @@ import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
 import 'solidity-coverage';
 import 'hardhat-abi-exporter';
+import '@nomicfoundation/hardhat-verify';
 
 dotenv.config();
 
@@ -48,7 +49,7 @@ function getRemoteNetworkConfig(
   networkId: number,
 ): HttpNetworkUserConfig {
   return {
-    url: `https://eth-${networkName}.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+    url: `https://eth-${networkName}.g.alchemy.com/v2/${ALCHEMY_KEY}`,
     chainId: networkId,
     accounts: {
       mnemonic: MNEMONIC,
@@ -102,6 +103,7 @@ const hardhatConfig: HardhatUserConfig = {
     timeout: 0,
   },
   networks: {
+    sepolia: getRemoteNetworkConfig(NetworkName.sepolia, 11155111),
     kovan: getRemoteNetworkConfig(NetworkName.kovan, 42),
     ropsten: getRemoteNetworkConfig(NetworkName.ropsten, 3),
     mainnet: getRemoteNetworkConfig(NetworkName.mainnet, 1),
@@ -109,6 +111,13 @@ const hardhatConfig: HardhatUserConfig = {
   },
   abiExporter: {
     clear: true,
+  },
+  etherscan: {
+    apiKey: {
+      // Uncomment these and set the environment variable if you want to verify contracts on Etherscan.
+      // mainnet: process.env.MAINNET_ETHERSCAN_API_KEY!,
+      // sepolia: process.env.SEPOLIA_ETHERSCAN_API_KEY!,
+    },
   },
 };
 

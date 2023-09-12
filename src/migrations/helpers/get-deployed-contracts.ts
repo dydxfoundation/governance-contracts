@@ -22,6 +22,7 @@ import { getDeployerSigner } from '../../deploy-config/get-deployer-address';
 import mainnetAddresses from '../../deployed-addresses/mainnet.json';
 import { getNetworkName } from '../../hre';
 import { MainnetDeployedContracts } from '../../types';
+import { deployUpgradeGovernanceStrategyV2Contracts } from '../deploy-upgrade-governance-strategy-v2-contracts';
 
 type DeployedAddresses = typeof mainnetAddresses;
 
@@ -37,6 +38,15 @@ export async function getMainnetDeployedContracts(): Promise<MainnetDeployedCont
   } else {
     throw new Error(`Deployed addresses not found for network ${getNetworkName()}`);
   }
+
+  // Deploy the contracts which are not yet deployed on mainnet.
+  const {
+    wrappedDydxToken,
+    governanceStrategyV2,
+  } = await deployUpgradeGovernanceStrategyV2Contracts({
+    dydxTokenAddress: deployedAddresses.dydxToken,
+    safetyModuleAddress: deployedAddresses.safetyModule,
+  });
 
   return {
     dydxToken: new DydxToken__factory(deployer).attach(deployedAddresses.dydxToken),
@@ -67,5 +77,7 @@ export async function getMainnetDeployedContracts(): Promise<MainnetDeployedCont
     dydxCollateralToken: IERC20__factory.connect(deployedAddresses.dydxCollateralToken, deployer),
     starkPerpetual: IStarkPerpetual__factory.connect(deployedAddresses.starkPerpetual, deployer),
     starkProxyNewImpl: new StarkProxyV2__factory(deployer).attach(deployedAddresses.starkProxyNewImpl),
+    wrappedDydxToken,
+    governanceStrategyV2,
   };
 }
