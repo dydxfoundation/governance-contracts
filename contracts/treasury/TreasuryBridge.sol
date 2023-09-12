@@ -73,7 +73,7 @@ contract TreasuryBridge is
    */
   function bridgeTreasury(
     uint256 amount,
-    bytes32 accAddress,
+    bytes calldata accAddress,
     bytes calldata data
   )
     external

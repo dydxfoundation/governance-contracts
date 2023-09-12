@@ -10,13 +10,15 @@ interface IBridge {
    *
    * @param  id          Unique ID of the bridge event.
    * @param  amount      Amount of tokens bridged.
+   * @param  from        The Ethereum address the tokens were transferred from.
    * @param  accAddress  The address to send to.
    * @param  data        Any arbitrary data.
    */
   event Bridge(
     uint256 indexed id,
     uint256 amount,
-    bytes32 accAddress,
+    address from,
+    bytes accAddress,
     bytes data
   );
 
@@ -29,7 +31,7 @@ interface IBridge {
    */
   function bridge(
     uint256 amount,
-    bytes32 accAddress,
+    bytes calldata accAddress,
     bytes calldata memo
   ) external;
 }

@@ -94,7 +94,7 @@ contract WrappedEthereumDydxToken is
    */
   function bridge(
     uint256 amount,
-    bytes32 accAddress,
+    bytes calldata accAddress,
     bytes calldata memo
   )
     external
@@ -109,6 +109,7 @@ contract WrappedEthereumDydxToken is
     emit Bridge(
       nonce,
       amount,
+      msg.sender,
       accAddress,
       memo
     );

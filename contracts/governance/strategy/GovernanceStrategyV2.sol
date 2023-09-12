@@ -44,19 +44,19 @@ contract GovernanceStrategyV2 is
   /// @notice Token representing staked positions of the DYDX token.
   address public immutable STAKED_DYDX_TOKEN;
 
-  /// @notice Token representing bridged DYDX tokens.
-  address public immutable BRIDGED_DYDX_TOKEN;
+  /// @notice Token representing Wrapped Ethereum DYDX tokens.
+  address public immutable WRAPPED_ETHEREUM_DYDX_TOKEN;
 
   // ============ Constructor ============
 
   constructor(
     address dydxToken,
     address stakedDydxToken,
-    address bridgedDydxToken
+    address wrappedEthereumDydxToken
   ) {
     DYDX_TOKEN = dydxToken;
     STAKED_DYDX_TOKEN = stakedDydxToken;
-    BRIDGED_DYDX_TOKEN = bridgedDydxToken;
+    WRAPPED_ETHEREUM_DYDX_TOKEN = wrappedEthereumDydxToken;
   }
 
   // ============ Other Functions ============
@@ -167,7 +167,7 @@ contract GovernanceStrategyV2 is
         blockNumber,
         powerType
       ) +
-      IGovernancePowerDelegationERC20(BRIDGED_DYDX_TOKEN).getPowerAtBlock(
+      IGovernancePowerDelegationERC20(WRAPPED_ETHEREUM_DYDX_TOKEN).getPowerAtBlock(
         user,
         blockNumber,
         powerType
