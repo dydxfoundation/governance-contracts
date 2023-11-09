@@ -31,8 +31,8 @@ export async function executeV3DataAvailabilityNoProposal({
   await waitForTx(await starkPerpetual.registerGlobalConfigurationChange(deployConfig.STARK_PERPETUAL_CONFIG_HASH));
   await waitForTx(await starkPerpetual.applyGlobalConfigurationChange(deployConfig.STARK_PERPETUAL_CONFIG_HASH));
   await waitForTx(await starkPerpetual.proxyAcceptGovernance());
-  await waitForTx(await starkPerpetual.addImplementation(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
-  await waitForTx(await starkPerpetual.upgradeTo(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
+  await waitForTx((starkPerpetual as any).addImplementation(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
+  await waitForTx((starkPerpetual as any).upgradeTo(deployConfig.IMPLEMENTATION_ADDRESS, deployConfig.BYTES_IMPLEMENTATION, false));
 
   log('\n=== V3 DATA AVAILABILITY PROPOSAL COMPLETE ===\n');
 }

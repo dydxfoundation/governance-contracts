@@ -1,6 +1,6 @@
 {
   "name": "@dydxfoundation/governance",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "dYdX governance smart contracts",
   "main": "dist/src/index.js",
   "scripts": {
