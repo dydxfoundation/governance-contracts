@@ -20,7 +20,7 @@ import { fundGrantsProgramViaProposal, fundGrantsProgramNoProposal } from './gra
 import { fundGrantsProgramV15ViaProposal, fundGrantsProgramV15NoProposal } from './grants-program-v1_5-proposal';
 import { fundOpsTrustNoProposal, fundOpsTrustViaProposal } from './ops-trust-proposal';
 import { fundOpsTrustV2ViaProposal, fundOpsTrustV2NoProposal } from './ops-trust-v2-proposal';
-import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './saety-module-compensation';
+import { fundSafetyModuleRecoveryNoProposal, fundSafetyModuleRecoveryViaProposal } from './safety-module-compensation';
 import { executeSafetyModuleUpgradeNoProposal, executeSafetyModuleUpgradeViaProposal } from './safety-module-fix';
 import { executeStarkProxyUpgradeNoProposal, executeStarkProxyUpgradeViaProposal } from './stark-proxy-fix';
 import { updateMerkleDistributorRewardsParametersDIP24NoProposal, updateMerkleDistributorRewardsParametersDIP24ViaProposal } from './update-merkle-distributor-rewards-parameters-dip24';
