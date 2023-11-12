@@ -10,6 +10,7 @@ import { deployPhase1 } from './migrations/phase-1';
 import { deployPhase2 } from './migrations/phase-2';
 import { deploySafetyModuleRecovery } from './migrations/safety-module-recovery';
 import { deployUpgradeGovernanceStrategyV2Contracts } from './migrations/deploy-upgrade-governance-strategy-v2-contracts';
+import { deployTreasuryBridgeContracts } from './migrations/deploy-treasury-bridge-contracts';
 export * from './deploy-config/types';
 
 export type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
@@ -22,6 +23,7 @@ export type AllDeployedContracts = (
   UnwrapPromise<ReturnType<typeof deploySafetyModuleRecovery>> &
   UnwrapPromise<ReturnType<typeof deployStarkProxyV2>> &
   UnwrapPromise<ReturnType<typeof deployUpgradeGovernanceStrategyV2Contracts>> &
+  UnwrapPromise<ReturnType<typeof deployTreasuryBridgeContracts>> &
   UnwrapPromise<ReturnType<typeof deployMocks>>
 );
 

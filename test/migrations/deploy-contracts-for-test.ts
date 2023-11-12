@@ -31,6 +31,7 @@ import { executeWindDownBorrowingPoolNoProposal, executeWindDownBorrowingPoolVia
 import { executeWindDownSafetyModuleNoProposal, executeWindDownSafetyModuleViaProposal } from './wind-down-safety-module';
 import { executeUpgradeGovernanceStrategyV2NoProposal, executeUpgradeGovernanceStrategyV2ViaProposal } from './upgrade-governance-strategy-v2';
 import { deployUpgradeGovernanceStrategyV2Contracts } from '../../src/migrations/deploy-upgrade-governance-strategy-v2-contracts';
+import { deployTreasuryBridgeContracts } from '../../src/migrations/deploy-treasury-bridge-contracts';
 
 /**
  * Perform all deployments steps for the test environment.
@@ -108,17 +109,24 @@ export async function deployContractsForTest(): Promise<AllDeployedContracts> {
   });
 
 
-  const UpgradeGovernanceStrategyV2Contracts = await deployUpgradeGovernanceStrategyV2Contracts({
+  const upgradeGovernanceStrategyV2Contracts = await deployUpgradeGovernanceStrategyV2Contracts({
       dydxTokenAddress: phase1Contracts.dydxToken.address,
       safetyModuleAddress: phase2Contracts.safetyModule.address,
   });
+
+  const treasuryBridgeContracts = await deployTreasuryBridgeContracts({
+    wrappedDydxTokenAddress: upgradeGovernanceStrategyV2Contracts.wrappedDydxToken.address,
+    rewardsTreasuryVesterAddress: phase2Contracts.rewardsTreasuryVester.address,
+    communityTreasuryVesterAddress: phase2Contracts.communityTreasuryVester.address,
+  })
 
   return {
     ...phase1Contracts,
     ...phase2Contracts,
     ...smRecoveryContracts,
     ...starkProxyRecoveryContracts,
-    ...UpgradeGovernanceStrategyV2Contracts,
+    ...upgradeGovernanceStrategyV2Contracts,
+    ...treasuryBridgeContracts,
     ...mockContracts,
   };
 }

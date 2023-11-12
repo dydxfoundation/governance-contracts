@@ -71,10 +71,8 @@ async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
     await executeV3DataAvailabilityProposalForTest(deployedContracts);
     await executeOpsTrustV2ProposalForTest(deployedContracts);
     await executeUpdateMerkleDistributorRewardsParametersDIP24ProposalForTest(deployedContracts);
+    await executeUpgradeGovernanceStrategyV2ProposalForTest(deployedContracts);
   }
-
-  // Execute the proposals which have not yet been executed on mainnet.
-  await executeUpgradeGovernanceStrategyV2ProposalForTest(deployedContracts);
 
   await configureForTest(deployedContracts);
   return deployedContracts;
