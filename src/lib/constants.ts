@@ -23,6 +23,9 @@ export const SM_ROLE_HASHES = [
   Role.STAKE_OPERATOR_ROLE,
 ].map(getRole);
 
+export const REWARDS_TREASURY_VESTER_BURN_ADDRESS = '0x0000000000000000000000000000000000000001';
+export const COMMUNITY_TREASURY_VESTER_BURN_ADDRESS = '0x0000000000000000000000000000000000000002';
+
 // DIP_6_IPFS_HASH taken from the link below:
 // https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-6-Ipfs-hashes.json
 export const DIP_6_IPFS_HASH = '0xb659e2db02977540be8821312b75aa2e18d9e8ab60a2708b3d64e7fd5bc7c9bd';
