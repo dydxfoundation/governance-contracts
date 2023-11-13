@@ -1,5 +1,6 @@
 import { Role } from '../types';
 import { getRole } from './util';
+import { fromBech32, toHex } from '@cosmjs/encoding';
 
 export const ONE_DAY_SECONDS = 60 * 60 * 24;
 export const ONE_DAY_BLOCKS = 6570; // Assume 13s per block
@@ -25,6 +26,13 @@ export const SM_ROLE_HASHES = [
 
 export const REWARDS_TREASURY_VESTER_BURN_ADDRESS = '0x0000000000000000000000000000000000000001';
 export const COMMUNITY_TREASURY_VESTER_BURN_ADDRESS = '0x0000000000000000000000000000000000000002';
+export const EXPECTED_AVG_BLOCKTIME_LOWER_BOUND_S = 12.05;
+
+// DYDX chain address conversion logic copied from here:
+// https://github.com/dydxopsdao/bridge-user-interface/blob/766998f3d18e0fb3fb45d7379291b9c7d70b98d6/src/hooks/migrate/useBridgeTransaction.tsx#L67
+// DYDX chain community treasury address taken from here:
+// https://github.com/dydxprotocol/v4-chain/blob/98d817dbf570d5bda7eb2eb5019d0dbebd424576/protocol/app/module_accounts_test.go#L34
+export const COMMUNITY_TREASURY_DYDX_CHAIN_ADDRESS_BYTES = `0x${toHex(fromBech32("dydx15ztc7xy42tn2ukkc0qjthkucw9ac63pgp70urn").data)}`
 
 // DIP_6_IPFS_HASH taken from the link below:
 // https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-6-Ipfs-hashes.json
@@ -68,3 +76,7 @@ export const DIP_24_IPFS_HASH = '0x3a7575988e0aa9c066830c1e8f8958d9b81d0365cfb6e
 // DIP_26_IPFS_HASH taken from the link below:
 // https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-26-Ipfs-hashes.json
 export const DIP_26_IPFS_HASH = '0x4e09e2db5902fe2ffce429be407d507de75b69cb94f138b0785d3af1eaf083ec';
+
+// DIP_29_IPFS_HASH taken from the link below:
+// https://github.com/dydxfoundation/dip/blob/master/content/ipfs-dips/DIP-29-Ipfs-hashes.json
+export const DIP_29_IPFS_HASH = '0x7349d9a234c93be79327fb69d23f2daf71abab093ed517dcd1cca55688ab1991';

@@ -50,7 +50,7 @@ The calldata for creating the proposal will be logged to stdout. If you want to 
 this, you will first have to enable Hex Data in Metamask. If you do not have Hex Data enabled in MetaMask, go to
 Settings > Advanced > Show Hex Data to turn on sending Hex Data when sending a transaction.
 
-The TX should be sent to the DYDX governor contract. On mainnet, the DYDX governor contract is at address `0x7E9B1672616FF6D6629Ef2879419aaE79A9018D2W`.
+The TX should be sent to the DYDX governor contract. On mainnet, the DYDX governor contract is at address `0x7E9B1672616FF6D6629Ef2879419aaE79A9018D2`.
 
 As an example, the steps for creating the proposal in Metamask on mainnet are the following:
 1. Change your Metamask network to mainnet and the address to the one that has sufficient proposing power.

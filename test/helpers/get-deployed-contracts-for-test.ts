@@ -17,6 +17,7 @@ import {
   executeOpsTrustV2ProposalForTest,
   executeUpdateMerkleDistributorRewardsParametersDIP24ProposalForTest,
   executeUpgradeGovernanceStrategyV2ProposalForTest,
+  executeTreasuryBridgeProposalForTest,
 } from '../migrations/deploy-contracts-for-test';
 
 let globalDeployedContracts: AllDeployedContracts;
@@ -74,6 +75,9 @@ async function getDeployedContractsForTest(): Promise<AllDeployedContracts> {
     await executeUpgradeGovernanceStrategyV2ProposalForTest(deployedContracts);
   }
 
+  // Execute the proposals which have not yet been executed on mainnet.
+  await executeTreasuryBridgeProposalForTest(deployedContracts);
+  
   await configureForTest(deployedContracts);
   return deployedContracts;
 }

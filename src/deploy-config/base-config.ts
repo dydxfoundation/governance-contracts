@@ -306,6 +306,9 @@ const config = {
   // Trading rewards and alpha are unchanged.
   UPDATE_MERKLE_DISTRIBUTOR_TRADER_REWARDS_AMOUNT_DIP24: '1582192000000000000000000',
   UPDATE_MERKLE_DISTRIBUTOR_ALPHA_PARAMETER_DIP24: '0',
+  
+  // Treasury Bridge Proposal
+  UNALLOCATED_REWARDS_TO_BRIDGE_AMOUNT: toWad('240519495.4607200971'),
 };
 
 export type BaseConfig = typeof config;
