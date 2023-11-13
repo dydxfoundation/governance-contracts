@@ -25,8 +25,13 @@ const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 
 // Testnet and mainnet configuration.
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
-const MNEMONIC = process.env.MNEMONIC || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
+let MNEMONIC = process.env.MNEMONIC || '';
+if (MNEMONIC === '') {
+  MNEMONIC = 'test test test test test test test test test test test test';
+  console.log('Note on-chain TXs cannot be created since a test mnemonic is being used that has no funds.');
+  console.log('If this was not intentional, re-run the script with a valid seed phrase stored in the MNEMONIC environment variable.');
+}
 
 // Load hardhat tasks.
 if (!SKIP_LOAD) {

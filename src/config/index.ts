@@ -41,6 +41,8 @@ const configSchema = {
   TEST_UPDATE_MERKLE_DISTRIBUTOR_REWARDS_PARAMETERS_DIP24_WITH_PROPOSAL: parseBoolean({ default: true }),
   UPGRADE_GOVERNANCE_STRATEGY_PROPOSAL_ID: parseInteger({ default: null }),
   TEST_UPGRADE_GOVERNANCE_STRATEGY_WITH_PROPOSAL: parseBoolean({ default: true }),
+  TREASURY_BRIDGE_PROPOSAL_ID: parseInteger({ default: null }),
+  TEST_TREASURY_BRIDGE_WITH_PROPOSAL: parseBoolean({ default: true }),
 };
 
 const config = parseSchema(configSchema);

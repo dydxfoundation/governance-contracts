@@ -32,6 +32,8 @@ import { executeWindDownSafetyModuleNoProposal, executeWindDownSafetyModuleViaPr
 import { executeUpgradeGovernanceStrategyV2NoProposal, executeUpgradeGovernanceStrategyV2ViaProposal } from './upgrade-governance-strategy-v2';
 import { deployUpgradeGovernanceStrategyV2Contracts } from '../../src/migrations/deploy-upgrade-governance-strategy-v2-contracts';
 import { deployTreasuryBridgeContracts } from '../../src/migrations/deploy-treasury-bridge-contracts';
+import { executeTreasuryBridgeNoProposal, executeTreasuryBridgeViaProposal } from './treasury-bridge-proposal';
+
 
 /**
  * Perform all deployments steps for the test environment.
@@ -403,6 +405,38 @@ export async function executeUpgradeGovernanceStrategyV2ProposalForTest(
         governorAddress: deployedContracts.governor.address,
         governanceStrategyV2Address: deployedContracts.governanceStrategyV2.address,
         longTimelockAddress: deployedContracts.longTimelock.address,
+    });
+  }
+}
+
+export async function executeTreasuryBridgeProposalForTest(
+  deployedContracts: AllDeployedContracts,
+  ) {
+  if (config.TEST_TREASURY_BRIDGE_WITH_PROPOSAL) {
+    await executeTreasuryBridgeViaProposal({
+      dydxTokenAddress: deployedContracts.dydxToken.address,
+      wrappedDydxTokenAddress: deployedContracts.wrappedDydxToken.address,
+      governorAddress: deployedContracts.governor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      rewardsTreasuryAddress: deployedContracts.rewardsTreasury.address,
+      communityTreasuryAddress: deployedContracts.communityTreasury.address,
+      rewardsTreasuryProxyAdminAddress: deployedContracts.rewardsTreasuryProxyAdmin.address,
+      communityTreasuryProxyAdminAddress: deployedContracts.communityTreasuryProxyAdmin.address,
+      rewardsTreasuryVesterAddress: deployedContracts.rewardsTreasuryVester.address,
+      communityTreasuryVesterAddress: deployedContracts.communityTreasuryVester.address,
+      rewardsTreasuryBridgeAddress: deployedContracts.rewardsTreasuryBridge.address,
+      communityTreasuryBridgeAddress: deployedContracts.communityTreasuryBridge.address,
+    });
+  } else {
+    await executeTreasuryBridgeNoProposal({
+      governorAddress: deployedContracts.governor.address,
+      shortTimelockAddress: deployedContracts.shortTimelock.address,
+      rewardsTreasuryAddress: deployedContracts.rewardsTreasury.address,
+      communityTreasuryAddress: deployedContracts.communityTreasury.address,
+      rewardsTreasuryProxyAdminAddress: deployedContracts.rewardsTreasuryProxyAdmin.address,
+      communityTreasuryProxyAdminAddress: deployedContracts.communityTreasuryProxyAdmin.address,
+      rewardsTreasuryBridgeAddress: deployedContracts.rewardsTreasuryBridge.address,
+      communityTreasuryBridgeAddress: deployedContracts.communityTreasuryBridge.address,
     });
   }
 }
