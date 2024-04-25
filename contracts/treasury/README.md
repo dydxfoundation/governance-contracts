@@ -93,7 +93,7 @@ As of epoch 28, 205,165,433.5392799029 DYDX were allocated to rewards. Reasoning
         - The liquidity module rewards were set to 0 on Sep-29-2022 02:16:23 PM UTC, which is unix timestamp 1664460983.
             - This occurred as part of a governance proposal executed on block 15639536 ([source](https://etherscan.io/tx/0xcda8c40f45aac4ef7f5d6aa5d82cb84e89057c03842b549c00151ffbae854a4e#eventlog)).
 - 194,095,887 DYDX tokens were allocated for trading, MM, and retroactive mining rewards up to epoch 28 (note, this doesn't include epoch 29 rewards since they aren't allocated on-chain yet). Reasoning:
-    - Latest V3 rewards are [here](https://cloudflare-ipfs.com/ipfs/bafybeic22w5uxknvce4kzci7fftgezsccxgpvruyh2ro4a4qkbxpi5pdqu). Note this includes retroactive allocations as well.
+    - Latest V3 rewards are [here](https://hedgies.mypinata.cloud/ipfs/bafybeic22w5uxknvce4kzci7fftgezsccxgpvruyh2ro4a4qkbxpi5pdqu). Note this includes retroactive allocations as well.
     - Number can be reproduced by running the below script.
 
 ## Future allocated rewards after epoch 28
@@ -134,7 +134,7 @@ def compute_cumulative_rewards(data):
     return sum(int(entry[1]) for entry in data)
 
 def main():
-    url = "https://cloudflare-ipfs.com/ipfs/bafybeic22w5uxknvce4kzci7fftgezsccxgpvruyh2ro4a4qkbxpi5pdqu"
+    url = "https://hedgies.mypinata.cloud/ipfs/bafybeic22w5uxknvce4kzci7fftgezsccxgpvruyh2ro4a4qkbxpi5pdqu"
     data = fetch_data(url)
     total_rewards = compute_cumulative_rewards(data)
     print(f"Cumulative rewards: {total_rewards}")
