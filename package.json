@@ -33,7 +33,7 @@
   "dependencies": {
     "@chainlink/contracts": "^0.2.1",
     "@cosmjs/encoding": "^0.31.3",
-    "axios": "^0.24.0",
+    "axios": "^0.28.0",
     "cids": "^1.1.9",
     "dotenv": "^10.0.0",
     "ethereum-multicall": "^2.9.0",
@@ -63,12 +63,12 @@
     "eslint-plugin-import": "^2.24.2",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eth-sig-util": "^3.0.1",
-    "ethereum-waffle": "^3.4.0",
+    "ethereum-waffle": "^4.0.10",
     "hardhat": "^2.17.2",
     "lodash": "^4.17.21",
     "luxon": "^2.0.2",
     "reflect-metadata": "^0.1.13",
-    "solidity-coverage": "^0.7.17",
+    "solidity-coverage": "^0.8.12",
     "ts-node": "^10.9.1",
     "typechain": "^5.1.2",
     "typescript": "^4.4.3"
